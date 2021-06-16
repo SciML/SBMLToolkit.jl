@@ -1,0 +1,13 @@
+name = "SBMLToolkit"
+uuid = "86080e66-c8ac-44c2-a1a0-9adaadfe4a4e"
+authors = ["paulflang", "anandijain"]
+version = "0.1.0"
+
+[compat]
+julia = "1.6"
+
+[extras]
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[targets]
+test = ["Test"]
