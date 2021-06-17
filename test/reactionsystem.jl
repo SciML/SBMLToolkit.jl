@@ -24,7 +24,6 @@
     @named rs = ReactionSystem(MODEL1)
     isequal(nameof(rs), :rs)
 
-    rs = ReactionSystem(sbmlfile)
     # println(Catalyst.get_eqs(rs))
     # println(ModelingToolkit.Reaction[ModelingToolkit.Reaction(c1*k1*2.0*s1*2.0*s2, [s1, s2], [s1s2], [1., 1.], [1.]; use_only_rate=true)])
     @test isequal(Catalyst.get_eqs(rs), ModelingToolkit.Reaction[ModelingToolkit.Reaction(0.25c1*k1*s1*s2, [s1, s2], [s1s2], [1., 1.], [1.]; use_only_rate=true)])
@@ -34,7 +33,7 @@
     @named rs = ReactionSystem(MODEL1)
     isequal(nameof(rs), :rs)
 
-    rs = ReactionSystem(joinpath("data","reactionsystem_05.xml"))  # Contains reversible reaction
+    rs = ReactionSystem(readSBML(joinpath("data","reactionsystem_05.xml")))  # Contains reversible reaction
     @test isequal(Catalyst.get_eqs(rs),
                   ModelingToolkit.Reaction[
                       ModelingToolkit.Reaction(c1*k1*s1*s2, [s1,s2], [s1s2],
@@ -62,7 +61,7 @@
     isequal(nameof(odesys), :odesys)
     @test_nowarn structural_simplify(odesys)
 
-    odesys = ODESystem(sbmlfile)
+    odesys = ODESystem(readSBML(sbmlfile))
     trueeqs = Equation[Differential(t)(s1) ~ -0.25c1 * k1 * s1 * s2,
                        Differential(t)(s1s2) ~ 0.25c1 * k1 * s1 * s2,
                        Differential(t)(s2) ~ -0.25c1 * k1 * s1 * s2]
@@ -83,7 +82,7 @@
     sol = solve(oprob, Tsit5())
     @test isapprox(sol.u, [[1.], [2.]])
 
-    @test_nowarn ODEProblem(sbmlfile, [0., 1.])
+    @test_nowarn ODEProblem(readSBML(sbmlfile), [0., 1.])
 
     # Test checksupport
     @test_nowarn SBML.checksupport(MODEL1)

@@ -11,12 +11,6 @@ function ModelingToolkit.ReactionSystem(model::SBML.Model; kwargs...)  # Todo: r
     ReactionSystem(rxs,Catalyst.DEFAULT_IV,species,params; kwargs...)
 end
 
-""" ReactionSystem constructor """
-function ModelingToolkit.ReactionSystem(sbmlfile::String; kwargs...)
-    model = readSBML(sbmlfile,SBML.convert_simplify_math)
-    ReactionSystem(model; kwargs...)
-end
-
 """ ODESystem constructor """
 function ModelingToolkit.ODESystem(model::SBML.Model; kwargs...)
     rs = ReactionSystem(model; kwargs...)
@@ -27,21 +21,9 @@ function ModelingToolkit.ODESystem(model::SBML.Model; kwargs...)
     convert(ODESystem, rs, defaults=defaults)
 end
 
-""" ODESystem constructor """
-function ModelingToolkit.ODESystem(sbmlfile::String; kwargs...)
-    model = readSBML(sbmlfile)
-    ODESystem(model; kwargs...)
-end
-
 """ ODEProblem constructor """
 function ModelingToolkit.ODEProblem(model::SBML.Model,tspan;kwargs...)  # PL: Todo: add u0 and parameters argument
     odesys = ODESystem(model)
-    ODEProblem(odesys, [], tspan; kwargs...)
-end
-
-""" ODEProblem constructor """
-function ModelingToolkit.ODEProblem(sbmlfile::String,tspan;kwargs...)  # PL: Todo: add u0 and parameters argument
-    odesys = ODESystem(sbmlfile)
     ODEProblem(odesys, [], tspan; kwargs...)
 end
 
