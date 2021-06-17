@@ -21,12 +21,6 @@ function ModelingToolkit.ODESystem(model::SBML.Model; kwargs...)
     convert(ODESystem, rs, defaults=defaults)
 end
 
-""" ODEProblem constructor """
-function ModelingToolkit.ODEProblem(model::SBML.Model,tspan;kwargs...)  # PL: Todo: add u0 and parameters argument
-    odesys = ODESystem(model)
-    ODEProblem(odesys, [], tspan; kwargs...)
-end
-
 """ Check if conversion to ReactionSystem is possible """
 function checksupport(model::SBML.Model)
     for s in values(model.species)

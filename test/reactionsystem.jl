@@ -78,11 +78,11 @@
     @test_nowarn ODEProblem(odesys, [], [0., 1.], [])
 
     # Test ODEProblem
-    oprob = ODEProblem(MODEL1, [0., 1.])
+    oprob = ODEProblem(ODESystem(MODEL1), [0., 1.])
     sol = solve(oprob, Tsit5())
     @test isapprox(sol.u, [[1.], [2.]])
 
-    @test_nowarn ODEProblem(readSBML(sbmlfile), [0., 1.])
+    @test_nowarn ODEProblem(ODESystem(readSBML(sbmlfile)), [0., 1.])
 
     # Test checksupport
     @test_nowarn SBML.checksupport(MODEL1)
