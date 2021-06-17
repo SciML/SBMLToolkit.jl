@@ -24,6 +24,7 @@
     @named rs = ReactionSystem(MODEL1)
     isequal(nameof(rs), :rs)
 
+    rs = ReactionSystem(readSBML(sbmlfile))
     # println(Catalyst.get_eqs(rs))
     # println(ModelingToolkit.Reaction[ModelingToolkit.Reaction(c1*k1*2.0*s1*2.0*s2, [s1, s2], [s1s2], [1., 1.], [1.]; use_only_rate=true)])
     @test isequal(Catalyst.get_eqs(rs), ModelingToolkit.Reaction[ModelingToolkit.Reaction(0.25c1*k1*s1*s2, [s1, s2], [s1s2], [1., 1.], [1.]; use_only_rate=true)])
