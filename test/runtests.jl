@@ -2,7 +2,7 @@ using SBMLToolkit
 using Test
 
 using Catalyst
-using DifferentialEquations
+using OrdinaryDiffEq
 
 @testset "SBMLToolkit.jl" begin
     include("reactionsystem.jl")
