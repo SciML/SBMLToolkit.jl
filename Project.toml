@@ -9,6 +9,7 @@ ModelingToolkit = "961ee093-0014-501f-94e3-6117800e7a78"
 SBML = "e5567a89-2604-4b09-9718-f5f78e97c3bb"
 
 [compat]
+ModelingToolkit = "5"
 julia = "1.6"
 
 [extras]
