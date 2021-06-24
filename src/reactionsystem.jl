@@ -1,5 +1,5 @@
 """ ReactionSystem constructor """
-function ModelingToolkit.ReactionSystem(model::Model; kwargs...)  # Todo: requires unique parameters (i.e. SBML must have been imported with localParameter promotion in libSBML)
+function ModelingToolkit.ReactionSystem(model::SBML.Model; kwargs...)  # Todo: requires unique parameters (i.e. SBML must have been imported with localParameter promotion in libSBML)
     checksupport(model)
     model = make_extensive(model)
     rxs = mtk_reactions(model)
@@ -18,7 +18,7 @@ function ModelingToolkit.ReactionSystem(sbmlfile::String; kwargs...)
 end
 
 """ ODESystem constructor """
-function ModelingToolkit.ODESystem(model::Model; kwargs...)
+function ModelingToolkit.ODESystem(model::SBML.Model; kwargs...)
     rs = ReactionSystem(model; kwargs...)
     model = make_extensive(model)  # PL: consider making `make_extensive!` to avoid duplicate calling in ReactionSystem and here
     u0map = get_u0(model)
@@ -34,7 +34,7 @@ function ModelingToolkit.ODESystem(sbmlfile::String; kwargs...)
 end
 
 """ ODEProblem constructor """
-function ModelingToolkit.ODEProblem(model::Model,tspan;kwargs...)  # PL: Todo: add u0 and parameters argument
+function ModelingToolkit.ODEProblem(model::SBML.Model,tspan;kwargs...)  # PL: Todo: add u0 and parameters argument
     odesys = ODESystem(model)
     ODEProblem(odesys, [], tspan; kwargs...)
 end
@@ -46,7 +46,7 @@ function ModelingToolkit.ODEProblem(sbmlfile::String,tspan;kwargs...)  # PL: Tod
 end
 
 """ Check if conversion to ReactionSystem is possible """
-function checksupport(model::Model)
+function checksupport(model::SBML.Model)
     for s in values(model.species)
         if s.boundary_condition
             @warn "Species $(s.name) has `boundaryCondition` or is `constant`. This will lead to wrong results when simulating the `ReactionSystem`."
@@ -62,7 +62,7 @@ function make_extensive(model)
 end
 
 """ Convert initial_concentration to initial_amount """
-function to_initial_amounts(model::Model)
+function to_initial_amounts(model::SBML.Model)
     model = deepcopy(model)
     for specie in values(model.species)
         if isnothing(specie.initial_amount)
@@ -126,11 +126,11 @@ function _get_substitutions(model)
 end
 
 """ Convert SBML.Reaction to MTK.Reaction """
-function mtk_reactions(model::Model)
+function mtk_reactions(model::SBML.Model)
     subsdict = _get_substitutions(model)
     rxs = []
     if length(model.reactions) == 0
-        throw(ErrorException("Model contains no reactions."))
+        throw(ErrorException("SBML.Model contains no reactions."))
     end
     for reaction in values(model.reactions)
         reactants = Num[]
@@ -210,6 +210,30 @@ function get_paramap(model)
         end
     end
     paramap
+end
+
+""" Get rate constant of mass action kineticLaws """
+function getmassaction(kl::Num, reactants::Union{Vector{Num},Nothing}, stoich::Union{Vector{<:Real},Nothing})
+    function check_args(x::SymbolicUtils.Symbolic{Real})
+        for arg in SymbolicUtils.arguments(x)
+            if isnan(check_args(arg))
+                return NaN
+            end
+        end
+        return 0
+    end
+    check_args(x::Term{Real, Nothing}) = NaN  # Variable leaf node
+    check_args(x::Sym{Real, Base.ImmutableDict{DataType, Any}}) = 0  # Parameter leaf node
+    check_args(x::Real) = 0  # Real leaf node
+    check_args(x) = throw(ErrorException("Cannot handle $(typeof(x)) types."))  # Unknow leaf node
+    if isnothing(reactants) && isnothing(stoich)
+        rate_const = kl
+    elseif isnothing(reactants) | isnothing(stoich)
+        throw(ErrorException("`reactants` and `stoich` are incosistent: `reactants` are $(reactants) and `stoich` is $(stoich)."))
+    else
+        rate_const = kl / *((.^(reactants, stoich))...)
+    end
+    isnan(check_args(rate_const.val)) ? NaN : rate_const
 end
 
 create_var(x, iv) = Num(Variable{Symbolics.FnType{Tuple{Any},Real}}(Symbol(x)))(iv).val
