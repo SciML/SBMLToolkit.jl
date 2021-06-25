@@ -10,11 +10,12 @@ SBML = "e5567a89-2604-4b09-9718-f5f78e97c3bb"
 SymbolicUtils = "d1185830-fcd6-423d-90d6-eec64667417b"
 
 [compat]
+SBML = ">= 0.5.2"
 julia = "1.6"
 
 [extras]
-Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 DifferentialEquations = "0c46a032-eb83-5123-abaf-570d42b7fbaa"
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [targets]
 test = ["Test", "DifferentialEquations"]
