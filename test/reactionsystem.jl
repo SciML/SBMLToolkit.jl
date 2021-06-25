@@ -69,6 +69,7 @@
     @test_nowarn structural_simplify(odesys)
 
     odesys = ODESystem(readSBML(sbmlfile))
+    m = readSBML(sbmlfile)
     trueeqs = Equation[Differential(t)(s1) ~ -0.25c1 * k1 * s1 * s2,
                        Differential(t)(s1s2) ~ 0.25c1 * k1 * s1 * s2,
                        Differential(t)(s2) ~ -0.25c1 * k1 * s1 * s2]
@@ -85,11 +86,11 @@
     @test_nowarn ODEProblem(odesys, [], [0., 1.], [])
 
     # Test ODEProblem
-    oprob = ODEProblem(ODESystem(MODEL1), [0., 1.])
+    oprob = ODEProblem(ODESystem(MODEL1), [], [0., 1.], [])
     sol = solve(oprob, Tsit5())
     @test isapprox(sol.u, [[1.], [2.]])
 
-    @test_nowarn ODEProblem(ODESystem(readSBML(sbmlfile)), [0., 1.])
+    @test_nowarn ODEProblem(ODESystem(readSBML(sbmlfile)), [], [0., 1.], [])
 
     # Test checksupport
     @test_nowarn SBMLToolkit.checksupport(MODEL1)

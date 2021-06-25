@@ -110,9 +110,9 @@ function mtk_reactions(model::SBML.Model)
     end
     for reaction in values(model.reactions)
         reactants = Num[]
-        rstoich = Real[]
+        rstoich = Float64[]
         products = Num[]
-        pstoich = Real[]
+        pstoich = Float64[]
         for (k,v) in reaction.stoichiometry
             if v < 0
                 push!(reactants, create_var(k,Catalyst.DEFAULT_IV))
