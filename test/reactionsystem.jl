@@ -1,6 +1,6 @@
 @testset "Model to MTK conversions" begin
     
-    # sbmlfile = joinpath("data", "reactionsystem_01.xml")
+    sbmlfile = joinpath("data", "reactionsystem_01.xml")
     @parameters t, k1, c1
     @variables s1(t), s2(t), s1s2(t)
 
@@ -30,15 +30,15 @@
     @named rs = ReactionSystem(MODEL1)
     isequal(nameof(rs), :rs)
 
-    # rs = ReactionSystem(sbmlfile)
-    # # println(Catalyst.get_eqs(rs))
-    # # println(ModelingToolkit.Reaction[ModelingToolkit.Reaction(c1*k1*2.0*s1*2.0*s2, [s1, s2], [s1s2], [1., 1.], [1.]; use_only_rate=true)])
-    # @test isequal(Catalyst.get_eqs(rs), ModelingToolkit.Reaction[ModelingToolkit.Reaction(0.25c1*k1*s1*s2, [s1, s2], [s1s2], [1., 1.], [1.]; use_only_rate=true)])
-    # @test isequal(Catalyst.get_iv(rs), t)
-    # @test isequal(Catalyst.get_states(rs), [s1, s1s2, s2])
-    # @test isequal(Catalyst.get_ps(rs), [k1,c1])
-    # @named rs = ReactionSystem(MODEL1)
-    # isequal(nameof(rs), :rs)
+    rs = ReactionSystem(readSBML(sbmlfile))
+    # println(Catalyst.get_eqs(rs))
+    # println(ModelingToolkit.Reaction[ModelingToolkit.Reaction(c1*k1*2.0*s1*2.0*s2, [s1, s2], [s1s2], [1., 1.], [1.]; use_only_rate=true)])
+    @test isequal(Catalyst.get_eqs(rs), ModelingToolkit.Reaction[ModelingToolkit.Reaction(0.25c1*k1*s1*s2, [s1, s2], [s1s2], [1., 1.], [1.]; use_only_rate=true)])
+    @test isequal(Catalyst.get_iv(rs), t)
+    @test isequal(Catalyst.get_states(rs), [s1, s1s2, s2])
+    @test isequal(Catalyst.get_ps(rs), [k1,c1])
+    @named rs = ReactionSystem(MODEL1)
+    isequal(nameof(rs), :rs)
 
     rs = ReactionSystem(MODEL3)  # Contains reversible reaction
     @test isequal(Catalyst.get_eqs(rs),
@@ -68,28 +68,28 @@
     isequal(nameof(odesys), :odesys)
     @test_nowarn structural_simplify(odesys)
 
-    # odesys = ODESystem(sbmlfile)
-    # trueeqs = Equation[Differential(t)(s1) ~ -0.25c1 * k1 * s1 * s2,
-    #                    Differential(t)(s1s2) ~ 0.25c1 * k1 * s1 * s2,
-    #                    Differential(t)(s2) ~ -0.25c1 * k1 * s1 * s2]
-    # @test isequal(Catalyst.get_eqs(odesys), trueeqs)
-    # @test isequal(Catalyst.get_iv(odesys), t)
-    # @test isequal(Catalyst.get_states(odesys), [s1, s1s2, s2])
-    # @test isequal(Catalyst.get_ps(odesys), [k1, c1])
-    # u0 = [s1 => 2*1., s2 => 2*1., s1s2 => 2*1.]
-    # par = [k1 => 1., c1 => 2.]
-    # @test isequal(odesys.defaults, Dict(append!(u0, par)))
-    # @named odesys = ODESystem(MODEL1)
-    # isequal(nameof(odesys), :odesys)
+    odesys = ODESystem(readSBML(sbmlfile))
+    trueeqs = Equation[Differential(t)(s1) ~ -0.25c1 * k1 * s1 * s2,
+                       Differential(t)(s1s2) ~ 0.25c1 * k1 * s1 * s2,
+                       Differential(t)(s2) ~ -0.25c1 * k1 * s1 * s2]
+    @test isequal(Catalyst.get_eqs(odesys), trueeqs)
+    @test isequal(Catalyst.get_iv(odesys), t)
+    @test isequal(Catalyst.get_states(odesys), [s1, s1s2, s2])
+    @test isequal(Catalyst.get_ps(odesys), [k1, c1])
+    u0 = [s1 => 2*1., s2 => 2*1., s1s2 => 2*1.]
+    par = [k1 => 1., c1 => 2.]
+    @test isequal(odesys.defaults, Dict(append!(u0, par)))
+    @named odesys = ODESystem(MODEL1)
+    isequal(nameof(odesys), :odesys)
 
     @test_nowarn ODEProblem(odesys, [], [0., 1.], [])
 
     # Test ODEProblem
-    oprob = ODEProblem(MODEL1, [0., 1.])
+    oprob = ODEProblem(ODESystem(MODEL1), [0., 1.])
     sol = solve(oprob, Tsit5())
     @test isapprox(sol.u, [[1.], [2.]])
 
-    # @test_nowarn ODEProblem(sbmlfile, [0., 1.])
+    @test_nowarn ODEProblem(ODESystem(readSBML(sbmlfile)), [0., 1.])
 
     # Test checksupport
     @test_nowarn SBMLToolkit.checksupport(MODEL1)
