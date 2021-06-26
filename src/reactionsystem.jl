@@ -128,7 +128,7 @@ function mtk_reactions(model::SBML.Model)
 end
 
 """ Get reagents """
-function getreagents(stoich::Dict{String,SBML.Species}, model::SBML.Model; rev=false)
+function getreagents(stoich::Dict{String,<:Real}, model::SBML.Model; rev=false)
     if rev
         stoich = Dict(k => -v for (k,v) in stoich)
     end
@@ -136,7 +136,7 @@ function getreagents(stoich::Dict{String,SBML.Species}, model::SBML.Model; rev=f
     products = Num[]
     rstoich = Float64[]
     pstoich = Float64[]
-    for (k,v) in reaction.stoichiometry
+    for (k,v) in stoich
         if v < 0
             push!(reactants, create_var(k,Catalyst.DEFAULT_IV))
             push!(rstoich, -v)
@@ -226,8 +226,6 @@ function getmassaction(kl::Num, reactants::Union{Vector{Num},Nothing}, stoich::U
     end
     isnan(check_args(rate_const.val)) ? NaN : rate_const
 end
-
-function 
 
 create_var(x, iv) = Num(Variable{Symbolics.FnType{Tuple{Any},Real}}(Symbol(x)))(iv).val
 create_var(x) = Num(Variable(Symbol(x))).val

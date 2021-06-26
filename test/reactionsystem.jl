@@ -43,7 +43,7 @@
     rs = ReactionSystem(MODEL3)  # Contains reversible reaction
     @test isequal(Catalyst.get_eqs(rs),
                   ModelingToolkit.Reaction[
-                      ModelingToolkit.Reaction(k1*s2, [s2], nothing,
+                      ModelingToolkit.Reaction(0.5k1*s2, [s2], nothing,
                           [1.], nothing; use_only_rate=true),
                       ModelingToolkit.Reaction(k1, nothing, [s2],
                           nothing, [1.]; use_only_rate=true)])
@@ -141,6 +141,9 @@
     truereaction = ModelingToolkit.Reaction(k1, nothing, [s1], nothing, [1]; only_use_rate=true)  # Todo: implement Sam's suggestion on mass action kinetics
     @test isequal(reaction, truereaction)
 
+    # Test getreagents
+    
+    
     # Test getunidirectionalcomponents
     km = SBML.MathApply("-", SBML.Math[KINETICMATH1, SBML.MathIdent("c1")])
     sm = convert(Num, km)
