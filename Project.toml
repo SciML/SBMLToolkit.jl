@@ -11,6 +11,7 @@ SymbolicUtils = "d1185830-fcd6-423d-90d6-eec64667417b"
 
 [compat]
 SBML = ">= 0.5.2"
+SymbolicUtils = "0.13"
 julia = "1.6"
 
 [extras]
