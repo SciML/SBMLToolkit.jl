@@ -109,36 +109,51 @@ function mtk_reactions(model::SBML.Model)
         throw(ErrorException("SBML.Model contains no reactions."))
     end
     for reaction in values(model.reactions)
-        reactants = Num[]
-        rstoich = Float64[]
-        products = Num[]
-        pstoich = Float64[]
-        for (k,v) in reaction.stoichiometry
-            if v < 0
-                push!(reactants, create_var(k,Catalyst.DEFAULT_IV))
-                push!(rstoich, -v)
-            elseif v > 0
-                push!(products, create_var(k,Catalyst.DEFAULT_IV))
-                push!(pstoich, v)
-            else
-                @error("Stoichiometry of $k must be non-zero")
-            end
-        end
-        if (length(reactants)==0) reactants = nothing; rstoich = nothing end
-        if (length(products)==0) products = nothing; pstoich = nothing end
-        symbolic_math = convert(Num, reaction.kinetic_math)
-        
+        extensive_math = SBML.extensive_kinetic_math(model, reaction.kinetic_math)
+        symbolic_math = convert(Num, extensive_math)
         if reaction.reversible
             symbolic_math = getunidirectionalcomponents(symbolic_math)
-            kl = [substitute(x, subsdict) for x in symbolic_math]
-            push!(rxs, ModelingToolkit.Reaction(kl[1],reactants,products,rstoich,pstoich;only_use_rate=true))
-            push!(rxs, ModelingToolkit.Reaction(kl[2],products,reactants,pstoich,rstoich;only_use_rate=true))
+            kl_fw, kl_rv = [substitute(x, subsdict) for x in symbolic_math]
+            reagents = getreagents(reaction.stoichiometry, model)
+            push!(rxs, ModelingToolkit.Reaction(kl_fw, reagents...; only_use_rate=true))
+            reagents = getreagents(reaction.stoichiometry, model; rev=true)
+            push!(rxs, ModelingToolkit.Reaction(kl_rv, reagents...; only_use_rate=true))
         else
             kl = substitute(symbolic_math, subsdict)
-            push!(rxs, ModelingToolkit.Reaction(kl,reactants,products,rstoich,pstoich;only_use_rate=true))
+            reagents = getreagents(reaction.stoichiometry, model)
+            push!(rxs, ModelingToolkit.Reaction(kl, reagents...; only_use_rate=true))
         end
     end
     rxs
+end
+
+""" Get reagents """
+function getreagents(stoich::Dict{String,SBML.Species}, model::SBML.Model; rev=false)
+    if rev
+        stoich = Dict(k => -v for (k,v) in stoich)
+    end
+    reactants = Num[]
+    products = Num[]
+    rstoich = Float64[]
+    pstoich = Float64[]
+    for (k,v) in reaction.stoichiometry
+        if v < 0
+            push!(reactants, create_var(k,Catalyst.DEFAULT_IV))
+            push!(rstoich, -v)
+            if model.species[k].boundary_condition == true
+                push!(products, create_var(k,Catalyst.DEFAULT_IV))
+                push!(pstoich, -v)
+            end
+        elseif v > 0 & model.species[k].boundary_condition != true
+            push!(products, create_var(k,Catalyst.DEFAULT_IV))
+            push!(pstoich, v)
+        else
+            @error("Stoichiometry of $k must be non-zero")
+        end
+    end
+    if (length(reactants)==0) reactants = nothing; rstoich = nothing end
+    if (length(products)==0) products = nothing; pstoich = nothing end
+    (reactants, products, rstoich, pstoich)
 end
 
 """ Infer forward and reverse components of bidirectional kineticLaw """
@@ -211,6 +226,8 @@ function getmassaction(kl::Num, reactants::Union{Vector{Num},Nothing}, stoich::U
     end
     isnan(check_args(rate_const.val)) ? NaN : rate_const
 end
+
+function 
 
 create_var(x, iv) = Num(Variable{Symbolics.FnType{Tuple{Any},Real}}(Symbol(x)))(iv).val
 create_var(x) = Num(Variable(Symbol(x))).val
