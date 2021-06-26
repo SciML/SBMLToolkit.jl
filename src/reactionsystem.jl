@@ -103,11 +103,9 @@ end
 
 """ Get reagents """
 function getreagents(stoich::Dict{String,<:Real}, model::SBML.Model; rev=false)
-    println(stoich)
     if rev
         stoich = Dict(k => -v for (k,v) in stoich)
     end
-    println(stoich)
     reactants = Num[]
     products = Num[]
     rstoich = Float64[]
@@ -121,9 +119,7 @@ function getreagents(stoich::Dict{String,<:Real}, model::SBML.Model; rev=false)
                 push!(pstoich, -v)
             end
         elseif v > 0
-            println("inside else")
             if model.species[k].boundary_condition != true
-                println("inside if")
                 push!(products, create_var(k,Catalyst.DEFAULT_IV))
                 push!(pstoich, v)
             end
