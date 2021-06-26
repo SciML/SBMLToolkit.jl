@@ -93,41 +93,10 @@
     @test_nowarn ODEProblem(ODESystem(readSBML(sbmlfile)), [], [0., 1.], [])
 
     # Test checksupport
-    @test_nowarn SBMLToolkit.checksupport(MODEL1)
-    sbc = SBML.Species("sbc", "c1", true, nothing, nothing, (1., "substance"), nothing, true)   
-    mod = SBML.Model(Dict("k1" => 1.), Dict(), Dict("c1" => COMP1), Dict("sbc" => sbc), Dict("r1" => REACTION1), Dict(), Dict())
-    @test_logs (:warn, "Species sbc has `boundaryCondition` or is `constant`. This will lead to wrong results when simulating the `ReactionSystem`.") SBMLToolkit.checksupport(mod)
-
-    # # Test make_extensive
-    # model = SBML.make_extensive(MODEL2)
-    # @test isequal(model.species["s2"].initial_amount, (2., ""))
-    # @test isequal(model.species["s2"].initial_concentration, nothing)
-
-    # kineticmath2_true = SBML.MathApply("*", SBML.Math[
-    #     SBML.MathIdent("k1"),
-    #     SBML.MathApply("/", SBML.Math[
-    #         SBML.MathIdent("s2"),
-    #         SBML.MathVal(2.0)])
-    #     ])
-    # @test isequal(repr(model.reactions["r2"].kinetic_math), repr(kineticmath2_true))
-    # @test model.species["s2"].only_substance_units
-
-    # # Test to_initial_amounts
-    # model = SBML.to_initial_amounts(MODEL1)
-    # @test isequal(model.species["s1"].initial_amount, (1., "substance"))
-    # @test isequal(model.species["s1"].initial_concentration, nothing)
-    # model = SBML.to_initial_amounts(MODEL2)
-    # @test isequal(model.species["s2"].initial_amount, (2., ""))
-    # @test isequal(model.species["s2"].initial_concentration, nothing)
-
-    # # Test to_extensive_math!
-    # model = SBML.to_extensive_math!(MODEL1)
-    # @test isequal(model.reactions["r1"].kinetic_math, KINETICMATH1)
-    # model = SBML.to_extensive_math!(MODEL2)
-    # @test isequal(repr(model.reactions["r2"].kinetic_math), repr(kineticmath2_true))
-    # #PL: Todo @Mirek/Anand: Why does this not work without the `repr()`?
-    # # Do we need to write a isequal(x::SBML.Math, y::SBML.Math) method to get this work?
-    # @test model.species["s2"].only_substance_units
+    # @test_nowarn SBMLToolkit.checksupport(MODEL1)
+    # sbc = SBML.Species("sbc", "c1", true, nothing, nothing, (1., "substance"), nothing, true)   
+    # mod = SBML.Model(Dict("k1" => 1.), Dict(), Dict("c1" => COMP1), Dict("sbc" => sbc), Dict("r1" => REACTION1), Dict(), Dict())
+    # @test_logs (:warn, "Species sbc has `boundaryCondition` or is `constant`. This will lead to wrong results when simulating the `ReactionSystem`.") SBMLToolkit.checksupport(mod)
 
     # Test _get_substitutions
     truesubs = Dict(Num(Variable(:c1)) => c1,
@@ -142,8 +111,21 @@
     @test isequal(reaction, truereaction)
 
     # Test getreagents
+    @test isequal((nothing, [s1], nothing, [1.]), SBMLToolkit.getreagents(REACTION1.stoichiometry, MODEL1))
     
-    
+    constspec = SBML.Species("constspec", "c1", true, nothing, nothing, (1., "substance"), nothing, true)
+    ncs = SBMLToolkit.create_var("constspec",Catalyst.DEFAULT_IV)
+    kineticmath = SBML.MathApply("-", SBML.Math[
+        SBML.MathApply("*", SBML.Math[
+            SBML.MathIdent("k1"),
+            SBML.MathIdent("constspec")]),
+        SBML.MathIdent("k1")])
+    constreac = SBML.Reaction(Dict("constspec" => -1), (NaN, ""), (NaN, ""), NaN,
+        nothing, kineticmath, false)
+    constmod = SBML.Model(Dict("k1" => 1.), Dict(), Dict("c1" => COMP1), Dict("constspec" => constspec), Dict("r1" => constreac), Dict(), Dict())
+    @test isequal(([ncs], [ncs], [1.], [1.]), SBMLToolkit.getreagents(constreac.stoichiometry, constmod))
+    @test isequal((nothing, nothing, nothing, nothing), SBMLToolkit.getreagents(constreac.stoichiometry, constmod; rev=true))
+
     # Test getunidirectionalcomponents
     km = SBML.MathApply("-", SBML.Math[KINETICMATH1, SBML.MathIdent("c1")])
     sm = convert(Num, km)
@@ -160,11 +142,6 @@
     sm1 = convert(Num, km)
     sm2 = sm - sm1
     @test_throws ErrorException SBMLToolkit.getunidirectionalcomponents(sm2)
-
-    # # Test get_u0
-    # true_u0map = [s1 => 1.]
-    # u0map = SBML.get_u0(MODEL1)
-    # @test isequal(true_u0map, u0map)
 
     # Test get_paramap
     trueparamap = [k1 => 1., c1 => 2.]

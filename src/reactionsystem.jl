@@ -1,7 +1,6 @@
 """ ReactionSystem constructor """
 function ModelingToolkit.ReactionSystem(model::SBML.Model; kwargs...)  # Todo: requires unique parameters (i.e. SBML must have been imported with localParameter promotion in libSBML)
     checksupport(model)
-    # model = make_extensive(model)
     rxs = mtk_reactions(model)
     species = []
     for k in keys(model.species)
@@ -14,7 +13,6 @@ end
 """ ODESystem constructor """
 function ModelingToolkit.ODESystem(model::SBML.Model; kwargs...)
     rs = ReactionSystem(model; kwargs...)
-    # model = make_extensive(model)  # PL: consider making `make_extensive!` to avoid duplicate calling in ReactionSystem and here
     u0map = [create_var(k,Catalyst.DEFAULT_IV) => v for (k,v) in SBML.initial_amounts(model, convert_concentrations = true)]
     parammap = get_paramap(model)
     defaults = Dict(vcat(u0map, parammap))
@@ -23,37 +21,13 @@ end
 
 """ Check if conversion to ReactionSystem is possible """
 function checksupport(model::SBML.Model)
-    for s in values(model.species)
-        if s.boundary_condition
-            @warn "Species $(s.name) has `boundaryCondition` or is `constant`. This will lead to wrong results when simulating the `ReactionSystem`."
-        end
-    end
+    # for s in values(model.species)
+    #     if s.boundary_condition
+    #         @warn "Species $(s.name) has `boundaryCondition` or is `constant`. This will lead to wrong results when simulating the `ReactionSystem`."
+    #     end
+    # end
+    return nothing
 end
-
-# """ Convert intensive to extensive expressions """
-# function make_extensive(model)
-#     model = to_initial_amounts(model)
-#     model = to_extensive_math!(model)
-#     model
-# end
-
-# """ Convert initial_concentration to initial_amount """
-# function to_initial_amounts(model::SBML.Model)
-#     model = deepcopy(model)
-#     for specie in values(model.species)
-#         if isnothing(specie.initial_amount)
-#             compartment = model.compartments[specie.compartment]
-#             if !isnothing(compartment.size)
-#                 specie.initial_amount = (specie.initial_concentration[1] * compartment.size, "")
-#             else
-#                 @warn "Compartment $(compartment.name) has no `size`. Cannot calculate `initial_amount` of Species $(specie.name). Setting `initial_amount` to `initial_concentration`."
-#                 specie.initial_amount = (specie.initial_concentration[1], "")
-#             end
-#             specie.initial_concentration = nothing
-#         end
-#     end
-#     model
-# end
 
 """ Convert intensive to extensive mathematical expression """
 function to_extensive_math!(model::SBML.Model)
@@ -129,9 +103,11 @@ end
 
 """ Get reagents """
 function getreagents(stoich::Dict{String,<:Real}, model::SBML.Model; rev=false)
+    println(stoich)
     if rev
         stoich = Dict(k => -v for (k,v) in stoich)
     end
+    println(stoich)
     reactants = Num[]
     products = Num[]
     rstoich = Float64[]
@@ -144,9 +120,13 @@ function getreagents(stoich::Dict{String,<:Real}, model::SBML.Model; rev=false)
                 push!(products, create_var(k,Catalyst.DEFAULT_IV))
                 push!(pstoich, -v)
             end
-        elseif v > 0 & model.species[k].boundary_condition != true
-            push!(products, create_var(k,Catalyst.DEFAULT_IV))
-            push!(pstoich, v)
+        elseif v > 0
+            println("inside else")
+            if model.species[k].boundary_condition != true
+                println("inside if")
+                push!(products, create_var(k,Catalyst.DEFAULT_IV))
+                push!(pstoich, v)
+            end
         else
             @error("Stoichiometry of $k must be non-zero")
         end
@@ -179,15 +159,6 @@ function getunidirectionalcomponents(bidirectional_math)
     end
     return (fw_terms[1], rv_terms[1])
 end
-
-# """ Extract u0map from Model """
-# function get_u0(model)
-#     u0map = []
-#     for (k,v) in model.species
-#         push!(u0map,Pair(create_var(k,Catalyst.DEFAULT_IV), v.initial_amount[1]))
-#     end
-#     u0map
-# end
 
 """ Extract paramap from Model """
 function get_paramap(model)
