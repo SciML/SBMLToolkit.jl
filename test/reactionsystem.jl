@@ -23,7 +23,7 @@
 
     # Test ReactionSystem constructor
     rs = ReactionSystem(MODEL1)
-    @test isequal(Catalyst.get_eqs(rs), ModelingToolkit.Reaction[ModelingToolkit.Reaction(k1, nothing, [s1], nothing, [1.]; use_only_rate=true)])
+    @test isequal(Catalyst.get_eqs(rs), ModelingToolkit.Reaction[ModelingToolkit.Reaction(k1, nothing, [s1], nothing, [1.])])
     @test isequal(Catalyst.get_iv(rs), t)
     @test isequal(Catalyst.get_states(rs), [s1])
     @test isequal(Catalyst.get_ps(rs), [k1,c1])
@@ -31,9 +31,7 @@
     isequal(nameof(rs), :rs)
 
     rs = ReactionSystem(readSBML(sbmlfile))
-    # println(Catalyst.get_eqs(rs))
-    # println(ModelingToolkit.Reaction[ModelingToolkit.Reaction(c1*k1*2.0*s1*2.0*s2, [s1, s2], [s1s2], [1., 1.], [1.]; use_only_rate=true)])
-    @test isequal(Catalyst.get_eqs(rs), ModelingToolkit.Reaction[ModelingToolkit.Reaction(0.25c1*k1*s1*s2, [s1, s2], [s1s2], [1., 1.], [1.]; use_only_rate=true)])
+    @test isequal(Catalyst.get_eqs(rs), ModelingToolkit.Reaction[ModelingToolkit.Reaction(0.25c1*k1, [s1, s2], [s1s2], [1., 1.], [1.])])
     @test isequal(Catalyst.get_iv(rs), t)
     @test isequal(Catalyst.get_states(rs), [s1, s1s2, s2])
     @test isequal(Catalyst.get_ps(rs), [k1,c1])
@@ -43,10 +41,10 @@
     rs = ReactionSystem(MODEL3)  # Contains reversible reaction
     @test isequal(Catalyst.get_eqs(rs),
                   ModelingToolkit.Reaction[
-                      ModelingToolkit.Reaction(0.5k1*s2, [s2], nothing,
-                          [1.], nothing; use_only_rate=true),
+                      ModelingToolkit.Reaction(0.5k1, [s2], nothing,
+                          [1.], nothing),
                       ModelingToolkit.Reaction(k1, nothing, [s2],
-                          nothing, [1.]; use_only_rate=true)])
+                          nothing, [1.])])
     @test isequal(Catalyst.get_iv(rs), t)
     @test isequal(Catalyst.get_states(rs), [s2])
     @test isequal(Catalyst.get_ps(rs), [k1, c1])
@@ -109,6 +107,10 @@
     reaction = SBMLToolkit.mtk_reactions(MODEL1)[1]
     truereaction = ModelingToolkit.Reaction(k1, nothing, [s1], nothing, [1]; only_use_rate=true)  # Todo: implement Sam's suggestion on mass action kinetics
     @test isequal(reaction, truereaction)
+
+    # Test use_rate
+    @test isequal(SBMLToolkit.use_rate(k1*s1, [s1], [1]), (k1, false))  # Case hOSU=true
+    @test isequal(SBMLToolkit.use_rate(k1*s1*s2/(c1+s2), [s1], [1]), (k1*s1*s2/(c1+s2), true))  # Case Michaelis-Menten kinetics
 
     # Test getreagents
     @test isequal((nothing, [s1], nothing, [1.]), SBMLToolkit.getreagents(REACTION1.stoichiometry, MODEL1))

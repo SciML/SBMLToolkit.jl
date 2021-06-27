@@ -84,21 +84,38 @@ function mtk_reactions(model::SBML.Model)
     end
     for reaction in values(model.reactions)
         extensive_math = SBML.extensive_kinetic_math(model, reaction.kinetic_math)
-        symbolic_math = convert(Num, extensive_math)
+        symbolic_math = Num(convert(Num, extensive_math))
         if reaction.reversible
             symbolic_math = getunidirectionalcomponents(symbolic_math)
             kl_fw, kl_rv = [substitute(x, subsdict) for x in symbolic_math]
+            
             reagents = getreagents(reaction.stoichiometry, model)
-            push!(rxs, ModelingToolkit.Reaction(kl_fw, reagents...; only_use_rate=true))
+            kl_fw, our = use_rate(kl_fw, reagents[1], reagents[3])
+            push!(rxs, ModelingToolkit.Reaction(kl_fw, reagents...; only_use_rate=our))
+            
             reagents = getreagents(reaction.stoichiometry, model; rev=true)
-            push!(rxs, ModelingToolkit.Reaction(kl_rv, reagents...; only_use_rate=true))
+            kl_rv, our = use_rate(kl_rv, reagents[1], reagents[3])
+            push!(rxs, ModelingToolkit.Reaction(kl_rv, reagents...; only_use_rate=our))
         else
             kl = substitute(symbolic_math, subsdict)
             reagents = getreagents(reaction.stoichiometry, model)
-            push!(rxs, ModelingToolkit.Reaction(kl, reagents...; only_use_rate=true))
+            kl, our = use_rate(kl, reagents[1], reagents[3])
+            push!(rxs, ModelingToolkit.Reaction(kl, reagents...; only_use_rate=our))
         end
     end
     rxs
+end
+
+""" Get kineticLaw for use in MTK.Reaction """
+function use_rate(kl::Num, react::Union{Vector{Num},Nothing}, stoich::Union{Vector{<:Real},Nothing})
+    rate_const = getmassaction(kl, react, stoich)
+    if !isnan(rate_const)
+        kl = rate_const
+        our = false
+    else
+        our = true
+    end
+    return (kl, our)
 end
 
 """ Get reagents """
