@@ -7,7 +7,7 @@
 
 SBMLToolkit.jl is a lightweight tool to import models specified in the Systems Biology Markup Language (SBML) into the Julia SciML ecosystem. More specifically, SBMLToolkit.jl extracts reactions, initial conditions and parameter values from SBML files. Events, Rules and several other SBML components are not yet supported. There are multiple ways to specify the same model in SBML. Please help us improving SBMLToolkit.jl by creating a GitHub issue if you experience errors when converting your SBML model.
 
-Note that [SBML.jl](https://github.com/LCSB-BioCore/SBML.jl) is a wrapper library of [libSBML](https://model.caltech.edu/software/libsbml/) and SBMLToolkit.jl is an extension for lowering these models into dynamical systems. 
+SBMLToolkit uses the [SBML.jl](https://github.com/LCSB-BioCore/SBML.jl) wrapper of the [libSBML](https://model.caltech.edu/software/libsbml/) library to lower dynamical SBML models into dynamical systems. If you are interested in constrained-based modelling please have a look at [COBREXA.jl](https://github.com/LCSB-BioCore/COBREXA.jl).
 
 ## Installation
 SBMLToolkit.jl is available on the Julia package managing system. To install SBMLToolkit run the following in the REPL:
