@@ -18,14 +18,18 @@ SBMLToolkit.jl is available on the Julia package managing system. To install SBM
 ## Tutorial
 SBML models can be simulated with the following steps:
   ```julia
-    using SBMLToolkit
+  using SBMLToolkit
 
-    rs = ReactionSystem("mymodel.sbml")
-    odesys = convert(ODESystem, rs)
+  mdl = readSBML("my_model.xml", doc -> begin
+      set_level_and_version(3, 2)(doc)
+      convert_simplify_math(doc)
+  end)
+  rs = ReactionSystem(mdl)
+  odesys = convert(ODESystem, rs)
 
-    tspan = [0., 1.]
-    prob = ODEProblem(odesys, [], tspan, [])
-    sol = solve(prob, Tsit5())
+  tspan = [0., 1.]
+  prob = ODEProblem(odesys, [], tspan, [])
+  sol = solve(prob, Tsit5())
   ```
 
 ## License
