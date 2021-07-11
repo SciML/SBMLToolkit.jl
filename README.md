@@ -7,23 +7,29 @@
 
 SBMLToolkit.jl is a lightweight tool to import models specified in the Systems Biology Markup Language (SBML) into the Julia SciML ecosystem. More specifically, SBMLToolkit.jl extracts reactions, initial conditions and parameter values from SBML files. Events, Rules and several other SBML components are not yet supported. There are multiple ways to specify the same model in SBML. Please help us improving SBMLToolkit.jl by creating a GitHub issue if you experience errors when converting your SBML model.
 
+SBMLToolkit uses the [SBML.jl](https://github.com/LCSB-BioCore/SBML.jl) wrapper of the [libSBML](https://model.caltech.edu/software/libsbml/) library to lower dynamical SBML models into dynamical systems. If you are interested in constrained-based modelling please have a look at [COBREXA.jl](https://github.com/LCSB-BioCore/COBREXA.jl).
+
 ## Installation
-SBMLToolkit.jl is not yet available on the Julia package managing system. To install SBMLToolkit please first clone this repository:
+SBMLToolkit.jl is available on the Julia package managing system. To install SBMLToolkit run the following in the REPL:
   ```
-  $ git clone https://github.com/paulflang/SBMLToolkit.jl.git
+  ]add SBMLToolkit
   ```
 
 ## Tutorial
 SBML models can be simulated with the following steps:
   ```julia
-    using SBMLToolkit
+  using SBMLToolkit
 
-    rs = ReactionSystem("mymodel.sbml")
-    odesys = convert(ODESystem, rs)
+  mdl = readSBML("my_model.xml", doc -> begin
+      set_level_and_version(3, 2)(doc)
+      convert_simplify_math(doc)
+  end)
+  rs = ReactionSystem(mdl)
+  odesys = convert(ODESystem, rs)
 
-    tspan = [0., 1.]
-    prob = ODEProblem(odesys, [], tspan, [])
-    sol = solve(prob, Tsit5())
+  tspan = [0., 1.]
+  prob = ODEProblem(odesys, [], tspan, [])
+  sol = solve(prob, Tsit5())
   ```
 
 ## License
