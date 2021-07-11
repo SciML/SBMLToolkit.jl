@@ -101,19 +101,34 @@ function mtk_reactions(model::SBML.Model)
             
             reagents = getreagents(reaction.stoichiometry, model)
             kl_fw, our = use_rate(kl_fw, reagents[1], reagents[3])
+            kl_rv = from_noncombinatoric(kl_rv, reagents[3], our)
             push!(rxs, ModelingToolkit.Reaction(kl_fw, reagents...; only_use_rate=our))
             
             reagents = getreagents(reaction.stoichiometry, model; rev=true)
             kl_rv, our = use_rate(kl_rv, reagents[1], reagents[3])
+            kl_rv = from_noncombinatoric(kl_rv, reagents[3], our)
             push!(rxs, ModelingToolkit.Reaction(kl_rv, reagents...; only_use_rate=our))
         else
             kl = substitute(symbolic_math, subsdict)
             reagents = getreagents(reaction.stoichiometry, model)
             kl, our = use_rate(kl, reagents[1], reagents[3])
+            kl = from_noncombinatoric(kl, reagents[3], our)
             push!(rxs, ModelingToolkit.Reaction(kl, reagents...; only_use_rate=our))
         end
     end
     rxs
+end
+
+function from_noncombinatoric(rl::Num, stoich::Union{Vector{<:Real},Nothing}, only_use_rate::Bool)
+    if !isnothing(stoich) && !only_use_rate
+        coef = 1
+        for s in stoich
+            isone(s) && continue
+            coef *= factorial(s)
+        end
+        !isone(coef) && (rl *= coef)
+    end
+    rl
 end
 
 """ Get kineticLaw for use in MTK.Reaction """

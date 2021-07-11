@@ -108,6 +108,10 @@
     truereaction = ModelingToolkit.Reaction(k1, nothing, [s1], nothing, [1]; only_use_rate=true)  # Todo: implement Sam's suggestion on mass action kinetics
     @test isequal(reaction, truereaction)
 
+    # test from_noncombinatoric
+    @test isequal(4k1, SBMLToolkit.from_noncombinatoric(k1, [2,2], false))
+    @test isequal(k1, SBMLToolkit.from_noncombinatoric(k1, nothing, false))
+    
     # Test use_rate
     @test isequal(SBMLToolkit.use_rate(k1*s1, [s1], [1]), (k1, false))  # Case hOSU=true
     @test isequal(SBMLToolkit.use_rate(k1*s1*s2/(c1+s2), [s1], [1]), (k1*s1*s2/(c1+s2), true))  # Case Michaelis-Menten kinetics
