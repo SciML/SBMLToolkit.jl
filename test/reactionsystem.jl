@@ -96,6 +96,10 @@
     # mod = SBML.Model(Dict("k1" => 1.), Dict(), Dict("c1" => COMP1), Dict("sbc" => sbc), Dict("r1" => REACTION1), Dict(), Dict())
     # @test_logs (:warn, "Species sbc has `boundaryCondition` or is `constant`. This will lead to wrong results when simulating the `ReactionSystem`.") SBMLToolkit.checksupport(mod)
 
+    # Test checksupport
+    @test_nowarn SBMLToolkit.checksupport(sbmlfile)
+    @test_throws ErrorException SBMLToolkit.checksupport(joinpath("data", "unsupported.sbml"))
+    
     # Test _get_substitutions
     truesubs = Dict(Num(Variable(:c1)) => c1,
                 Num(Variable(:k1)) => k1,

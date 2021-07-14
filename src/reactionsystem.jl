@@ -29,6 +29,17 @@ function checksupport(model::SBML.Model)
     return nothing
 end
 
+""" Check if conversion to ReactionSystem is possible """
+function checksupport(filename::String)
+    not_implemented = ["listOfRules", "listOfConstraints", "listOfEvents"]
+    sbml = open(filename) do file
+        read(file, String)
+    end
+    for item in not_implemented
+        occursin(item, sbml) && throw(ErrorException("SBML models with $item are not yet implemented."))
+    end
+end
+
 """ Convert intensive to extensive mathematical expression """
 function to_extensive_math!(model::SBML.Model)
     function conv(x::SBML.MathApply)
