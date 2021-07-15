@@ -94,17 +94,9 @@ function mtk_reactions(model::SBML.Model)
         throw(ErrorException("SBML.Model contains no reactions."))
     end
     for reaction in values(model.reactions)
-        extensive_math = try
-            extensive_math = SBML.extensive_kinetic_math(model, reaction.kinetic_math)
-        catch e
-            if occursin("unsized compartment", e.msg)
-                extensive_math = reaction.kinetic_math
-                @warn e.msg
-            else
-                throw(e)
-            end
-            extensive_math
-        end      
+        extensive_math = SBML.extensive_kinetic_math(
+            model, reaction.kinetic_math,
+            handle_empty_compartment_size = _ -> 1.0)      
         symbolic_math = Num(convert(Num, extensive_math))
         if reaction.reversible
             symbolic_math = getunidirectionalcomponents(symbolic_math)
