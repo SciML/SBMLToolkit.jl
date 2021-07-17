@@ -96,8 +96,9 @@ function mtk_reactions(model::SBML.Model)
     for reaction in values(model.reactions)
         extensive_math = SBML.extensive_kinetic_math(
             model, reaction.kinetic_math,
-            handle_empty_compartment_size = _ -> 1.0)      
-        symbolic_math = Num(convert(Num, extensive_math))
+            handle_empty_compartment_size = _ -> 1.0)
+        symbolic_math = Num(convert(Num, extensive_math,
+            convert_time = (x::SBML.MathTime) -> Catalyst.DEFAULT_IV))
         if reaction.reversible
             symbolic_math = getunidirectionalcomponents(symbolic_math)
             kl_fw, kl_rv = [substitute(x, subsdict) for x in symbolic_math]
