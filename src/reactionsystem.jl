@@ -13,9 +13,7 @@ end
 """ ODESystem constructor """
 function ModelingToolkit.ODESystem(model::SBML.Model; kwargs...)
     rs = ReactionSystem(model; kwargs...)
-    u0map = [create_var(k,Catalyst.DEFAULT_IV) => v for (k,v) in SBML.initial_amounts(model, convert_concentrations = true)]
-    paramap = get_paramap(model)
-    defaults = Dict(vcat(u0map, paramap))
+    defaults = get_defaults(model)
     convert(ODESystem, rs, defaults=defaults)
 end
 
