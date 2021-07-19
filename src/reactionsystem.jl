@@ -220,14 +220,13 @@ end
 function getmassaction(kl::Num, reactants::Union{Vector{Num},Nothing}, stoich::Union{Vector{<:Real},Nothing})
     function check_args(x::SymbolicUtils.Symbolic{Real})
         for arg in SymbolicUtils.arguments(x)
-            if isnan(check_args(arg))
+            if isnan(check_args(arg)) || isequal(arg, Catalyst.DEFAULT_IV)
                 return NaN
             end
         end
         return 0
     end
     check_args(x::Term{Real, Nothing}) = NaN  # Variable leaf node
-    check_args(x::Sym{Real, Nothing}) = NaN  # `time` leaf node
     check_args(x::Sym{Real, Base.ImmutableDict{DataType, Any}}) = 0  # Parameter leaf node
     check_args(x::Real) = 0  # Real leaf node
     check_args(x) = throw(ErrorException("Cannot handle $(typeof(x)) types."))  # Unknow leaf node
