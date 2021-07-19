@@ -17,7 +17,7 @@ SBMLToolkit.jl is available on the Julia package managing system. To install SBM
   ```
 
 ## Tutorial
-SBML models can be simulated with the following steps:
+SBML models can be simulated with the following steps (note that `sol` is in absolute quantities rather than concentrations):
   ```julia
   using SBMLToolkit, ModelingToolkit
 
