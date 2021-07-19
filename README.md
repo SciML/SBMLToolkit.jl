@@ -4,6 +4,7 @@
 [![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://paulflang.github.io/SBMLToolkit.jl/dev)
 [![Build Status](https://github.com/paulflang/SBMLToolkit.jl/workflows/CI/badge.svg)](https://github.com/paulflang/SBMLToolkit.jl/actions)
 [![Coverage](https://codecov.io/gh/paulflang/SBMLToolkit.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/paulflang/SBMLToolkit.jl)
+[![ColPrac: Contributor's Guide on Collaborative Practices for Community Packages](https://img.shields.io/badge/ColPrac-Contributor's%20Guide-blueviolet)](https://github.com/SciML/ColPrac)
 
 SBMLToolkit.jl is a lightweight tool to import models specified in the Systems Biology Markup Language (SBML) into the Julia SciML ecosystem. More specifically, SBMLToolkit.jl extracts reactions, initial conditions and parameter values from SBML files. Events, Rules and several other SBML components are not yet supported. There are multiple ways to specify the same model in SBML. Please help us improving SBMLToolkit.jl by creating a GitHub issue if you experience errors when converting your SBML model.
 
@@ -18,8 +19,9 @@ SBMLToolkit.jl is available on the Julia package managing system. To install SBM
 ## Tutorial
 SBML models can be simulated with the following steps:
   ```julia
-  using SBMLToolkit
+  using SBMLToolkit, ModelingToolkit
 
+  SBMLToolkit.checksupport("my_model.xml")
   mdl = readSBML("my_model.xml", doc -> begin
       set_level_and_version(3, 2)(doc)
       convert_simplify_math(doc)
