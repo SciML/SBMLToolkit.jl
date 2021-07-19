@@ -13,7 +13,9 @@ end
 """ ODESystem constructor """
 function ModelingToolkit.ODESystem(model::SBML.Model; kwargs...)
     rs = ReactionSystem(model; kwargs...)
-    defaults = get_defaults(model)
+    u0map = [create_var(k,Catalyst.DEFAULT_IV) => v for (k,v) in SBML.initial_amounts(model, convert_concentrations = true)]
+    parammap = get_paramap(model)
+    defaults = Dict(vcat(u0map, parammap))
     convert(ODESystem, rs, defaults=defaults)
 end
 
@@ -213,12 +215,6 @@ function get_paramap(model)
     end
     paramap
 end
-
-""" Extract u0map from Model """
-get_u0map(model::SBML.Model) = [create_var(k,Catalyst.DEFAULT_IV) => v for (k,v) in SBML.initial_amounts(model, convert_concentrations = true)]
-
-""" Extract defaults from model """
-ModelingToolkit.get_defaults(model::SBML.Model) = Dict(vcat(get_u0map(model), get_paramap(model)))
 
 """ Get rate constant of mass action kineticLaws """
 function getmassaction(kl::Num, reactants::Union{Vector{Num},Nothing}, stoich::Union{Vector{<:Real},Nothing})

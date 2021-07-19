@@ -27,7 +27,7 @@ SBML models can be simulated with the following steps (note that `sol` is in abs
       convert_simplify_math(doc)
   end)
   rs = ReactionSystem(mdl)
-  odesys = convert(ODESystem, rs, defaults=get_defaults(mdl))
+  odesys = convert(ODESystem, rs)
 
   tspan = [0., 1.]
   prob = ODEProblem(odesys, [], tspan, [])
