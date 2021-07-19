@@ -162,9 +162,19 @@
 
     # Test get_paramap
     trueparamap = [k1 => 1., c1 => 2.]
-    paramap = SBMLToolkit.get_paramap(MODEL1)
+    paramap = get_paramap(MODEL1)
     @test isequal(paramap, trueparamap)
 
+    # Test get_u0map
+    true_u0map = [s1 => 1.]
+    u0map = get_u0map(MODEL1)
+    @test isequal(u0map, true_u0map)
+
+    # Test get_defaults
+    true_defaults = Dict(s1 => 1., k1 => 1., c1 => 2.)
+    defaults = get_defaults(MODEL1)
+    @test isequal(defaults, true_defaults)
+    
     # Test getmassaction
     @test isequal(SBMLToolkit.getmassaction(k1*s1, [s1], [1]), k1)  # Case hOSU=true
     @test isequal(SBMLToolkit.getmassaction(k1*s1/c1, [s1], [1]), k1/c1)  # Case hOSU=false
