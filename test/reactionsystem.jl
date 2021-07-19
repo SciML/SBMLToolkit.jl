@@ -111,7 +111,14 @@
     reaction = SBMLToolkit.mtk_reactions(MODEL1)[1]
     truereaction = ModelingToolkit.Reaction(k1, nothing, [s1], nothing, [1]; only_use_rate=true)  # Todo: implement Sam's suggestion on mass action kinetics
     @test isequal(reaction, truereaction)
-
+    
+    km = SBML.MathTime("x")
+    reac = SBML.Reaction(Dict("s1" => 1), (NaN, ""), (NaN, ""), NaN,
+        nothing, km, false)
+    mod = SBML.Model(Dict(), Dict(), Dict("c1" => COMP1), Dict("s1" => SPECIES1), Dict("r1" => reac), Dict(), Dict())
+    @test isequal(Catalyst.DEFAULT_IV, SBMLToolkit.mtk_reactions(mod)[1].rate)
+    
+    
     # test from_noncombinatoric
     @test isequal(4k1, SBMLToolkit.from_noncombinatoric(k1, [2,2], false))
     @test isequal(k1, SBMLToolkit.from_noncombinatoric(k1, nothing, false))
@@ -163,6 +170,7 @@
     @test isequal(SBMLToolkit.getmassaction(k1*s1/c1, [s1], [1]), k1/c1)  # Case hOSU=false
     @test isequal(SBMLToolkit.getmassaction(k1+c1, nothing, nothing), k1+c1)  # Case zero order kineticLaw
     @test isnan(SBMLToolkit.getmassaction(k1*s1*s2/(c1+s2), [s1], [1]))  # Case Michaelis-Menten kinetics
+    @test isnan(SBMLToolkit.getmassaction(k1*s1*Catalyst.DEFAULT_IV, [s1], [1]))  # Case kineticLaw with time
 
     @test isnan(SBMLToolkit.getmassaction(k1*s1*s2, [s1], [1]))  
     @test isnan(SBMLToolkit.getmassaction(k1+c1, [s1], [1]))

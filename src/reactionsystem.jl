@@ -94,18 +94,11 @@ function mtk_reactions(model::SBML.Model)
         throw(ErrorException("SBML.Model contains no reactions."))
     end
     for reaction in values(model.reactions)
-        extensive_math = try
-            extensive_math = SBML.extensive_kinetic_math(model, reaction.kinetic_math)
-        catch e
-            if occursin("unsized compartment", e.msg)
-                extensive_math = reaction.kinetic_math
-                @warn e.msg
-            else
-                throw(e)
-            end
-            extensive_math
-        end      
-        symbolic_math = Num(convert(Num, extensive_math))
+        extensive_math = SBML.extensive_kinetic_math(
+            model, reaction.kinetic_math,
+            handle_empty_compartment_size = _ -> 1.0)
+        symbolic_math = Num(convert(Num, extensive_math,
+            convert_time = (x::SBML.MathTime) -> Catalyst.DEFAULT_IV))
         if reaction.reversible
             symbolic_math = getunidirectionalcomponents(symbolic_math)
             kl_fw, kl_rv = [substitute(x, subsdict) for x in symbolic_math]
@@ -227,7 +220,7 @@ end
 function getmassaction(kl::Num, reactants::Union{Vector{Num},Nothing}, stoich::Union{Vector{<:Real},Nothing})
     function check_args(x::SymbolicUtils.Symbolic{Real})
         for arg in SymbolicUtils.arguments(x)
-            if isnan(check_args(arg))
+            if isnan(check_args(arg)) || isequal(arg, Catalyst.DEFAULT_IV)
                 return NaN
             end
         end
