@@ -7,5 +7,5 @@ using OrdinaryDiffEq
 using SBML
 
 @testset "SBMLToolkit.jl" begin
-    include("reactionsystem.jl")
+    @testset "Model to MTK conversions" begin include("reactionsystem.jl") end
 end
