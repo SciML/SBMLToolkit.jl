@@ -1,32 +1,20 @@
 """ ReactionSystem constructor """
 function ModelingToolkit.ReactionSystem(model::SBML.Model; kwargs...)  # Todo: requires unique parameters (i.e. SBML must have been imported with localParameter promotion in libSBML)
-    checksupport(model)
     rxs = mtk_reactions(model)
     species = []
     for k in keys(model.species)
         push!(species, create_var(k,Catalyst.DEFAULT_IV))
     end
-    params = vcat([create_param(k) for k in keys(model.parameters)], [create_param(k) for (k,v) in model.compartments if !isnothing(v.size)])
-    ReactionSystem(rxs,Catalyst.DEFAULT_IV,species,params; kwargs...)
+    u0map = [create_var(k,Catalyst.DEFAULT_IV) => v for (k,v) in SBML.initial_amounts(model, convert_concentrations = true)]
+    parammap = get_paramap(model)
+    defs = ModelingToolkit._merge(u0map, parammap)
+    ReactionSystem(rxs,Catalyst.DEFAULT_IV,species,first.(parammap); defaults=defs, kwargs...)
 end
 
 """ ODESystem constructor """
 function ModelingToolkit.ODESystem(model::SBML.Model; kwargs...)
     rs = ReactionSystem(model; kwargs...)
-    u0map = [create_var(k,Catalyst.DEFAULT_IV) => v for (k,v) in SBML.initial_amounts(model, convert_concentrations = true)]
-    parammap = get_paramap(model)
-    defaults = Dict(vcat(u0map, parammap))
-    convert(ODESystem, rs, defaults=defaults)
-end
-
-""" Check if conversion to ReactionSystem is possible """
-function checksupport(model::SBML.Model)
-    # for s in values(model.species)
-    #     if s.boundary_condition
-    #         @warn "Species $(s.name) has `boundaryCondition` or is `constant`. This will lead to wrong results when simulating the `ReactionSystem`."
-    #     end
-    # end
-    return nothing
+    convert(ODESystem, rs)
 end
 
 """ Check if conversion to ReactionSystem is possible """
