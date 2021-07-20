@@ -1,7 +1,7 @@
 """ ReactionSystem constructor """
 function ModelingToolkit.ReactionSystem(model::SBML.Model; kwargs...)  # Todo: requires unique parameters (i.e. SBML must have been imported with localParameter promotion in libSBML)
     rxs = mtk_reactions(model)
-    u0map = [create_var(k,Catalyst.DEFAULT_IV) => v for (k,v) in SBML.initial_amounts(model, convert_concentrations = true)]
+    u0map = get_u0map(model)
     parammap = get_paramap(model)
     defs = ModelingToolkit._merge(u0map, parammap)
     ReactionSystem(rxs,Catalyst.DEFAULT_IV,first.(u0map),first.(parammap); defaults=defs, kwargs...)
@@ -199,6 +199,9 @@ function get_paramap(model)
     end
     paramap
 end
+
+get_u0map(model) = [create_var(k,Catalyst.DEFAULT_IV) => v for (k,v) in SBML.initial_amounts(model, convert_concentrations = true)]
+ModelingToolkit.defaults(model::SBML.Model) = ModelingToolkit._merge(get_u0map(model), get_paramap(model))
 
 """ Get rate constant of mass action kineticLaws """
 function getmassaction(kl::Num, reactants::Union{Vector{Num},Nothing}, stoich::Union{Vector{<:Real},Nothing})

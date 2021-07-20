@@ -173,3 +173,6 @@ paramap = SBMLToolkit.get_paramap(MODEL1)
 @test isnan(SBMLToolkit.getmassaction(k1*s1*s2, [s1], [1]))  
 @test isnan(SBMLToolkit.getmassaction(k1+c1, [s1], [1]))
 @test_throws ErrorException SBMLToolkit.getmassaction(k1, nothing, [1])
+
+# default test
+@test ModelingToolkit.defaults(m) == ModelingToolkit.defaults(ReactionSystem(m))
