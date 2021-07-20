@@ -7,13 +7,16 @@ function ModelingToolkit.ReactionSystem(model::SBML.Model; kwargs...)  # Todo: r
         push!(species, create_var(k,Catalyst.DEFAULT_IV))
     end
     params = vcat([create_param(k) for k in keys(model.parameters)], [create_param(k) for (k,v) in model.compartments if !isnothing(v.size)])
+    kwargs = Dict(string(k) => v for (k,v) in pairs(kwargs))
+    haskey(kwargs,"defaults") || (kwargs["defaults"] = get_defaults(model))
     ReactionSystem(rxs,Catalyst.DEFAULT_IV,species,params; kwargs...)
 end
 
 """ ODESystem constructor """
 function ModelingToolkit.ODESystem(model::SBML.Model; kwargs...)
     rs = ReactionSystem(model; kwargs...)
-    defaults = get_defaults(model)
+    kwargs = Dict(string(k) => v for (k,v) in pairs(kwargs))
+    haskey(kwargs,"defaults") ? (defaults=kwargs["defaults"]) : (defaults=get_defaults(model))
     convert(ODESystem, rs, defaults=defaults)
 end
 
