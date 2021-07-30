@@ -157,6 +157,7 @@ km = SBML.MathIdent("s1s2")
 sm1 = convert(Num, km)
 sm2 = sm - sm1
 @test_throws ErrorException SBMLToolkit.getunidirectionalcomponents(sm2)
+@test_throws ErrorException SBMLToolkit.getunidirectionalcomponents(:k1)
 
 # Test get_paramap
 trueparamap = [k1 => 1., c1 => 2.]
