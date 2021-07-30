@@ -22,6 +22,7 @@ function checksupport(filename::String)
     for item in not_implemented
         occursin(item, sbml) && throw(ErrorException("SBML models with $item are not yet implemented."))
     end
+    occursin("<sbml xmlns:fbc=", sbml) && throw(ErrorException("This model was designed for constrained-based optimisation. Please use COBREXA.jl instead of SBMLToolkit."))
 end
 
 """ Convert intensive to extensive mathematical expression """
