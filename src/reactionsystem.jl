@@ -22,6 +22,7 @@ function checksupport(filename::String)
     for item in not_implemented
         occursin(item, sbml) && throw(ErrorException("SBML models with $item are not yet implemented."))
     end
+    occursin("<sbml xmlns:fbc=", sbml) && throw(ErrorException("This model was designed for constrained-based optimisation. Please use COBREXA.jl instead of SBMLToolkit."))
 end
 
 """ Convert intensive to extensive mathematical expression """
@@ -167,7 +168,7 @@ function getunidirectionalcomponents(bidirectional_math)
     err = "Cannot separate bidirectional kineticLaw `$bidirectional_math` to forward and reverse part. Please make reaction irreversible or rearrange kineticLaw to the form `term1 - term2`."
     bidirectional_math = Symbolics.tosymbol(bidirectional_math)
     bidirectional_math = simplify(bidirectional_math; expand=true)
-    if (bidirectional_math isa Real) || (SymbolicUtils.operation(bidirectional_math) != +)
+    if (bidirectional_math isa Union{Real, Symbol}) || (SymbolicUtils.operation(bidirectional_math) != +)
         throw(ErrorException(err))
     end
     terms = SymbolicUtils.arguments(bidirectional_math)
