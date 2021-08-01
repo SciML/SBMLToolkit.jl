@@ -87,8 +87,8 @@ function mtk_reactions(model::SBML.Model)
         if reaction.reversible
             symbolic_math = getunidirectionalcomponents(symbolic_math)
             kl_fw, kl_rv = [substitute(x, subsdict) for x in symbolic_math]
-            
             reagents = getreagents(reaction.stoichiometry, model)
+            isnothing(reagents[1]) && isnothing(reagents[2]) && continue
             kl_fw, our = use_rate(kl_fw, reagents[1], reagents[3])
             kl_rv = from_noncombinatoric(kl_rv, reagents[3], our)
             push!(rxs, ModelingToolkit.Reaction(kl_fw, reagents...; only_use_rate=our))
@@ -100,6 +100,7 @@ function mtk_reactions(model::SBML.Model)
         else
             kl = substitute(symbolic_math, subsdict)
             reagents = getreagents(reaction.stoichiometry, model)
+            isnothing(reagents[1]) && isnothing(reagents[2]) && continue
             kl, our = use_rate(kl, reagents[1], reagents[3])
             kl = from_noncombinatoric(kl, reagents[3], our)
             push!(rxs, ModelingToolkit.Reaction(kl, reagents...; only_use_rate=our))
