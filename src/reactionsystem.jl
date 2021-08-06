@@ -84,22 +84,25 @@ function mtk_reactions(model::SBML.Model)
             handle_empty_compartment_size = _ -> 1.0)
         symbolic_math = Num(convert(Num, extensive_math,
             convert_time = (x::SBML.MathTime) -> Catalyst.DEFAULT_IV))
+        
+        rstoich = reaction.reactants
+        pstoich = reaction.products
         if reaction.reversible
             symbolic_math = getunidirectionalcomponents(symbolic_math)
             kl_fw, kl_rv = [substitute(x, subsdict) for x in symbolic_math]
-            reagents = getreagents(reaction.stoichiometry, model)
+            reagents = getreagents(rstoich, pstoich, model)
             isnothing(reagents[1]) && isnothing(reagents[2]) && continue
             kl_fw, our = use_rate(kl_fw, reagents[1], reagents[3])
             kl_rv = from_noncombinatoric(kl_rv, reagents[3], our)
             push!(rxs, ModelingToolkit.Reaction(kl_fw, reagents...; only_use_rate=our))
             
-            reagents = getreagents(reaction.stoichiometry, model; rev=true)
+            reagents = getreagents(rstoich, pstoich, model)
             kl_rv, our = use_rate(kl_rv, reagents[1], reagents[3])
             kl_rv = from_noncombinatoric(kl_rv, reagents[3], our)
             push!(rxs, ModelingToolkit.Reaction(kl_rv, reagents...; only_use_rate=our))
         else
             kl = substitute(symbolic_math, subsdict)
-            reagents = getreagents(reaction.stoichiometry, model)
+            reagents = getreagents(rstoich, pstoich, model)
             isnothing(reagents[1]) && isnothing(reagents[2]) && continue
             kl, our = use_rate(kl, reagents[1], reagents[3])
             kl = from_noncombinatoric(kl, reagents[3], our)
@@ -134,34 +137,30 @@ function use_rate(kl::Num, react::Union{Vector{Num},Nothing}, stoich::Union{Vect
 end
 
 """ Get reagents """
-function getreagents(stoich::Dict{String,<:Real}, model::SBML.Model; rev=false)
-    if rev
-        stoich = Dict(k => -v for (k,v) in stoich)
-    end
-    reactants = Num[]
-    products = Num[]
-    rstoich = Float64[]
-    pstoich = Float64[]
-    for (k,v) in stoich
-        if v < 0
-            push!(reactants, create_var(k,Catalyst.DEFAULT_IV))
-            push!(rstoich, -v)
-            if model.species[k].boundary_condition == true
-                push!(products, create_var(k,Catalyst.DEFAULT_IV))
-                push!(pstoich, -v)
-            end
-        elseif v > 0
-            if model.species[k].boundary_condition != true
-                push!(products, create_var(k,Catalyst.DEFAULT_IV))
-                push!(pstoich, v)
-            end
-        else
-            @error("Stoichiometry of $k must be non-zero")
-        end
-    end
+function getreagents(rstoichdict::Dict{String,<:Real}, pstoichdict::Dict{String,<:Real}, model::SBML.Model)
+
+    reactants, rstoich = stoichmap_to_varmap(rstoichdict)
+    products, pstoich = stoichmap_to_varmap(pstoichdict)
+    
     if (length(reactants)==0) reactants = nothing; rstoich = nothing end
     if (length(products)==0) products = nothing; pstoich = nothing end
     (reactants, products, rstoich, pstoich)
+end
+
+function stoichmap_to_varmap(stoich::Dict{String,<:Real})
+    species = Num[]
+    stoichs = Float64[]
+        for (k,v) in stoich
+        if iszero(v)
+            @error("Stoichiometry of $k must be non-zero")
+        else 
+            # if model.species[k].boundary_condition == true
+                push!(species, create_var(k,Catalyst.DEFAULT_IV))
+                push!(stoichs, v)
+            # end
+        end 
+    end
+    (species, stoichs)
 end
 
 """ Infer forward and reverse components of bidirectional kineticLaw """
