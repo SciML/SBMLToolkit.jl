@@ -96,7 +96,7 @@ function mtk_reactions(model::SBML.Model)
             kl_rv = from_noncombinatoric(kl_rv, reagents[3], our)
             push!(rxs, ModelingToolkit.Reaction(kl_fw, reagents...; only_use_rate=our))
             
-            reagents = getreagents(rstoich, pstoich, model)
+            reagents = getreagents(pstoich, rstoich, model)
             kl_rv, our = use_rate(kl_rv, reagents[1], reagents[3])
             kl_rv = from_noncombinatoric(kl_rv, reagents[3], our)
             push!(rxs, ModelingToolkit.Reaction(kl_rv, reagents...; only_use_rate=our))
