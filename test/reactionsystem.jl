@@ -9,11 +9,11 @@ KINETICMATH1 = SBML.MathIdent("k1")
 KINETICMATH2 = SBML.MathApply("*", SBML.Math[
 SBML.MathIdent("k1"), SBML.MathIdent("s2")])
 KINETICMATH3 = SBML.MathApply("-", SBML.Math[KINETICMATH2, KINETICMATH1])
-REACTION1 = SBML.Reaction(Dict("s1" => 1), Dict(), (NaN, ""), (NaN, ""), NaN,
+REACTION1 = SBML.Reaction(Dict(), Dict("s1" => 1), (NaN, ""), (NaN, ""), NaN,
                         nothing, KINETICMATH1, false)
-REACTION2 = SBML.Reaction(Dict(), Dict("s2" => 1), (NaN, ""), (NaN, ""), NaN,
+REACTION2 = SBML.Reaction(Dict("s2" => 1), Dict(), (NaN, ""), (NaN, ""), NaN,
                         nothing, KINETICMATH2, false)
-REACTION3 = SBML.Reaction(Dict(), Dict("s2" => 1), (NaN, ""), (NaN, ""), NaN,
+REACTION3 = SBML.Reaction(Dict("s2" => 1), Dict(), (NaN, ""), (NaN, ""), NaN,
                         nothing, KINETICMATH3, true)
 MODEL1 = SBML.Model(Dict("k1" => 1.), Dict(), Dict("c1" => COMP1), Dict("s1" => SPECIES1), Dict("r1" => REACTION1), Dict(), Dict())  # PL: For instance in the compartments dict, we may want to enforce that key and compartment.name are identical
 MODEL2 = SBML.Model(Dict("k1" => 1.), Dict(), Dict("c1" => COMP1), Dict("s2" => SPECIES2), Dict("r2" => REACTION2), Dict(), Dict())
