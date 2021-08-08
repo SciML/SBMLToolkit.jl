@@ -135,7 +135,7 @@ SBML.MathApply("*", SBML.Math[
     SBML.MathIdent("k1"),
     SBML.MathIdent("constspec")]),
 SBML.MathIdent("k1")])
-constreac = SBML.Reaction(Dict(), Dict("constspec" => 1), (NaN, ""), (NaN, ""), NaN,nothing, kineticmath, false)
+constreac = SBML.Reaction(Dict("constspec" => 1), Dict(), (NaN, ""), (NaN, ""), NaN,nothing, kineticmath, false)
 constmod = SBML.Model(Dict("k1" => 1.), Dict(), Dict("c1" => COMP1), Dict("constspec" => constspec), Dict("r1" => constreac), Dict(), Dict())
 @test isequal(([ncs], [ncs], [1.], [1.]), SBMLToolkit.getreagents(constreac.reactants, constreac.products, constmod))
 @test isequal((nothing, nothing, nothing, nothing), SBMLToolkit.getreagents(constreac.reactants, constreac.products, constmod))

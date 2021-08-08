@@ -139,29 +139,50 @@ end
 """ Get reagents """
 function getreagents(rstoichdict::Dict{String,<:Real}, pstoichdict::Dict{String,<:Real}, model::SBML.Model)
 
-    reactants, rstoich = stoichmap_to_varmap(rstoichdict)
-    products, pstoich = stoichmap_to_varmap(pstoichdict)
-    
+    reactants = Num[]
+    products = Num[]
+    rstoich = Float64[]
+    pstoich = Float64[]
+    for (k,v) in rstoichdict
+        iszero(v) && @error("Stoichiometry of $k must be non-zero")
+        push!(reactants, create_var(k,Catalyst.DEFAULT_IV))
+        push!(rstoich, v)
+        if model.species[k].boundary_condition == true
+            push!(products, create_var(k,Catalyst.DEFAULT_IV))
+            push!(pstoich, v)
+        end
+    end
+
+    for (k,v) in pstoichdict
+        iszero(v) && @error("Stoichiometry of $k must be non-zero")
+        if model.species[k].boundary_condition != true
+            push!(products, create_var(k,Catalyst.DEFAULT_IV))
+            push!(pstoich,  v)
+        end
+        #     push!(reactants, create_var(k,Catalyst.DEFAULT_IV))
+        #     push!(rstoich, v)
+    end
+            
     if (length(reactants)==0) reactants = nothing; rstoich = nothing end
     if (length(products)==0) products = nothing; pstoich = nothing end
     (reactants, products, rstoich, pstoich)
 end
 
-function stoichmap_to_varmap(stoich::Dict{String,<:Real})
-    species = Num[]
-    stoichs = Float64[]
-        for (k,v) in stoich
-        if iszero(v)
-            @error("Stoichiometry of $k must be non-zero")
-        else 
-            # if model.species[k].boundary_condition == true
-                push!(species, create_var(k,Catalyst.DEFAULT_IV))
-                push!(stoichs, v)
-            # end
-        end 
-    end
-    (species, stoichs)
-end
+# function stoichmap_to_varmap(stoich::Dict{String,<:Real})
+#     species = Num[]
+#     stoichs = Float64[]
+#         for (k,v) in stoich
+#         if iszero(v)
+#             
+#         else 
+#             # if model.species[k].boundary_condition == true
+#                 push!(species, create_var(k,Catalyst.DEFAULT_IV))
+#                 push!(stoichs, v)
+#             # end
+#         end 
+#     end
+#     (species, stoichs)
+# end
 
 """ Infer forward and reverse components of bidirectional kineticLaw """
 function getunidirectionalcomponents(bidirectional_math)
