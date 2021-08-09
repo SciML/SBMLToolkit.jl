@@ -9,11 +9,11 @@ KINETICMATH1 = SBML.MathIdent("k1")
 KINETICMATH2 = SBML.MathApply("*", SBML.Math[
 SBML.MathIdent("k1"), SBML.MathIdent("s2")])
 KINETICMATH3 = SBML.MathApply("-", SBML.Math[KINETICMATH2, KINETICMATH1])
-REACTION1 = SBML.Reaction(Dict("s1" => 1), (NaN, ""), (NaN, ""), NaN,
+REACTION1 = SBML.Reaction(Dict(), Dict("s1" => 1), (NaN, ""), (NaN, ""), NaN,
                         nothing, KINETICMATH1, false)
-REACTION2 = SBML.Reaction(Dict("s2" => -1), (NaN, ""), (NaN, ""), NaN,
+REACTION2 = SBML.Reaction(Dict("s2" => 1), Dict(), (NaN, ""), (NaN, ""), NaN,
                         nothing, KINETICMATH2, false)
-REACTION3 = SBML.Reaction(Dict("s2" => -1), (NaN, ""), (NaN, ""), NaN,
+REACTION3 = SBML.Reaction(Dict("s2" => 1), Dict(), (NaN, ""), (NaN, ""), NaN,
                         nothing, KINETICMATH3, true)
 MODEL1 = SBML.Model(Dict("k1" => 1.), Dict(), Dict("c1" => COMP1), Dict("s1" => SPECIES1), Dict("r1" => REACTION1), Dict(), Dict())  # PL: For instance in the compartments dict, we may want to enforce that key and compartment.name are identical
 MODEL2 = SBML.Model(Dict("k1" => 1.), Dict(), Dict("c1" => COMP1), Dict("s2" => SPECIES2), Dict("r2" => REACTION2), Dict(), Dict())
@@ -111,8 +111,7 @@ truereaction = ModelingToolkit.Reaction(k1, nothing, [s1], nothing, [1]; only_us
 @test isequal(reaction, truereaction)
 
 km = SBML.MathTime("x")
-reac = SBML.Reaction(Dict("s1" => 1), (NaN, ""), (NaN, ""), NaN,
-nothing, km, false)
+reac = SBML.Reaction(Dict(), Dict("s1" => 1), (NaN, ""), (NaN, ""), NaN, nothing, km, false)
 mod = SBML.Model(Dict(), Dict(), Dict("c1" => COMP1), Dict("s1" => SPECIES1), Dict("r1" => reac), Dict(), Dict())
 @test isequal(Catalyst.DEFAULT_IV, SBMLToolkit.mtk_reactions(mod)[1].rate)
 
@@ -126,7 +125,7 @@ mod = SBML.Model(Dict(), Dict(), Dict("c1" => COMP1), Dict("s1" => SPECIES1), Di
 @test isequal(SBMLToolkit.use_rate(k1*s1*s2/(c1+s2), [s1], [1]), (k1*s1*s2/(c1+s2), true))  # Case Michaelis-Menten kinetics
 
 # Test getreagents
-@test isequal((nothing, [s1], nothing, [1.]), SBMLToolkit.getreagents(REACTION1.stoichiometry, MODEL1))
+@test isequal((nothing, [s1], nothing, [1.]), SBMLToolkit.getreagents(REACTION1.reactants, REACTION1.products, MODEL1))
 
 constspec = SBML.Species("constspec", "c1", true, nothing, nothing, (1., "substance"), nothing, true)
 ncs = SBMLToolkit.create_var("constspec",Catalyst.DEFAULT_IV)
@@ -135,11 +134,10 @@ SBML.MathApply("*", SBML.Math[
     SBML.MathIdent("k1"),
     SBML.MathIdent("constspec")]),
 SBML.MathIdent("k1")])
-constreac = SBML.Reaction(Dict("constspec" => -1), (NaN, ""), (NaN, ""), NaN,
-nothing, kineticmath, false)
+constreac = SBML.Reaction(Dict("constspec" => 1), Dict(), (NaN, ""), (NaN, ""), NaN, nothing, kineticmath, false)
 constmod = SBML.Model(Dict("k1" => 1.), Dict(), Dict("c1" => COMP1), Dict("constspec" => constspec), Dict("r1" => constreac), Dict(), Dict())
-@test isequal(([ncs], [ncs], [1.], [1.]), SBMLToolkit.getreagents(constreac.stoichiometry, constmod))
-@test isequal((nothing, nothing, nothing, nothing), SBMLToolkit.getreagents(constreac.stoichiometry, constmod; rev=true))
+@test isequal(([ncs], [ncs], [1.], [1.]), SBMLToolkit.getreagents(constreac.reactants, constreac.products, constmod))
+@test isequal((nothing, nothing, nothing, nothing), SBMLToolkit.getreagents(constreac.reactants, constreac.products, constmod; rev=true))
 
 # Test getunidirectionalcomponents
 km = SBML.MathApply("-", SBML.Math[KINETICMATH1, SBML.MathIdent("c1")])
