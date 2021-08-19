@@ -2,7 +2,7 @@ sbmlfile = joinpath("data", "reactionsystem_01.xml")
 @parameters t, k1, c1
 @variables s1(t), s2(t), s1s2(t)
 
-COMP1 = SBML.Compartment("c1", true, 3, 2., "nl") 
+COMP1 = SBML.Compartment("c1", true, 3, 2., "nl")
 SPECIES1 = SBML.Species("s1", "c1", false, nothing, nothing, (1., "substance"), nothing, true)  # Todo: Maybe not support units in initial_concentration?
 SPECIES2 = SBML.Species("s2", "c1", false, nothing, nothing, nothing, (1., "substance/nl"), false)
 KINETICMATH1 = SBML.MathIdent("k1")
@@ -21,7 +21,7 @@ MODEL3 = SBML.Model(Dict("k1" => 1.), Dict(), Dict("c1" => COMP1), Dict("s2" => 
 
 # Test ReactionSystem constructor
 rs = ReactionSystem(MODEL1)
-@test isequal(Catalyst.get_eqs(rs), ModelingToolkit.Reaction[ModelingToolkit.Reaction(k1, nothing, [s1], nothing, [1.])])
+@test isequal(Catalyst.get_eqs(rs), Catalyst.Reaction[Catalyst.Reaction(k1, nothing, [s1], nothing, [1.])])
 @test isequal(Catalyst.get_iv(rs), t)
 @test isequal(Catalyst.get_states(rs), [s1])
 @test isequal(Catalyst.get_ps(rs), [k1,c1])
@@ -29,7 +29,7 @@ rs = ReactionSystem(MODEL1)
 isequal(nameof(rs), :rs)
 
 rs = ReactionSystem(readSBML(sbmlfile))
-@test isequal(Catalyst.get_eqs(rs), ModelingToolkit.Reaction[ModelingToolkit.Reaction(0.25c1*k1, [s1, s2], [s1s2], [1., 1.], [1.])])
+@test isequal(Catalyst.get_eqs(rs), Catalyst.Reaction[Catalyst.Reaction(0.25c1*k1, [s1, s2], [s1s2], [1., 1.], [1.])])
 @test isequal(Catalyst.get_iv(rs), t)
 @test isequal(Catalyst.get_states(rs), [s1, s1s2, s2])
 @test isequal(Catalyst.get_ps(rs), [k1,c1])
@@ -38,10 +38,10 @@ isequal(nameof(rs), :rs)
 
 rs = ReactionSystem(MODEL3)  # Contains reversible reaction
 @test isequal(Catalyst.get_eqs(rs),
-            ModelingToolkit.Reaction[
-                ModelingToolkit.Reaction(0.5k1, [s2], nothing,
+            Catalyst.Reaction[
+                Catalyst.Reaction(0.5k1, [s2], nothing,
                     [1.], nothing),
-                ModelingToolkit.Reaction(k1, nothing, [s2],
+                Catalyst.Reaction(k1, nothing, [s2],
                     nothing, [1.])])
 @test isequal(Catalyst.get_iv(rs), t)
 @test isequal(Catalyst.get_states(rs), [s2])
@@ -90,7 +90,7 @@ sol = solve(oprob, Tsit5())
 
 # Test checksupport
 # @test_nowarn SBMLToolkit.checksupport(MODEL1)
-# sbc = SBML.Species("sbc", "c1", true, nothing, nothing, (1., "substance"), nothing, true)   
+# sbc = SBML.Species("sbc", "c1", true, nothing, nothing, (1., "substance"), nothing, true)
 # mod = SBML.Model(Dict("k1" => 1.), Dict(), Dict("c1" => COMP1), Dict("sbc" => sbc), Dict("r1" => REACTION1), Dict(), Dict())
 # @test_logs (:warn, "Species sbc has `boundaryCondition` or is `constant`. This will lead to wrong results when simulating the `ReactionSystem`.") SBMLToolkit.checksupport(mod)
 
@@ -99,15 +99,15 @@ sol = solve(oprob, Tsit5())
 @test_throws ErrorException SBMLToolkit.checksupport(joinpath("data", "unsupported.sbml"))
 
 # Test _get_substitutions
-truesubs = Dict(Num(Variable(:c1)) => c1,
-        Num(Variable(:k1)) => k1,
-        Num(Variable(:s1)) => s1)
+truesubs = Dict(first(@variables c1)) => c1,
+        first(@variables k1) => k1,
+        first(@variables s1) => s1)
 subs = SBMLToolkit._get_substitutions(MODEL1)
 @test isequal(subs, truesubs)
 
 # Test mtk_reactions
 reaction = SBMLToolkit.mtk_reactions(MODEL1)[1]
-truereaction = ModelingToolkit.Reaction(k1, nothing, [s1], nothing, [1]; only_use_rate=true)  # Todo: implement Sam's suggestion on mass action kinetics
+truereaction = Catalyst.Reaction(k1, nothing, [s1], nothing, [1]; only_use_rate=true)  # Todo: implement Sam's suggestion on mass action kinetics
 @test isequal(reaction, truereaction)
 
 km = SBML.MathTime("x")
@@ -169,7 +169,7 @@ paramap = SBMLToolkit.get_paramap(MODEL1)
 @test isnan(SBMLToolkit.getmassaction(k1*s1*s2/(c1+s2), [s1], [1]))  # Case Michaelis-Menten kinetics
 @test isnan(SBMLToolkit.getmassaction(k1*s1*Catalyst.DEFAULT_IV, [s1], [1]))  # Case kineticLaw with time
 
-@test isnan(SBMLToolkit.getmassaction(k1*s1*s2, [s1], [1]))  
+@test isnan(SBMLToolkit.getmassaction(k1*s1*s2, [s1], [1]))
 @test isnan(SBMLToolkit.getmassaction(k1+c1, [s1], [1]))
 @test_throws ErrorException SBMLToolkit.getmassaction(k1, nothing, [1])
 

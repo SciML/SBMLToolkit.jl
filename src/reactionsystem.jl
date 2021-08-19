@@ -1,10 +1,10 @@
 """ ReactionSystem constructor """
-function ModelingToolkit.ReactionSystem(model::SBML.Model; kwargs...)  # Todo: requires unique parameters (i.e. SBML must have been imported with localParameter promotion in libSBML)
+function Catalyst.ReactionSystem(model::SBML.Model; kwargs...)  # Todo: requires unique parameters (i.e. SBML must have been imported with localParameter promotion in libSBML)
     rxs = mtk_reactions(model)
     u0map = get_u0map(model)
     parammap = get_paramap(model)
     defs = ModelingToolkit._merge(u0map, parammap)
-    ReactionSystem(rxs,Catalyst.DEFAULT_IV,first.(u0map),first.(parammap); defaults=defs, kwargs...)
+    ReactionSystem(rxs,Catalyst.DEFAULT_IV,first.(u0map),first.(parammap); defaults=defs, name=gensym(:SBML), kwargs...)
 end
 
 """ ODESystem constructor """
@@ -94,19 +94,19 @@ function mtk_reactions(model::SBML.Model)
             isnothing(reagents[1]) && isnothing(reagents[2]) && continue
             kl_fw, our = use_rate(kl_fw, reagents[1], reagents[3])
             kl_rv = from_noncombinatoric(kl_rv, reagents[3], our)
-            push!(rxs, ModelingToolkit.Reaction(kl_fw, reagents...; only_use_rate=our))
-            
+            push!(rxs, Catalyst.Reaction(kl_fw, reagents...; only_use_rate=our))
+
             reagents = getreagents(rstoich, pstoich, model; rev=true)
             kl_rv, our = use_rate(kl_rv, reagents[1], reagents[3])
             kl_rv = from_noncombinatoric(kl_rv, reagents[3], our)
-            push!(rxs, ModelingToolkit.Reaction(kl_rv, reagents...; only_use_rate=our))
+            push!(rxs, Catalyst.Reaction(kl_rv, reagents...; only_use_rate=our))
         else
             kl = substitute(symbolic_math, subsdict)
             reagents = getreagents(rstoich, pstoich, model)
             isnothing(reagents[1]) && isnothing(reagents[2]) && continue
             kl, our = use_rate(kl, reagents[1], reagents[3])
             kl = from_noncombinatoric(kl, reagents[3], our)
-            push!(rxs, ModelingToolkit.Reaction(kl, reagents...; only_use_rate=our))
+            push!(rxs, Catalyst.Reaction(kl, reagents...; only_use_rate=our))
         end
     end
     rxs
@@ -143,7 +143,7 @@ function getreagents(rstoichdict::Dict{String,<:Real}, pstoichdict::Dict{String,
     rstoich = Float64[]
     pstoich = Float64[]
 
-    if rev 
+    if rev
         tmp = rstoichdict
         rstoichdict = pstoichdict
         pstoichdict = tmp
@@ -166,7 +166,7 @@ function getreagents(rstoichdict::Dict{String,<:Real}, pstoichdict::Dict{String,
             push!(pstoich,  v)
         end
     end
-            
+
     if (length(reactants)==0) reactants = nothing; rstoich = nothing end
     if (length(products)==0) products = nothing; pstoich = nothing end
     (reactants, products, rstoich, pstoich)
@@ -237,9 +237,15 @@ function getmassaction(kl::Num, reactants::Union{Vector{Num},Nothing}, stoich::U
     isnan(check_args(rate_const.val)) ? NaN : rate_const
 end
 
-create_var(x, iv) = Num(Variable{Symbolics.FnType{Tuple{Any},Real}}(Symbol(x)))(iv).val
-create_var(x) = Num(Variable(Symbol(x))).val
+function create_var(x)
+    sym = Symbol(x)
+    Symbolics.unwrap(first(@variables $sym))
+end
+function create_var(x, iv)
+    sym = Symbol(x)
+    Symbolics.unwrap(first(@variables $sym(iv)))
+end
 function create_param(x)
-    p = Sym{Real}(Symbol(x))
-    ModelingToolkit.toparam(p)
+    sym = Symbol(x)
+    Symbolics.unwrap(first(@parameters $sym))
 end
