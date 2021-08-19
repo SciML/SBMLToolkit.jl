@@ -1,3 +1,4 @@
+cd(@__DIR__)
 sbmlfile = joinpath("data", "reactionsystem_01.xml")
 @parameters t, k1, c1
 @variables s1(t), s2(t), s1s2(t)
@@ -7,7 +8,7 @@ SPECIES1 = SBML.Species("s1", "c1", false, nothing, nothing, (1., "substance"), 
 SPECIES2 = SBML.Species("s2", "c1", false, nothing, nothing, nothing, (1., "substance/nl"), false)
 KINETICMATH1 = SBML.MathIdent("k1")
 KINETICMATH2 = SBML.MathApply("*", SBML.Math[
-SBML.MathIdent("k1"), SBML.MathIdent("s2")])
+                                    SBML.MathIdent("k1"), SBML.MathIdent("s2")])
 KINETICMATH3 = SBML.MathApply("-", SBML.Math[KINETICMATH2, KINETICMATH1])
 REACTION1 = SBML.Reaction(Dict(), Dict("s1" => 1), (NaN, ""), (NaN, ""), NaN,
                         nothing, KINETICMATH1, false)
@@ -98,10 +99,12 @@ sol = solve(oprob, Tsit5())
 @test_nowarn SBMLToolkit.checksupport(sbmlfile)
 @test_throws ErrorException SBMLToolkit.checksupport(joinpath("data", "unsupported.sbml"))
 
+
+
 # Test _get_substitutions
-truesubs = Dict(first(@variables c1)) => c1,
-        first(@variables k1) => k1,
-        first(@variables s1) => s1)
+truesubs = Dict(Num(Symbolics.variable(:c1;T=Real)) => c1,
+        Num(Symbolics.variable(:k1;T=Real)) => k1,
+        Num(Symbolics.variable(:s1;T=Real)) => s1)
 subs = SBMLToolkit._get_substitutions(MODEL1)
 @test isequal(subs, truesubs)
 
