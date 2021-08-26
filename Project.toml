@@ -11,11 +11,11 @@ SBML = "e5567a89-2604-4b09-9718-f5f78e97c3bb"
 SymbolicUtils = "d1185830-fcd6-423d-90d6-eec64667417b"
 
 [compat]
-Catalyst = "6, 7"
-MathML = "0.1.7"
-ModelingToolkit = "5"
-SBML = "0.7"
-SymbolicUtils = "0.1 - 0.13"
+Catalyst = "8"
+MathML = "0.1.8"
+ModelingToolkit = "6"
+SBML = "0.8"
+SymbolicUtils = "0.13"
 julia = "1.6"
 
 [extras]
