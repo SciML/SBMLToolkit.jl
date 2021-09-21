@@ -2,7 +2,7 @@ module SBMLToolkit
 
 using Catalyst
 using SBML
-using Symbolics, SymbolicUtils
+using SymbolicUtils
 
 include("reactionsystem.jl")
 
