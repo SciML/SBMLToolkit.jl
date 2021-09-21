@@ -1,21 +1,19 @@
 name = "SBMLToolkit"
 uuid = "86080e66-c8ac-44c2-a1a0-9adaadfe4a4e"
 authors = ["paulflang", "anandijain"]
-version = "0.1.7"
+version = "0.1.8"
 
 [deps]
 Catalyst = "479239e8-5488-4da2-87a7-35f2df7eef83"
 MathML = "abcecc63-2b08-419c-80c4-c63dca6fa478"
-ModelingToolkit = "961ee093-0014-501f-94e3-6117800e7a78"
 SBML = "e5567a89-2604-4b09-9718-f5f78e97c3bb"
 SymbolicUtils = "d1185830-fcd6-423d-90d6-eec64667417b"
 
 [compat]
 Catalyst = "9"
-MathML = "0.1.8"
-ModelingToolkit = "6"
+MathML = "0.1"
 SBML = "0.8"
-SymbolicUtils = "0.13, 0.14, 0.15"
+SymbolicUtils = "0.16"
 julia = "1.6"
 
 [extras]

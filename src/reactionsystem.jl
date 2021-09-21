@@ -232,7 +232,7 @@ function getmassaction(kl::Num, reactants::Union{Vector{Num},Nothing}, stoich::U
     elseif isnothing(reactants) | isnothing(stoich)
         throw(ErrorException("`reactants` and `stoich` are incosistent: `reactants` are $(reactants) and `stoich` is $(stoich)."))
     else
-        rate_const = kl / *((.^(reactants, stoich))...)
+        rate_const = SymbolicUtils.simplify_fractions(kl / *((.^(reactants, stoich))...))
     end
     isnan(check_args(rate_const.val)) ? NaN : rate_const
 end

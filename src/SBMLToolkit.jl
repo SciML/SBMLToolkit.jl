@@ -1,6 +1,6 @@
 module SBMLToolkit
 
-using Catalyst, ModelingToolkit
+using Catalyst
 using SBML
 using SymbolicUtils
 
