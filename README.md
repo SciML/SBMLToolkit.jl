@@ -34,6 +34,7 @@ SBML models can be simulated with the following steps (note that `sol` is in abs
   sol = solve(prob, Tsit5())
   ```
 
+
 ## License
 The package is released under the [MIT license](https://github.com/paulflang/SBMLToolkit.jl/blob/main/LICENSE).
 
