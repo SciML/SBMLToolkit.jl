@@ -34,6 +34,19 @@ SBML models can be simulated with the following steps (note that `sol` is in abs
   sol = solve(prob, Tsit5())
   ```
 
+## SBML test suite report
+SBMLtoolkit.jl is regularly tested against the [SBML test suite](https://github.com/sbmlteam/sbml-test-suite/tree/master/cases/semantic). The last test was run on October 24, 2021 on cases 00001 to 01664. Detailed results can be found in [test_suite_report.csv](./test_suite_report.csv). Out of the 1664 cases 1219 expectedly failed, as
+* they contain SBML constraints, rules or events, or
+* do not contain any reactions, or
+* cannot be converted to SBML Version 3 Level 2, or
+* contain kineticLaws in reversible reactions with ambiguous forward and reverse part, or
+* are flux balance models.
+
+Of the remaining 445 cases
+* 422 can be converted to a `ModelingToolkit.ReactionSystem`, of which
+* 416 simulate without returning an error, of which
+* 416 yield the correct simulation results.
+
 ## License
 The package is released under the [MIT license](https://github.com/paulflang/SBMLToolkit.jl/blob/main/LICENSE).
 
