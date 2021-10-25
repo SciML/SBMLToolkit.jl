@@ -6,7 +6,7 @@
 [![Coverage](https://codecov.io/gh/paulflang/SBMLToolkit.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/paulflang/SBMLToolkit.jl)
 [![ColPrac: Contributor's Guide on Collaborative Practices for Community Packages](https://img.shields.io/badge/ColPrac-Contributor's%20Guide-blueviolet)](https://github.com/SciML/ColPrac)
 
-SBMLToolkit.jl is a lightweight tool to import models specified in the Systems Biology Markup Language (SBML) into the Julia SciML ecosystem. More specifically, SBMLToolkit.jl extracts reactions, initial conditions and parameter values from SBML files. Events, Rules and several other SBML components are not yet supported. There are multiple ways to specify the same model in SBML. Please help us improving SBMLToolkit.jl by creating a GitHub issue if you experience errors when converting your SBML model.
+SBMLToolkit.jl is a lightweight tool to import models specified in the Systems Biology Markup Language (SBML) into the Julia SciML ecosystem. More specifically, SBMLToolkit.jl extracts reactions, initial conditions and parameter values from SBML files. Events, Rules and several other SBML components are not yet supported. For details on support of SBML test suite cases, please refer to the [SBML Test-Suite Results Tracker](https://github.com/SciML/SBMLToolkit.jl/issues/45). There are multiple ways to specify the same model in SBML. Please help us improving SBMLToolkit.jl by creating a GitHub issue if you experience errors when converting your SBML model.
 
 SBMLToolkit uses the [SBML.jl](https://github.com/LCSB-BioCore/SBML.jl) wrapper of the [libSBML](https://model.caltech.edu/software/libsbml/) library to lower dynamical SBML models into dynamical systems. If you are interested in constrained-based modelling please have a look at [COBREXA.jl](https://github.com/LCSB-BioCore/COBREXA.jl).
 
@@ -33,6 +33,8 @@ SBML models can be simulated with the following steps (note that `sol` is in abs
   prob = ODEProblem(odesys, [], tspan, [])
   sol = solve(prob, Tsit5())
   ```
+
+## SBML test suite 
 
 ## License
 The package is released under the [MIT license](https://github.com/paulflang/SBMLToolkit.jl/blob/main/LICENSE).
