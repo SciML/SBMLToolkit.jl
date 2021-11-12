@@ -110,7 +110,7 @@ subs = SBMLToolkit._get_substitutions(MODEL1)
 
 # Test mtk_reactions
 reaction = SBMLToolkit.mtk_reactions(MODEL1)[1]
-truereaction = Catalyst.Reaction(k1, nothing, [s1], nothing, [1]; only_use_rate=true)  # Todo: implement Sam's suggestion on mass action kinetics
+truereaction = Catalyst.Reaction(k1, nothing, [s1], nothing, [1])  # Todo: implement Sam's suggestion on mass action kinetics
 @test isequal(reaction, truereaction)
 
 km = SBML.MathTime("x")
