@@ -4,18 +4,22 @@ function Catalyst.ReactionSystem(model::SBML.Model; kwargs...)  # Todo: requires
     u0map = get_u0map(model)
     parammap = get_paramap(model)
     defs = ModelingToolkit._merge(u0map, parammap)
-    ReactionSystem(rxs,Catalyst.DEFAULT_IV,first.(u0map),first.(parammap); defaults=defs, name=gensym(:SBML), kwargs...)
+    ReactionSystem(rxs, Catalyst.DEFAULT_IV, first.(u0map), first.(parammap); defaults = defs, name = gensym(:SBML), kwargs...)
 end
 
 """ ODESystem constructor """
 function ModelingToolkit.ODESystem(model::SBML.Model; kwargs...)
     rs = ReactionSystem(model; kwargs...)
-    convert(ODESystem, rs)
+    sys = convert(ODESystem, rs)
+    ODESystem(equations(sys); 
+        name = nameof(sys), 
+        defaults = ModelingToolkit.get_defaults(rs), 
+        continuous_events = get_events(model, rs))
 end
 
 """ Check if conversion to ReactionSystem is possible """
 function checksupport(filename::String)
-    not_implemented = ["listOfRules", "listOfConstraints", "listOfEvents"]
+    not_implemented = ["listOfRules", "listOfConstraints"]
     sbml = open(filename) do file
         read(file, String)
     end
@@ -200,7 +204,7 @@ end
 function get_paramap(model)
     paramap = Pair{Num, Float64}[]
     for (k,v) in model.parameters
-        push!(paramap,Pair(create_param(k),v))
+        push!(paramap,Pair(create_param(k),v[1])) # [1] index is dropping unit (i think)
     end
     for (k,v) in model.compartments
         if !isnothing(v.size)
@@ -248,4 +252,20 @@ end
 function create_param(x)
     sym = Symbol(x)
     Symbolics.unwrap(first(@parameters $sym))
+end
+
+function get_events(model, rs)
+    evs = model.events
+    mtk_evs = Pair{Vector{Equation}, Vector{Equation}}[]
+    for (_, e) in evs
+        trig = [~(convert(Num, e.trigger).val.arguments...)] # need to convert S1 -> S1(t)
+        mtk_evas = Equation[]
+        for eva in e.event_assignments
+            var = Symbol(eva.variable)
+            pair = ModelingToolkit.getvar(rs, var) ~ eva.math.val
+            push!(mtk_evas, pair)
+        end
+        push!(mtk_evs, trig => mtk_evas)
+    end
+    mtk_evs
 end

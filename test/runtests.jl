@@ -1,9 +1,9 @@
 using SBMLToolkit
 using Test
 
-using SBML
 using Catalyst
 using OrdinaryDiffEq
+using ModelingToolkit
 using SBML
 
 @testset "SBMLToolkit.jl" begin
