@@ -3,19 +3,27 @@ function Catalyst.ReactionSystem(model::SBML.Model; kwargs...)  # Todo: requires
     rxs = mtk_reactions(model)
     u0map = get_u0map(model)
     parammap = get_paramap(model)
-    defs = ModelingToolkit._merge(u0map, parammap)
-    ReactionSystem(rxs, Catalyst.DEFAULT_IV, first.(u0map), first.(parammap); defaults = defs, name = gensym(:SBML), kwargs...)
+    defs = ModelingToolkit._merge(Dict(u0map), Dict(parammap))
+
+    algrules, obsrules, raterules = get_rules(model)
+    for o in obsrules
+        defs[o.lhs] = substitute(o.rhs, defs)
+    end
+    constraints_sys = ODESystem(vcat(algrules, raterules, obsrules), Catalyst.DEFAULT_IV; name = gensym(:CONSTRAINTS))
+
+    ReactionSystem(rxs, Catalyst.DEFAULT_IV, first.(u0map), first.(parammap); defaults = defs, name = gensym(:SBML),
+        constraints = constraints_sys, kwargs...)
 end
 
 """ ODESystem constructor """
-function ModelingToolkit.ODESystem(model::SBML.Model; kwargs...)
+function ModelingToolkit.ODESystem(model::SBML.Model; include_zero_odes = false, kwargs...)
     rs = ReactionSystem(model; kwargs...)
-    convert(ODESystem, rs)
+    convert(ODESystem, rs; include_zero_odes = include_zero_odes)
 end
 
 """ Check if conversion to ReactionSystem is possible """
 function checksupport(filename::String)
-    not_implemented = ["listOfRules", "listOfConstraints", "listOfEvents"]
+    not_implemented = ["listOfConstraints", "listOfEvents"]
     sbml = open(filename) do file
         read(file, String)
     end
@@ -75,9 +83,6 @@ end
 function mtk_reactions(model::SBML.Model)
     subsdict = _get_substitutions(model)
     rxs = []
-    if length(model.reactions) == 0
-        throw(ErrorException("SBML.Model contains no reactions."))
-    end
     for reaction in values(model.reactions)
         extensive_math = SBML.extensive_kinetic_math(
             model, reaction.kinetic_math,
@@ -254,4 +259,60 @@ end
 function create_param(x)
     sym = Symbol(x)
     Symbolics.unwrap(first(@parameters $sym))
+end
+
+function get_rules(model)
+    subsdict = _get_substitutions(model)
+    # these three go into `constraints` field of ReactionSystem
+    obseqs = Equation[]
+    algeqs = Equation[]
+    raterules = Equation[]
+
+    rules = model.rules
+    for r in rules
+        if r isa SBML.AlgebraicRule
+            push!(algeqs, 0 ~ convert(Num, r.math))
+        elseif r isa SBML.AssignmentRule
+            push!(obseqs, assignmentrule_to_obseq(model, r))
+        elseif r isa SBML.RateRule
+            push!(raterules, raterule_to_diffeq(model, r))
+        else
+            error()
+        end
+    end
+    algeqs, obseqs, raterules = map(x -> substitute(x, subsdict), (algeqs, obseqs, raterules))
+    algeqs, obseqs, raterules
+end
+
+function assignmentrule_to_obseq(model, rule)
+    if haskey(model.species, rule.id)
+        sym = Symbol(rule.id)
+        var = Symbolics.unwrap(first(@variables $sym(Catalyst.DEFAULT_IV)))
+        assignment = Num(convert(Num, rule.math, convert_time = (x::SBML.MathTime) -> Catalyst.DEFAULT_IV))
+        return var ~ assignment
+    elseif haskey(model.compartments, rule.id)
+        error("not handling setting compartment volumes rn")
+    elseif haskey(model.parameters, rule.id)
+        error("not handling setting non-constant parameters rn")
+    else
+        error()
+    end
+end
+
+function raterule_to_diffeq(model, rule)
+    # the rule.id can be a species, speciesRef, compartment, or param. currently not doingthis
+    # for now im just doing species
+    D = Differential(Catalyst.DEFAULT_IV)
+    if haskey(model.species, rule.id)
+        sym = Symbol(rule.id)
+        var = Symbolics.unwrap(first(@variables $sym(Catalyst.DEFAULT_IV)))
+        assignment = Num(convert(Num, rule.math, convert_time = (x::SBML.MathTime) -> Catalyst.DEFAULT_IV))
+        return D(var) ~ assignment
+    elseif haskey(model.comnpartments, rule.id)
+        error("not handling setting compartment volumes rn")
+    elseif haskey(model.parameters, rule.id)
+        error("not handling setting non-constant parameters rn")
+    else
+        error()
+    end
 end
