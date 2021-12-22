@@ -7,11 +7,12 @@ end)
 fn = "data/00038-sbml-l3v2.xml" # this case is for observable eqs
 m = myread(fn)
 rs = ReactionSystem(m)
-@test length(observed(rs)) == 1
 
 sys = convert(ODESystem, rs; include_zero_odes = false)
-@test length(equations(sys)) == 2
-prob = ODEProblem(sys, [], (0, 10.0))
+@test length(equations(sys)) == 3
+ssys = structural_simplify(sys)
+@test length(observed(ssys)) == 1
+prob = ODEProblem(ssys, [], (0, 10.0))
 sol = solve(prob, Tsit5())
 
 @variables t S3(t)

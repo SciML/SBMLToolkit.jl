@@ -9,12 +9,9 @@ function Catalyst.ReactionSystem(model::SBML.Model; kwargs...)  # Todo: requires
     for o in obsrules
         defs[o.lhs] = substitute(o.rhs, defs)
     end
-    constraints_sys = ODESystem(vcat(algrules, raterules,
-    #  obsrules
-     ), Catalyst.DEFAULT_IV; name = gensym(:CONSTRAINTS))
+    constraints_sys = ODESystem(vcat(algrules, raterules, obsrules), Catalyst.DEFAULT_IV; name = gensym(:CONSTRAINTS))
 
     ReactionSystem(rxs, Catalyst.DEFAULT_IV, first.(u0map), first.(parammap); defaults = defs, name = gensym(:SBML),
-        observed = obsrules, 
         constraints = constraints_sys, kwargs...)
 end
 
@@ -266,9 +263,8 @@ end
 
 function get_rules(model)
     subsdict = _get_substitutions(model)
-    # goes into `observed`
+    # these three go into `constraints` field of ReactionSystem
     obseqs = Equation[]
-    # these two go into `constraints` field of ReactionSystem
     algeqs = Equation[]
     raterules = Equation[]
 
