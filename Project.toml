@@ -1,7 +1,7 @@
 name = "SBMLToolkit"
 uuid = "86080e66-c8ac-44c2-a1a0-9adaadfe4a4e"
 authors = ["paulflang", "anandijain"]
-version = "0.1.9"
+version = "0.1.10"
 
 [deps]
 Catalyst = "479239e8-5488-4da2-87a7-35f2df7eef83"
@@ -17,8 +17,9 @@ SymbolicUtils = "0.16, 0.18"
 julia = "1.6"
 
 [extras]
+ModelingToolkit = "961ee093-0014-501f-94e3-6117800e7a78"
 OrdinaryDiffEq = "1dea7af3-3e70-54e6-95c3-0bf5283fa5ed"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [targets]
-test = ["Test", "OrdinaryDiffEq"]
+test = ["ModelingToolkit", "Test", "OrdinaryDiffEq"]
