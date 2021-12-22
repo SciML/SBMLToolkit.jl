@@ -206,7 +206,7 @@ end
 function get_paramap(model)
     paramap = Pair{Num,Float64}[]
     for (k, v) in model.parameters
-        push!(paramap, Pair(create_param(k), v))
+        push!(paramap, Pair(create_param(k), v[1])) # [1] index drops unit
     end
     for (k, v) in model.compartments
         if !isnothing(v.size)
