@@ -18,12 +18,16 @@ end
 """ ODESystem constructor """
 function ModelingToolkit.ODESystem(model::SBML.Model; include_zero_odes = false, kwargs...)
     rs = ReactionSystem(model; kwargs...)
-    convert(ODESystem, rs; include_zero_odes = include_zero_odes)
+    sys = structural_simplify(convert(ODESystem, rs; include_zero_odes = include_zero_odes))
+    ODESystem(equations(sys);
+        name = nameof(sys),
+        defaults = ModelingToolkit.get_defaults(rs),
+        continuous_events = get_events(model, rs))
 end
 
 """ Check if conversion to ReactionSystem is possible """
 function checksupport(filename::String)
-    not_implemented = ["listOfConstraints", "listOfEvents"]
+    not_implemented = ["delay", "listOfConstraints"]
     sbml = open(filename) do file
         read(file, String)
     end
@@ -315,4 +319,25 @@ function raterule_to_diffeq(model, rule)
     else
         error()
     end
+end
+
+function get_events(model, rs)
+    subsdict = _get_substitutions(model)
+
+    evs = model.events
+    mtk_evs = Pair{Vector{Equation},Vector{Equation}}[]
+    for (_, e) in evs
+        args = convert(Num, e.trigger; convert_time = (x::SBML.MathTime) -> Catalyst.DEFAULT_IV).val.arguments
+        lhs, rhs = map(x -> substitute(x, subsdict), args)
+        trig = [lhs ~ rhs]
+        mtk_evas = Equation[]
+        for eva in e.event_assignments
+            var = Symbol(eva.variable)
+            # @info eva.math.val
+            pair = ModelingToolkit.getvar(rs, var) ~ convert(Num, eva.math)
+            push!(mtk_evas, pair)
+        end
+        push!(mtk_evs, trig => mtk_evas)
+    end
+    mtk_evs
 end
