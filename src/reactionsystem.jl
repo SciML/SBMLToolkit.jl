@@ -4,7 +4,7 @@ function Catalyst.ReactionSystem(model::SBML.Model; kwargs...)  # Todo: requires
     u0map = get_u0map(model)
     parammap = get_paramap(model)
     defs = ModelingToolkit._merge(u0map, parammap)
-    ReactionSystem(rxs,Catalyst.DEFAULT_IV,first.(u0map),first.(parammap); defaults=defs, name=gensym(:SBML), kwargs...)
+    ReactionSystem(rxs, Catalyst.DEFAULT_IV, first.(u0map), first.(parammap); defaults = defs, name = gensym(:SBML), kwargs...)
 end
 
 """ ODESystem constructor """
@@ -40,7 +40,7 @@ function to_extensive_math!(model::SBML.Model)
                     @warn "Specie $(x.id) hasOnlySubstanceUnits but its compartment $(compartment.name) has no size. Cannot auto-correct the rate laws $(x.id) is involved in. Please check manually."
                 else
                     x_new = SBML.MathApply("/", SBML.Math[x,
-                                SBML.MathVal(compartment.size)])
+                        SBML.MathVal(compartment.size)])
                     specie.only_substance_units = true
                 end
             end
@@ -60,13 +60,13 @@ end
 function _get_substitutions(model)
     subsdict = Dict()
     for k in keys(model.species)
-        push!(subsdict, Pair(create_var(k),create_var(k,Catalyst.DEFAULT_IV)))
+        push!(subsdict, Pair(create_var(k), create_var(k, Catalyst.DEFAULT_IV)))
     end
     for k in keys(model.parameters)
-        push!(subsdict, Pair(create_var(k),create_param(k)))
+        push!(subsdict, Pair(create_var(k), create_param(k)))
     end
     for k in keys(model.compartments)
-        push!(subsdict, Pair(create_var(k),create_param(k)))
+        push!(subsdict, Pair(create_var(k), create_param(k)))
     end
     subsdict
 end
@@ -94,19 +94,19 @@ function mtk_reactions(model::SBML.Model)
             isnothing(reagents[1]) && isnothing(reagents[2]) && continue
             kl_fw, our = use_rate(kl_fw, reagents[1], reagents[3])
             kl_rv = from_noncombinatoric(kl_rv, reagents[3], our)
-            push!(rxs, Catalyst.Reaction(kl_fw, reagents...; only_use_rate=our))
+            push!(rxs, Catalyst.Reaction(kl_fw, reagents...; only_use_rate = our))
 
-            reagents = getreagents(rstoich, pstoich, model; rev=true)
+            reagents = getreagents(rstoich, pstoich, model; rev = true)
             kl_rv, our = use_rate(kl_rv, reagents[1], reagents[3])
             kl_rv = from_noncombinatoric(kl_rv, reagents[3], our)
-            push!(rxs, Catalyst.Reaction(kl_rv, reagents...; only_use_rate=our))
+            push!(rxs, Catalyst.Reaction(kl_rv, reagents...; only_use_rate = our))
         else
             kl = substitute(symbolic_math, subsdict)
             reagents = getreagents(rstoich, pstoich, model)
             isnothing(reagents[1]) && isnothing(reagents[2]) && continue
             kl, our = use_rate(kl, reagents[1], reagents[3])
             kl = from_noncombinatoric(kl, reagents[3], our)
-            push!(rxs, Catalyst.Reaction(kl, reagents...; only_use_rate=our))
+            push!(rxs, Catalyst.Reaction(kl, reagents...; only_use_rate = our))
         end
     end
     rxs
@@ -137,7 +137,7 @@ function use_rate(kl::Num, react::Union{Vector{Num},Nothing}, stoich::Union{Vect
 end
 
 """ Get reagents """
-function getreagents(rstoichdict::Dict{String,<:Real}, pstoichdict::Dict{String,<:Real}, model::SBML.Model; rev=false)
+function getreagents(rstoichdict::Dict{String,<:Real}, pstoichdict::Dict{String,<:Real}, model::SBML.Model; rev = false)
     reactants = Num[]
     products = Num[]
     rstoich = Float64[]
@@ -149,26 +149,32 @@ function getreagents(rstoichdict::Dict{String,<:Real}, pstoichdict::Dict{String,
         pstoichdict = tmp
     end
 
-    for (k,v) in rstoichdict
+    for (k, v) in rstoichdict
         iszero(v) && @error("Stoichiometry of $k must be non-zero")
-        push!(reactants, create_var(k,Catalyst.DEFAULT_IV))
+        push!(reactants, create_var(k, Catalyst.DEFAULT_IV))
         push!(rstoich, v)
         if model.species[k].boundary_condition == true
-            push!(products, create_var(k,Catalyst.DEFAULT_IV))
+            push!(products, create_var(k, Catalyst.DEFAULT_IV))
             push!(pstoich, v)
         end
     end
 
-    for (k,v) in pstoichdict
+    for (k, v) in pstoichdict
         iszero(v) && @error("Stoichiometry of $k must be non-zero")
         if model.species[k].boundary_condition != true
-            push!(products, create_var(k,Catalyst.DEFAULT_IV))
-            push!(pstoich,  v)
+            push!(products, create_var(k, Catalyst.DEFAULT_IV))
+            push!(pstoich, v)
         end
     end
 
-    if (length(reactants)==0) reactants = nothing; rstoich = nothing end
-    if (length(products)==0) products = nothing; pstoich = nothing end
+    if (length(reactants) == 0)
+        reactants = nothing
+        rstoich = nothing
+    end
+    if (length(products) == 0)
+        products = nothing
+        pstoich = nothing
+    end
     (reactants, products, rstoich, pstoich)
 end
 
@@ -176,8 +182,8 @@ end
 function getunidirectionalcomponents(bidirectional_math)
     err = "Cannot separate bidirectional kineticLaw `$bidirectional_math` to forward and reverse part. Please make reaction irreversible or rearrange kineticLaw to the form `term1 - term2`."
     bidirectional_math = Symbolics.tosymbol(bidirectional_math)
-    bidirectional_math = simplify(bidirectional_math; expand=true)
-    if (bidirectional_math isa Union{Real, Symbol}) || (SymbolicUtils.operation(bidirectional_math) != +)
+    bidirectional_math = simplify(bidirectional_math; expand = true)
+    if (bidirectional_math isa Union{Real,Symbol}) || (SymbolicUtils.operation(bidirectional_math) != +)
         throw(ErrorException(err))
     end
     terms = SymbolicUtils.arguments(bidirectional_math)
@@ -198,19 +204,19 @@ end
 
 """ Extract paramap from Model """
 function get_paramap(model)
-    paramap = Pair{Num, Float64}[]
-    for (k,v) in model.parameters
-        push!(paramap,Pair(create_param(k),v))
+    paramap = Pair{Num,Float64}[]
+    for (k, v) in model.parameters
+        push!(paramap, Pair(create_param(k), v))
     end
-    for (k,v) in model.compartments
+    for (k, v) in model.compartments
         if !isnothing(v.size)
-            push!(paramap,Pair(create_param(k),v.size))
+            push!(paramap, Pair(create_param(k), v.size))
         end
     end
     paramap
 end
 
-get_u0map(model) = [create_var(k,Catalyst.DEFAULT_IV) => v for (k,v) in SBML.initial_amounts(model, convert_concentrations = true)]
+get_u0map(model) = [create_var(k, Catalyst.DEFAULT_IV) => v for (k, v) in SBML.initial_amounts(model, convert_concentrations = true)]
 ModelingToolkit.defaults(model::SBML.Model) = ModelingToolkit._merge(get_u0map(model), get_paramap(model))
 
 """ Get rate constant of mass action kineticLaws """
@@ -223,8 +229,8 @@ function getmassaction(kl::Num, reactants::Union{Vector{Num},Nothing}, stoich::U
         end
         return 0
     end
-    check_args(x::Term{Real, Nothing}) = NaN  # Variable leaf node
-    check_args(x::Sym{Real, Base.ImmutableDict{DataType, Any}}) = 0  # Parameter leaf node
+    check_args(x::Term{Real,Nothing}) = NaN  # Variable leaf node
+    check_args(x::Sym{Real,Base.ImmutableDict{DataType,Any}}) = 0  # Parameter leaf node
     check_args(x::Real) = 0  # Real leaf node
     check_args(x) = throw(ErrorException("Cannot handle $(typeof(x)) types."))  # Unknow leaf node
     if isnothing(reactants) && isnothing(stoich)
