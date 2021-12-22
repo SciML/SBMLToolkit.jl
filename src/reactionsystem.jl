@@ -3,11 +3,12 @@ function Catalyst.ReactionSystem(model::SBML.Model; kwargs...)  # Todo: requires
     rxs = mtk_reactions(model)
     u0map = get_u0map(model)
     parammap = get_paramap(model)
-    defs = ModelingToolkit._merge(u0map, parammap)
+    defs = ModelingToolkit._merge(Dict(u0map), Dict(parammap))
 
     algrules, obsrules, raterules = get_rules(model)
     for o in obsrules
-        push!(defs, o.lhs => substitute(o.rhs, defs))
+        defs[o.lhs] = substitute(o.rhs, defs)
+        # push!(defs, o.lhs => substitute(o.rhs, defs))
     end
     constraints_sys = ODESystem(vcat(algrules, raterules), Catalyst.DEFAULT_IV; name = gensym(:CONSTRAINTS))
 
@@ -19,9 +20,9 @@ end
 function ModelingToolkit.ODESystem(model::SBML.Model; include_zero_odes = false, kwargs...)
     rs = ReactionSystem(model; kwargs...)
     sys = convert(ODESystem, rs; include_zero_odes = include_zero_odes)
-    ODESystem(equations(sys); 
-        name = nameof(sys), 
-        defaults = ModelingToolkit.get_defaults(rs), 
+    ODESystem(equations(sys);
+        name = nameof(sys),
+        defaults = ModelingToolkit.get_defaults(rs),
         continuous_events = get_events(model, rs))
 end
 
@@ -87,9 +88,9 @@ end
 function mtk_reactions(model::SBML.Model)
     subsdict = _get_substitutions(model)
     rxs = []
-    if length(model.reactions) == 0
-        throw(ErrorException("SBML.Model contains no reactions."))
-    end
+    # if length(model.reactions) == 0
+    #     throw(ErrorException("SBML.Model contains no reactions."))
+    # end
     for reaction in values(model.reactions)
         extensive_math = SBML.extensive_kinetic_math(
             model, reaction.kinetic_math,
@@ -296,33 +297,51 @@ function get_rules(model)
     rules = model.rules
     for r in rules
         if r isa SBML.AlgebraicRule
-            push!(algeqs, 0 ~ convert(Num, algr.math))
+            push!(algeqs, 0 ~ convert(Num, r.math))
         elseif r isa SBML.AssignmentRule
+            @info r
             push!(obseqs, assignmentrule_to_obseq(model, r))
         elseif r isa SBML.RateRule
-        
+            push!(raterules, raterule_to_diffeq(model, r))
         else
             error()
         end
     end
-    algeqs, obseqs, raterules = map(x->substitute(x, subsdict), (algeqs, obseqs, raterules))
+    algeqs, obseqs, raterules = map(x -> substitute(x, subsdict), (algeqs, obseqs, raterules))
     algeqs, obseqs, raterules
 end
 
 function assignmentrule_to_obseq(model, rule)
+    @info rule
     if haskey(model.species, rule.id)
         sym = Symbol(rule.id)
         var = Symbolics.unwrap(first(@variables $sym(Catalyst.DEFAULT_IV)))
         assignment = Num(convert(Num, rule.math, convert_time = (x::SBML.MathTime) -> Catalyst.DEFAULT_IV))
         return var ~ assignment
-    elseif haskey(model.comnpartments, rule.id)
+    elseif haskey(model.compartments, rule.id)
         error("not handling setting compartment volumes rn")
+    elseif haskey(model.parameters, rule.id)
+        error("not handling setting non-constant parameters rn")
     else
         error()
     end
 end
 
-function raterule(model, rule)
+function raterule_to_diffeq(model, rule)
     # the rule.id can be a species, speciesRef, compartment, or param. currently not doingthis
+    # for now im just doing species
+    D = Differential(Catalyst.DEFAULT_IV)
+    if haskey(model.species, rule.id)
+        sym = Symbol(rule.id)
+        var = Symbolics.unwrap(first(@variables $sym(Catalyst.DEFAULT_IV)))
+        assignment = Num(convert(Num, rule.math, convert_time = (x::SBML.MathTime) -> Catalyst.DEFAULT_IV))
+        return D(var) ~ assignment
+    elseif haskey(model.comnpartments, rule.id)
+        error("not handling setting compartment volumes rn")
+    elseif haskey(model.parameters, rule.id)
+        error("not handling setting non-constant parameters rn")
+    else
+        error()
+    end
 end
 
