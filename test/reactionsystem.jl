@@ -179,13 +179,6 @@ paramap = SBMLToolkit.get_paramap(MODEL1)
 # default test
 @test ModelingToolkit.defaults(m) == ModelingToolkit.defaults(ReactionSystem(m))
 
-using SBMLToolkit
-using Test
-
-using Catalyst
-using OrdinaryDiffEq
-using ModelingToolkit
-using SBML
 # events 
 myread(fn) = readSBML(fn, doc -> begin
     set_level_and_version(3, 2)(doc)
