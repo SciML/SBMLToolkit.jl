@@ -5,15 +5,6 @@ sbmlfile = joinpath("data", "reactionsystem_01.xml")
 
 kinetic_params = Dict{String,Tuple{Float64,String}}()
 
-empty_units = Dict{String,Vector{SBML.UnitPart}}()
-initial_assignments = Dict{String,SBML.Math}()
-empty_rules = SBML.Rule[]
-empty_contstraints = SBML.Constraint[]
-empty_objectives = Dict{String,Float64}()
-empty_geneproducts = Dict{String,SBML.GeneProduct}()
-empty_functiondefs = Dict{String,SBML.FunctionDefinition}()
-empty_events = Dict{String,SBML.Event}()
-
 COMP1 = SBML.Compartment("c1", true, 3, 2.0, "nl", nothing, nothing)
 SPECIES1 = SBML.Species("s1", "c1", false, nothing, nothing, (1.0, "substance"), nothing, true, nothing, nothing)  # Todo: Maybe not support units in initial_concentration?
 SPECIES2 = SBML.Species("s2", "c1", false, nothing, nothing, nothing, (1.0, "substance/nl"), false, nothing, nothing)
@@ -25,52 +16,22 @@ REACTION1 = SBML.Reaction(Dict(), Dict("s1" => 1), kinetic_params, "", "", nothi
 REACTION2 = SBML.Reaction(Dict("s2" => 1), Dict(), kinetic_params, "", "", nothing, KINETICMATH2, false, nothing, nothing)
 REACTION3 = SBML.Reaction(Dict("s2" => 1), Dict(), kinetic_params, "", "", nothing, KINETICMATH3, true, nothing, nothing)
 MODEL1 = SBML.Model(
-    Dict("k1" => (1.0, "")),
-    empty_units,
-    Dict("c1" => COMP1),
-    Dict("s1" => SPECIES1),
-    initial_assignments,
-    empty_rules,
-    empty_contstraints,
-    Dict("r1" => REACTION1),
-    empty_objectives,
-    empty_geneproducts,
-    empty_functiondefs,
-    empty_events,
-    nothing,
-    nothing
+    parameters = Dict("k1" => (1.0, "")),
+    compartments = Dict("c1" => COMP1),
+    species = Dict("s1" => SPECIES1),
+    reactions = Dict("r1" => REACTION1),
 )  # PL: For instance in the compartments dict, we may want to enforce that key and compartment.name are identical
 MODEL2 = SBML.Model(
-    Dict("k1" => (1.0, "")),
-    empty_units,
-    Dict("c1" => COMP1),
-    Dict("s2" => SPECIES2),
-    initial_assignments,
-    empty_rules,
-    empty_contstraints,
-    Dict("r2" => REACTION2),
-    empty_objectives,
-    empty_geneproducts,
-    empty_functiondefs,
-    empty_events,
-    nothing,
-    nothing
+    parameters = Dict("k1" => (1.0, "")),
+    compartments = Dict("c1" => COMP1),
+    species = Dict("s2" => SPECIES2),
+    reactions = Dict("r2" => REACTION2),
 )
 MODEL3 = SBML.Model(
-    Dict("k1" => (1.0, "")),
-    empty_units,
-    Dict("c1" => COMP1),
-    Dict("s2" => SPECIES2),
-    initial_assignments,
-    empty_rules,
-    empty_contstraints,
-    Dict("r3" => REACTION3),
-    empty_objectives,
-    empty_geneproducts,
-    empty_functiondefs,
-    empty_events,
-    nothing,
-    nothing
+    parameters = Dict("k1" => (1.0, "")),
+    compartments = Dict("c1" => COMP1),
+    species = Dict("s2" => SPECIES2),
+    reactions = Dict("r3" => REACTION3),
 )
 # MODEL2 = SBML.Model(Dict("k1" => ("", 1.0)), Dict(), Dict("c1" => COMP1), Dict("s2" => SPECIES2), Dict("r2" => REACTION2), Dict(), Dict())
 # MODEL3 = SBML.Model(Dict("k1" => ("", 1.0)), Dict(), Dict("c1" => COMP1), Dict("s2" => SPECIES2), Dict("r3" => REACTION3), Dict(), Dict())
@@ -171,20 +132,10 @@ truereaction = Catalyst.Reaction(k1, nothing, [s1], nothing, [1])  # Todo: imple
 km = SBML.MathTime("x")
 reac = SBML.Reaction(Dict("s1" => 1), Dict(), kinetic_params, "", "", nothing, km, false, nothing, nothing)
 mod = SBML.Model(
-    Dict("k1" => (1.0, "")),
-    empty_units,
-    Dict("c1" => COMP1),
-    Dict("s1" => SPECIES1),
-    initial_assignments,
-    empty_rules,
-    empty_contstraints,
-    Dict("r1" => reac),
-    empty_objectives,
-    empty_geneproducts,
-    empty_functiondefs,
-    empty_events,
-    nothing,
-    nothing
+    parameters = Dict("k1" => (1.0, "")),
+    compartments = Dict("c1" => COMP1),
+    species = Dict("s1" => SPECIES1),
+    reactions = Dict("r1" => reac),
 )
 
 @test isequal(Catalyst.DEFAULT_IV, SBMLToolkit.mtk_reactions(mod)[1].rate)
@@ -211,20 +162,10 @@ kineticmath = SBML.MathApply("-", SBML.Math[
 constreac = SBML.Reaction(Dict("constspec" => 1), Dict(), kinetic_params, "", "", nothing, kineticmath, false, nothing, nothing)
 
 constmod = SBML.Model(
-    Dict("k1" => (1.0, "")),
-    empty_units,
-    Dict("c1" => COMP1),
-    Dict("constspec" => constspec),
-    initial_assignments,
-    empty_rules,
-    empty_contstraints,
-    Dict("r1" => constreac),
-    empty_objectives,
-    empty_geneproducts,
-    empty_functiondefs,
-    empty_events,
-    nothing,
-    nothing
+    parameters = Dict("k1" => (1.0, "")),
+    compartments = Dict("c1" => COMP1),
+    species = Dict("constspec" => constspec),
+    reactions = Dict("r1" => constreac),
 )
 @test isequal(([ncs], [ncs], [1.0], [1.0]), SBMLToolkit.getreagents(constreac.reactants, constreac.products, constmod))
 @test isequal((nothing, nothing, nothing, nothing), SBMLToolkit.getreagents(constreac.reactants, constreac.products, constmod; rev = true))
