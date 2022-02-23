@@ -23,7 +23,7 @@ end
 
 """ Check if conversion to ReactionSystem is possible """
 function checksupport(filename::String)
-    not_implemented = ["listOfConstraints", "delay", "priority"]
+    not_implemented = ["listOfConstraints", "</delay>", "<priority>"]
     sbml = open(filename) do file
         read(file, String)
     end
