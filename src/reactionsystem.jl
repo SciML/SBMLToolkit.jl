@@ -67,14 +67,22 @@ end
 """ Get dictonary to change types in kineticLaw """
 function _get_substitutions(model)
     subsdict = Dict()
-    for k in keys(model.species)
+    for (k, v) in model.species
         push!(subsdict, Pair(create_var(k), create_var(k, Catalyst.DEFAULT_IV)))
     end
-    for k in keys(model.parameters)
-        push!(subsdict, Pair(create_var(k), create_param(k)))
+    for (k, v) in model.parameters
+        if v.constant !== nothing && v.constant
+            push!(subsdict, Pair(create_var(k), create_param(k)))
+        else
+            push!(subsdict, Pair(create_var(k), create_var(k, Catalyst.DEFAULT_IV)))
+        end
     end
-    for k in keys(model.compartments)
-        push!(subsdict, Pair(create_var(k), create_param(k)))
+    for (k, v) in model.compartments
+        if v.constant
+            push!(subsdict, Pair(create_var(k), create_param(k)))
+        else
+            push!(subsdict, Pair(create_var(k), create_var(k, Catalyst.DEFAULT_IV)))
+        end
     end
     subsdict
 end
@@ -106,7 +114,7 @@ function mtk_reactions(model::SBML.Model)
             kl_fw, our = use_rate(kl_fw, reactants, rstoichvals)
             kl_rv = from_noncombinatoric(kl_rv, rstoichvals, our)
             push!(rxs, Catalyst.Reaction(kl_fw, reactants, products, rstoichvals, pstoichvals; only_use_rate = our))
-        
+
             reagents = getreagents(rstoich, pstoich, model; rev = true)
             reactants_rev, products_rev, rstoichvals_rev, pstoichvals_rev = reagents
             rstoichvals_rev = stoich_convert_to_ints(rstoichvals_rev)
@@ -222,17 +230,42 @@ end
 function get_paramap(model)
     paramap = Pair{Num,Float64}[]
     for (k, v) in model.parameters
-        push!(paramap, Pair(create_param(k), v.value)) # [1] index drops unit
+        if v.constant
+            push!(paramap, Pair(create_param(k), v.value))
+        end
     end
     for (k, v) in model.compartments
-        if !isnothing(v.size)
+        if !isnothing(v.size) && v.constant
             push!(paramap, Pair(create_param(k), v.size))
         end
     end
     paramap
 end
 
-get_u0map(model) = [create_var(k, Catalyst.DEFAULT_IV) => v for (k, v) in SBML.initial_amounts(model, convert_concentrations = true)]
+""" Extract paramap from Model """
+function get_u0map(model)
+    u0s = Pair[]
+    inits = Dict(SBML.initial_amounts(model, convert_concentrations = true))
+
+    for (k, v) in model.species
+        p = create_var(k, Catalyst.DEFAULT_IV) => inits[k]
+        push!(u0s, p)
+    end
+
+    for (k, v) in model.compartments
+        if !isnothing(v.size) && !v.constant
+            push!(u0s, Pair(create_var(k, Catalyst.DEFAULT_IV), v.size))
+        end
+    end
+
+    for (k, v) in model.parameters
+        if !isnothing(v.value) && !v.constant
+            push!(u0s, Pair(create_var(k, Catalyst.DEFAULT_IV), v.value))
+        end
+    end
+    u0s
+end
+
 ModelingToolkit.defaults(model::SBML.Model) = ModelingToolkit._merge(get_u0map(model), get_paramap(model))
 
 """ Get rate constant of mass action kineticLaws """
@@ -295,34 +328,39 @@ function get_rules(model)
     algeqs, obseqs, raterules
 end
 
+function rule_to_var_and_eq(rule)
+    sym = Symbol(rule.id)
+    var = Symbolics.unwrap(first(@variables $sym(Catalyst.DEFAULT_IV)))
+    assignment = Num(convert(Num, rule.math, convert_time = (x::SBML.MathTime) -> Catalyst.DEFAULT_IV))
+    var, assignment
+end
+
 function assignmentrule_to_obseq(model, rule)
     if haskey(model.species, rule.id)
-        sym = Symbol(rule.id)
-        var = Symbolics.unwrap(first(@variables $sym(Catalyst.DEFAULT_IV)))
-        assignment = Num(convert(Num, rule.math, convert_time = (x::SBML.MathTime) -> Catalyst.DEFAULT_IV))
+        var, assignment = rule_to_var_and_eq(rule)
         return var ~ assignment
     elseif haskey(model.compartments, rule.id)
-        error("not handling setting compartment volumes rn")
+        var, assignment = rule_to_var_and_eq(rule)
+        return var ~ assignment
     elseif haskey(model.parameters, rule.id)
-        error("not handling setting non-constant parameters rn")
+        var, assignment = rule_to_var_and_eq(rule)
+        return var ~ assignment
     else
-        error()
+        error("invalid rule: $rule")
     end
 end
 
 function raterule_to_diffeq(model, rule)
-    # the rule.id can be a species, speciesRef, compartment, or param. currently not doingthis
-    # for now im just doing species
     D = Differential(Catalyst.DEFAULT_IV)
     if haskey(model.species, rule.id)
-        sym = Symbol(rule.id)
-        var = Symbolics.unwrap(first(@variables $sym(Catalyst.DEFAULT_IV)))
-        assignment = Num(convert(Num, rule.math, convert_time = (x::SBML.MathTime) -> Catalyst.DEFAULT_IV))
+        var, assignment = rule_to_var_and_eq(rule)
         return D(var) ~ assignment
-    elseif haskey(model.comnpartments, rule.id)
-        error("not handling setting compartment volumes rn")
+    elseif haskey(model.compartments, rule.id)
+        var, assignment = rule_to_var_and_eq(rule)
+        return D(var) ~ assignment
     elseif haskey(model.parameters, rule.id)
-        error("not handling setting non-constant parameters rn")
+        var, assignment = rule_to_var_and_eq(rule)
+        return D(var) ~ assignment
     else
         error()
     end
