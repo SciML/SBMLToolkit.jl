@@ -6,35 +6,49 @@ sbmlfile = joinpath("data", "reactionsystem_01.xml")
 kinetic_params = Dict{String,Tuple{Float64,String}}()
 
 COMP1 = SBML.Compartment("c1", true, 3, 2.0, "nl", nothing, nothing)
-SPECIES1 = SBML.Species("s1", "c1", false, nothing, nothing, (1.0, "substance"), nothing, true, nothing, nothing)  # Todo: Maybe not support units in initial_concentration?
-SPECIES2 = SBML.Species("s2", "c1", false, nothing, nothing, nothing, (1.0, "substance/nl"), false, nothing, nothing)
+SPECIES1 = SBML.Species(name = "s1", compartment = "c1", initial_amount = 1.0, substance_units = "substance", only_substance_units = true)  # Todo: Maybe not support units in initial_concentration?
+SPECIES2 = SBML.Species(name = "s2", compartment = "c1", initial_amount = 1.0, substance_units = "substance/nl", only_substance_units = false)
 KINETICMATH1 = SBML.MathIdent("k1")
 KINETICMATH2 = SBML.MathApply("*", SBML.Math[
     SBML.MathIdent("k1"), SBML.MathIdent("s2")])
 KINETICMATH3 = SBML.MathApply("-", SBML.Math[KINETICMATH2, KINETICMATH1])
-REACTION1 = SBML.Reaction(Dict(), Dict("s1" => 1), kinetic_params, "", "", nothing, KINETICMATH1, false, nothing, nothing)
-REACTION2 = SBML.Reaction(Dict("s2" => 1), Dict(), kinetic_params, "", "", nothing, KINETICMATH2, false, nothing, nothing)
-REACTION3 = SBML.Reaction(Dict("s2" => 1), Dict(), kinetic_params, "", "", nothing, KINETICMATH3, true, nothing, nothing)
+REACTION1 = SBML.Reaction(
+    reactants = Dict(),
+    products = Dict("s1" => 1),
+    kinetic_parameters = kinetic_params,
+    kinetic_math = KINETICMATH1,
+    reversible = false)
+REACTION2 = SBML.Reaction(
+    reactants = Dict("s2" => 1),
+    products = Dict(),
+    kinetic_parameters = kinetic_params,
+    kinetic_math = KINETICMATH2,
+    reversible = false)
+REACTION3 = SBML.Reaction(
+    reactants = Dict("s2" => 1),
+    products = Dict(),
+    kinetic_parameters = kinetic_params,
+    kinetic_math = KINETICMATH3,
+    reversible = true)
+PARAM1 = SBML.Parameter(name = "k1", value = 1.0, constant = true)
 MODEL1 = SBML.Model(
-    parameters = Dict("k1" => (1.0, "")),
+    parameters = Dict("k1" => PARAM1),
     compartments = Dict("c1" => COMP1),
     species = Dict("s1" => SPECIES1),
     reactions = Dict("r1" => REACTION1),
 )  # PL: For instance in the compartments dict, we may want to enforce that key and compartment.name are identical
 MODEL2 = SBML.Model(
-    parameters = Dict("k1" => (1.0, "")),
+    parameters = Dict("k1" => PARAM1),
     compartments = Dict("c1" => COMP1),
     species = Dict("s2" => SPECIES2),
     reactions = Dict("r2" => REACTION2),
 )
 MODEL3 = SBML.Model(
-    parameters = Dict("k1" => (1.0, "")),
+    parameters = Dict("k1" => PARAM1),
     compartments = Dict("c1" => COMP1),
     species = Dict("s2" => SPECIES2),
     reactions = Dict("r3" => REACTION3),
 )
-# MODEL2 = SBML.Model(Dict("k1" => ("", 1.0)), Dict(), Dict("c1" => COMP1), Dict("s2" => SPECIES2), Dict("r2" => REACTION2), Dict(), Dict())
-# MODEL3 = SBML.Model(Dict("k1" => ("", 1.0)), Dict(), Dict("c1" => COMP1), Dict("s2" => SPECIES2), Dict("r3" => REACTION3), Dict(), Dict())
 
 # Test ReactionSystem constructor
 rs = ReactionSystem(MODEL1)
@@ -57,9 +71,9 @@ rs = ReactionSystem(MODEL3)  # Contains reversible reaction
 @test isequal(Catalyst.get_eqs(rs),
     Catalyst.Reaction[
         Catalyst.Reaction(0.5k1, [s2], nothing,
-            [1.0], nothing),
+            [1], nothing),
         Catalyst.Reaction(k1, nothing, [s2],
-            nothing, [1.0])])
+            nothing, [1])])
 @test isequal(Catalyst.get_iv(rs), t)
 @test isequal(Catalyst.get_states(rs), [s2])
 @test isequal(Catalyst.get_ps(rs), [k1, c1])
@@ -130,9 +144,14 @@ truereaction = Catalyst.Reaction(k1, nothing, [s1], nothing, [1])  # Todo: imple
 @test isequal(reaction, truereaction)
 
 km = SBML.MathTime("x")
-reac = SBML.Reaction(Dict("s1" => 1), Dict(), kinetic_params, "", "", nothing, km, false, nothing, nothing)
+reac = SBML.Reaction(
+    reactants = Dict("s1" => 1),
+    products = Dict(),
+    kinetic_parameters = kinetic_params,
+    kinetic_math = km,
+    reversible = false)
 mod = SBML.Model(
-    parameters = Dict("k1" => (1.0, "")),
+    parameters = Dict("k1" => PARAM1),
     compartments = Dict("c1" => COMP1),
     species = Dict("s1" => SPECIES1),
     reactions = Dict("r1" => reac),
@@ -152,17 +171,22 @@ mod = SBML.Model(
 # Test getreagents
 @test isequal((nothing, [s1], nothing, [1.0]), SBMLToolkit.getreagents(REACTION1.reactants, REACTION1.products, MODEL1))
 
-constspec = SBML.Species("constspec", "c1", true, nothing, nothing, (1.0, "substance"), nothing, true, nothing, nothing)
+constspec = SBML.Species(name = "constspec", compartment = "c1", boundary_condition = true, initial_amount = 1.0, substance_units = "substance", only_substance_units = true)
 ncs = SBMLToolkit.create_var("constspec", Catalyst.DEFAULT_IV)
 kineticmath = SBML.MathApply("-", SBML.Math[
     SBML.MathApply("*", SBML.Math[
         SBML.MathIdent("k1"),
         SBML.MathIdent("constspec")]),
     SBML.MathIdent("k1")])
-constreac = SBML.Reaction(Dict("constspec" => 1), Dict(), kinetic_params, "", "", nothing, kineticmath, false, nothing, nothing)
+constreac = SBML.Reaction(
+    reactants = Dict("constspec" => 1),
+    products = Dict(),
+    kinetic_parameters = kinetic_params,
+    kinetic_math = kineticmath,
+    reversible = false)
 
 constmod = SBML.Model(
-    parameters = Dict("k1" => (1.0, "")),
+    parameters = Dict("k1" => PARAM1),
     compartments = Dict("c1" => COMP1),
     species = Dict("constspec" => constspec),
     reactions = Dict("r1" => constreac),
