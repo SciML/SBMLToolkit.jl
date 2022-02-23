@@ -6,7 +6,7 @@ end)
 # assignment rule
 fn = "data/00038-sbml-l3v2.xml" # this case is for observable eqs
 m = myread(fn)
-rs = ReactionSystem(m)
+@named rs = ReactionSystem(m)
 
 sys = convert(ODESystem, rs; include_zero_odes = false)
 @test length(equations(sys)) == 3
@@ -22,7 +22,7 @@ obsvar_sol = sol[S3]
 # rate rule
 fn = "data/00031-sbml-l3v2.xml" # this case is for observable eqs
 m = myread(fn)
-rs = ReactionSystem(m)
+@named rs = ReactionSystem(m)
 sys = convert(ODESystem, rs; include_zero_odes = false)
 @variables t S1(t)
 D = Differential(t)
@@ -31,10 +31,29 @@ D = Differential(t)
 # algebraic rule
 fn = "data/00039-sbml-l3v2.xml" # this case is for observable eqs
 m = myread(fn)
-rs = ReactionSystem(m)
+@named rs = ReactionSystem(m)
 sys = convert(ODESystem, rs; include_zero_odes = false)
 ssys = structural_simplify(sys)
 prob = ODEProblem(ssys, [], (0, 10.0))
 sol = solve(prob, Tsit5())
 @variables t S2(t)
 obsvar_sol = sol[S2]
+
+# tests that non-constant parameters become states
+fn = "data/00033-sbml-l3v2.xml"
+m = myread(fn)
+@named rs = ReactionSystem(m)
+sys = convert(ODESystem, rs)
+@variables k1(t)
+@test isequal(k1, states(sys)[end])
+
+# tests that non-constant compartments become states
+# WARNING the abserr wrt the reference solution is 0.04690613469254479
+# this is much higher than other tests, so simulations may be incorrect 
+# however, a very similar case (00053) passed reference tests so it may be nothing
+fn = "data/00051-sbml-l3v2.xml"
+m = myread(fn)
+@named rs = ReactionSystem(m)
+sys = convert(ODESystem, rs)
+@variables C(t)
+@test isequal(C, states(sys)[end])
