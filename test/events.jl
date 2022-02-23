@@ -8,7 +8,7 @@ fn = "data/00026-sbml-l3v2.xml"
 m = myread(fn)
 @named sys = ODESystem(m)
 ssys = structural_simplify(sys)
-@test length(ssys.continuous_events) == 1
+@test length(ModelingToolkit.get_continuous_events(ssys)) == 1
 prob = ODEProblem(ssys, [], (0, 5.0); saveat = 0:0.1:5.0)
 sol = solve(prob, Tsit5())
 @test sol.destats.ncondition > 0
@@ -18,7 +18,7 @@ fn = "data/00041-sbml-l3v2.xml"
 m = myread(fn)
 @named sys = ODESystem(m)
 ssys = structural_simplify(sys)
-@test length(ssys.continuous_events) == 2
+@test length(ModelingToolkit.get_continuous_events(ssys)) == 2
 prob = ODEProblem(ssys, [], (0, 5.0); saveat = 0:0.1:5.0)
 sol = solve(prob, Tsit5())
 @test sol.destats.ncondition > 0
