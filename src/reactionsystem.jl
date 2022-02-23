@@ -342,7 +342,7 @@ function assignmentrule_to_obseq(model, rule)
     elseif haskey(model.compartments, rule.id)
         var, assignment = rule_to_var_and_eq(rule)
         return var ~ assignment
-    elseif haskey(model.parameters, rule.id) # broken because we need to substitute x for x(t) in the defaults 
+    elseif haskey(model.parameters, rule.id)
         var, assignment = rule_to_var_and_eq(rule)
         return var ~ assignment
     else
@@ -351,8 +351,6 @@ function assignmentrule_to_obseq(model, rule)
 end
 
 function raterule_to_diffeq(model, rule)
-    # the rule.id can be a species, speciesRef, compartment, or param. currently not doingthis
-    # for now im just doing species
     D = Differential(Catalyst.DEFAULT_IV)
     if haskey(model.species, rule.id)
         var, assignment = rule_to_var_and_eq(rule)
