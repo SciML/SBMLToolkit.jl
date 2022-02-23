@@ -79,6 +79,10 @@ function _get_substitutions(model)
     subsdict
 end
 
+function stoich_convert_to_ints(xs)
+    (xs !== nothing && all(isinteger(x) for x in xs)) ? Int.(xs) : xs
+end
+
 """ Convert SBML.Reaction to MTK.Reaction """
 function mtk_reactions(model::SBML.Model)
     subsdict = _get_substitutions(model)
@@ -95,23 +99,30 @@ function mtk_reactions(model::SBML.Model)
         if reaction.reversible
             symbolic_math = getunidirectionalcomponents(symbolic_math)
             kl_fw, kl_rv = [substitute(x, subsdict) for x in symbolic_math]
-            reagents = getreagents(rstoich, pstoich, model)
-            isnothing(reagents[1]) && isnothing(reagents[2]) && continue
-            kl_fw, our = use_rate(kl_fw, reagents[1], reagents[3])
-            kl_rv = from_noncombinatoric(kl_rv, reagents[3], our)
-            push!(rxs, Catalyst.Reaction(kl_fw, reagents...; only_use_rate = our))
-
+            reactants, products, rstoichvals, pstoichvals = getreagents(rstoich, pstoich, model)
+            isnothing(reactants) && isnothing(products) && continue
+            rstoichvals = stoich_convert_to_ints(rstoichvals)
+            pstoichvals = stoich_convert_to_ints(pstoichvals)
+            kl_fw, our = use_rate(kl_fw, reactants, rstoichvals)
+            kl_rv = from_noncombinatoric(kl_rv, rstoichvals, our)
+            push!(rxs, Catalyst.Reaction(kl_fw, reactants, products, rstoichvals, pstoichvals; only_use_rate = our))
+        
             reagents = getreagents(rstoich, pstoich, model; rev = true)
-            kl_rv, our = use_rate(kl_rv, reagents[1], reagents[3])
-            kl_rv = from_noncombinatoric(kl_rv, reagents[3], our)
-            push!(rxs, Catalyst.Reaction(kl_rv, reagents...; only_use_rate = our))
+            reactants_rev, products_rev, rstoichvals_rev, pstoichvals_rev = reagents
+            rstoichvals_rev = stoich_convert_to_ints(rstoichvals_rev)
+            pstoichvals_rev = stoich_convert_to_ints(pstoichvals_rev)
+            kl_rv, our = use_rate(kl_rv, reactants_rev, rstoichvals_rev)
+            kl_rv = from_noncombinatoric(kl_rv, rstoichvals_rev, our)
+            push!(rxs, Catalyst.Reaction(kl_rv, reactants_rev, products_rev, rstoichvals_rev, pstoichvals_rev; only_use_rate = our))
         else
             kl = substitute(symbolic_math, subsdict)
-            reagents = getreagents(rstoich, pstoich, model)
-            isnothing(reagents[1]) && isnothing(reagents[2]) && continue
-            kl, our = use_rate(kl, reagents[1], reagents[3])
-            kl = from_noncombinatoric(kl, reagents[3], our)
-            push!(rxs, Catalyst.Reaction(kl, reagents...; only_use_rate = our))
+            reactants, products, rstoichvals, pstoichvals = getreagents(rstoich, pstoich, model)
+            isnothing(reactants) && isnothing(products) && continue
+            rstoichvals = stoich_convert_to_ints(rstoichvals)
+            pstoichvals = stoich_convert_to_ints(pstoichvals)
+            kl, our = use_rate(kl, reactants, rstoichvals)
+            kl = from_noncombinatoric(kl, rstoichvals, our)
+            push!(rxs, Catalyst.Reaction(kl, reactants, products, rstoichvals, pstoichvals; only_use_rate = our))
         end
     end
     rxs
@@ -211,7 +222,7 @@ end
 function get_paramap(model)
     paramap = Pair{Num,Float64}[]
     for (k, v) in model.parameters
-        push!(paramap, Pair(create_param(k), v[1])) # [1] index drops unit
+        push!(paramap, Pair(create_param(k), v.value)) # [1] index drops unit
     end
     for (k, v) in model.compartments
         if !isnothing(v.size)
