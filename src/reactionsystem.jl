@@ -68,7 +68,11 @@ end
 function _get_substitutions(model)
     subsdict = Dict()
     for (k, v) in model.species
-        push!(subsdict, Pair(create_var(k), create_var(k, Catalyst.DEFAULT_IV)))
+        if v.constant
+            push!(subsdict, Pair(create_var(k), create_param(k)))        
+        else
+            push!(subsdict, Pair(create_var(k), create_var(k, Catalyst.DEFAULT_IV)))
+        end
     end
     for (k, v) in model.parameters
         if v.constant !== nothing && v.constant
@@ -228,7 +232,13 @@ end
 
 """ Extract paramap from Model """
 function get_paramap(model)
+    inits = Dict(SBML.initial_amounts(model, convert_concentrations = true))
     paramap = Pair{Num,Float64}[]
+    for (k, v) in model.species
+        if v.constant
+            push!(paramap, create_param(k) => inits[k])
+        end
+    end
     for (k, v) in model.parameters
         if v.constant
             push!(paramap, Pair(create_param(k), v.value))
@@ -248,8 +258,10 @@ function get_u0map(model)
     inits = Dict(SBML.initial_amounts(model, convert_concentrations = true))
 
     for (k, v) in model.species
-        p = create_var(k, Catalyst.DEFAULT_IV) => inits[k]
-        push!(u0s, p)
+        if !v.constant
+            p = create_var(k, Catalyst.DEFAULT_IV) => inits[k]
+            push!(u0s, p)
+        end
     end
 
     for (k, v) in model.compartments
