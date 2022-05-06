@@ -64,6 +64,8 @@ rs = ReactionSystem(readSBML(sbmlfile))
 @test isequal(Catalyst.get_iv(rs), t)
 @test isequal(Catalyst.get_states(rs), [s1, s1s2, s2])
 @test isequal(Catalyst.get_ps(rs), [k1, c1])
+@test isequal(rs.var_to_name, Dict(s1 => "s1", s1s2 => "s1s2", s2 => "s2",
+                                   k1 => "k1", c1 => "c1"))
 @named rs = ReactionSystem(MODEL1)
 isequal(nameof(rs), :rs)
 

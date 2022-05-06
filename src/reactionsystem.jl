@@ -4,6 +4,9 @@ function Catalyst.ReactionSystem(model::SBML.Model; kwargs...)  # Todo: requires
     u0map = get_u0map(model)
     parammap = get_paramap(model)
     defs = ModelingToolkit._merge(Dict(u0map), Dict(parammap))
+    vtn = merge(Dict(k => v.name for (k, v) in model.compartments),
+                Dict(k => v.name for (k, v) in model.species),
+                Dict(k => v.name for (k, v) in model.parameters))
 
     algrules, obsrules, raterules = get_rules(model)
     for o in obsrules
@@ -11,8 +14,9 @@ function Catalyst.ReactionSystem(model::SBML.Model; kwargs...)  # Todo: requires
     end
     constraints_sys = ODESystem(vcat(algrules, raterules, obsrules), Catalyst.DEFAULT_IV; name = gensym(:CONSTRAINTS))
 
-    ReactionSystem(rxs, Catalyst.DEFAULT_IV, first.(u0map), first.(parammap); defaults = defs, name = gensym(:SBML),
-        constraints = constraints_sys, kwargs...)
+    ReactionSystem(rxs, Catalyst.DEFAULT_IV, first.(u0map), first.(parammap),
+                   vtn, [], gensym(:SBML), [], defs, nothing, constraints_sys;
+                   kwargs...)  # Calls the inner constructor, which may change between non-breaking releases.
 end
 
 """ ODESystem constructor """
