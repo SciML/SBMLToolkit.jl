@@ -324,13 +324,15 @@ function get_rules(model)
             error()
         end
     end
-    algeqs, obseqs, raterules = map(x -> substitute(x, subsdict), (algeqs, obseqs, raterules))
+    algeqs = [substitute(x, subsdict) for x in algeqs]
+    obseqs = [substitute(x, subsdict) for x in obseqs]
+    raterules = [substitute(x, subsdict) for x in raterules]
     algeqs, obseqs, raterules
 end
 
 function rule_to_var_and_eq(rule)
-    sym = Symbol(rule.id)
-    var = Symbolics.unwrap(first(@variables $sym(Catalyst.DEFAULT_IV)))
+    # sym = Symbol(rule.id)
+    var = create_var(rule.id, Catalyst.DEFAULT_IV)
     assignment = Num(convert(Num, rule.math, convert_time = (x::SBML.MathTime) -> Catalyst.DEFAULT_IV))
     var, assignment
 end
