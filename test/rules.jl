@@ -59,7 +59,7 @@ sys = convert(ODESystem, rs)
 @test isequal(C, states(sys)[end])
 
 # tests that constant species get zero derivative constraints
-fn = "species_gt_eqs.xml"
+fn = joinpath("data", "species_gt_eqs.xml")
 m = myread(fn)
 @named rs = ReactionSystem(m)
 println(3)
