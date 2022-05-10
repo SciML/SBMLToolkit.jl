@@ -377,12 +377,8 @@ end
 
 function get_underdetermined_species(model)
     rules = model.rules
-    defined_species = [r.id for r in rules if r isa Union{SBML.AssignmentRule, SBML.RateRule}]
+    defined_species = String[r.id for r in rules if r isa Union{SBML.AssignmentRule, SBML.RateRule}]
     species_changed_by_reactions = get_species_changed_by_reaction(model)
-    println(values(model.species))
-    println(species_changed_by_reactions)
-    println(defined_species)
-    println(model.species["A"].name)
     undefined_species = [s for s in values(model.species) if !(s.name in vcat(defined_species, species_changed_by_reactions)) && !s.constant]
     Equation[constant_to_diffeq(s) for s in undefined_species]      
 end
