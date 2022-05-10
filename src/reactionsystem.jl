@@ -9,7 +9,8 @@ function Catalyst.ReactionSystem(model::SBML.Model; kwargs...)  # Todo: requires
     for o in obsrules
         defs[o.lhs] = substitute(o.rhs, defs)
     end
-    constraints_sys = ODESystem(vcat(algrules, raterules, obsrules), Catalyst.DEFAULT_IV; name = gensym(:CONSTRAINTS))
+    constant_species = Equation[constant_to_diffeq(s) for s in values(model.species) if s.constant == true]
+    constraints_sys = ODESystem(vcat(algrules, raterules, obsrules, constant_species), Catalyst.DEFAULT_IV; name = gensym(:CONSTRAINTS))
 
     ReactionSystem(rxs, Catalyst.DEFAULT_IV, first.(u0map), first.(parammap); defaults = defs, name = gensym(:SBML),
         constraints = constraints_sys, kwargs...)
@@ -364,6 +365,12 @@ function raterule_to_diffeq(model, rule)
     else
         error()
     end
+end
+
+function constant_to_diffeq(species)
+    D = Differential(Catalyst.DEFAULT_IV)
+    var = create_var(species.id, Catalyst.DEFAULT_IV)
+    return D(var) ~ 0
 end
 
 """
