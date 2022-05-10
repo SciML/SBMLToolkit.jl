@@ -68,3 +68,18 @@ prob = ODEProblem(ssys, [], (0, 10.0))
 sol = solve(prob, Tsit5())
 @variables t B(t)
 @test isequal(first(sol[B]), last(sol[B]))
+
+# tests undefined_species_are_constant
+fn = joinpath("data", "species_gt_eqs_underdetermined.xml")
+m = myread(fn)
+@named rs = ReactionSystem(m, undefined_species_are_constant=true)
+sys = convert(ODESystem, rs; include_zero_odes = false)
+ssys = structural_simplify(sys)
+prob = ODEProblem(ssys, [], (0, 10.0))
+sol = solve(prob, Tsit5())
+@variables t B(t)
+@test isequal(first(sol[B]), last(sol[B]))
+
+@named rs = ReactionSystem(m, undefined_species_are_constant=false)
+sys = convert(ODESystem, rs; include_zero_odes = false)
+@test_throws ModelingToolkit.ExtraVariablesSystemException structural_simplify(sys)
