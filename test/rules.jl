@@ -57,3 +57,14 @@ m = myread(fn)
 sys = convert(ODESystem, rs)
 @variables C(t)
 @test isequal(C, states(sys)[end])
+
+# tests that constant species get zero derivative constraints
+fn = "species_gt_eqs.xml"
+m = myread(fn)
+@named rs = ReactionSystem(m)
+sys = convert(ODESystem, rs; include_zero_odes = false)
+ssys = structural_simplify(sys)
+prob = ODEProblem(ssys, [], (0, 10.0))
+sol = solve(prob, Tsit5())
+@variables t B(t)
+@test isequal(first(sol[B]), last(sol[B]))
