@@ -370,7 +370,7 @@ end
 
 function constant_to_diffeq(species)
     D = Differential(Catalyst.DEFAULT_IV)
-    var = create_var(species.id, Catalyst.DEFAULT_IV)
+    var = create_var(species.name, Catalyst.DEFAULT_IV)
     println(2)
     return D(var) ~ 0
 end
