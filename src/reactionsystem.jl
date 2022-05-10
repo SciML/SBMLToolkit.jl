@@ -1,5 +1,5 @@
 """ ReactionSystem constructor """
-function Catalyst.ReactionSystem(model::SBML.Model; kwargs...)  # Todo: requires unique parameters (i.e. SBML must have been imported with localParameter promotion in libSBML)
+function Catalyst.ReactionSystem(model::SBML.Model; undefined_species_are_constant=false, kwargs...)  # Todo: requires unique parameters (i.e. SBML must have been imported with localParameter promotion in libSBML)
     rxs = mtk_reactions(model)
     u0map = get_u0map(model)
     parammap = get_paramap(model)
@@ -9,9 +9,10 @@ function Catalyst.ReactionSystem(model::SBML.Model; kwargs...)  # Todo: requires
     for o in obsrules
         defs[o.lhs] = substitute(o.rhs, defs)
     end
-    println(1)
     constant_species = Equation[constant_to_diffeq(s) for s in values(model.species) if s.constant == true]
-    constraints_sys = ODESystem(vcat(algrules, raterules, obsrules, constant_species), Catalyst.DEFAULT_IV; name = gensym(:CONSTRAINTS))
+    undetermined_species = (undefined_species_are_constant ? get_underdetermined_species(model) : Equation[])
+    constraints_sys = ODESystem(vcat(algrules, raterules, obsrules, constant_species, undetermined_species),
+                                Catalyst.DEFAULT_IV; name = gensym(:CONSTRAINTS))
 
     ReactionSystem(rxs, Catalyst.DEFAULT_IV, first.(u0map), first.(parammap); defaults = defs, name = gensym(:SBML),
         constraints = constraints_sys, kwargs...)
@@ -371,8 +372,40 @@ end
 function constant_to_diffeq(species)
     D = Differential(Catalyst.DEFAULT_IV)
     var = create_var(species.name, Catalyst.DEFAULT_IV)
-    println(2)
     return D(var) ~ 0
+end
+
+function get_underdetermined_species(model)
+    rules = model.rules
+    defined_species = [r.id for r in rules if r isa Union{SBML.AssignmentRule, SBML.RateRule}]
+    species_changed_by_reactions = get_species_changed_by_reaction(model)
+    undefined_species = [s for s in values(model.species) if s.name not in vcat(defined_species, species_changed_by_reactions) && !s.constant]
+    Equation[constant_to_diffeq(s) for s in undefined_species]      
+end
+
+function get_species_changed_by_reaction(model)
+    species_changed_by_reaction = Set([])
+    for reaction in values(model.reactions)
+        rstoich = reaction.reactants
+        pstoich = reaction.products
+        netstoich = Dict()
+        for (k, v) in rstoich
+            netstoich[k] = v
+        end
+        for (k, v) in pstoich
+            if haskey(netstoich, k) && netstoich[k] == v
+                delete!(netstoich, k)
+            else
+                netstoich[k] = v
+            end
+        end
+        for specie in keys(netstoich)
+            if !model.species[specie].boundaryCondition && !model.species[specie].constant
+                push!(species_changed_by_reaction, specie)
+            end
+        end
+    end
+    collect(species_changed_by_reaction)
 end
 
 """
