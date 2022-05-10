@@ -9,6 +9,7 @@ function Catalyst.ReactionSystem(model::SBML.Model; kwargs...)  # Todo: requires
     for o in obsrules
         defs[o.lhs] = substitute(o.rhs, defs)
     end
+    println(1)
     constant_species = Equation[constant_to_diffeq(s) for s in values(model.species) if s.constant == true]
     constraints_sys = ODESystem(vcat(algrules, raterules, obsrules, constant_species), Catalyst.DEFAULT_IV; name = gensym(:CONSTRAINTS))
 
@@ -370,6 +371,7 @@ end
 function constant_to_diffeq(species)
     D = Differential(Catalyst.DEFAULT_IV)
     var = create_var(species.id, Catalyst.DEFAULT_IV)
+    println(2)
     return D(var) ~ 0
 end
 
