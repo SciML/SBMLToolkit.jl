@@ -45,7 +45,7 @@
       </compartment>
     </listOfCompartments>
     <listOfSpecies>
-      <species metaid="COPASI2" id="A" name="A" compartment="compartment" initialConcentration="3" boundaryCondition="true" constant="false">
+      <species metaid="COPASI2" id="A_id" name="A_name" compartment="compartment" initialConcentration="3" boundaryCondition="true" constant="false">
         <annotation>
           <COPASI xmlns="http://www.copasi.org/static/sbml">
             <rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
@@ -60,7 +60,7 @@
           </COPASI>
         </annotation>
       </species>
-      <species metaid="COPASI3" id="B" name="B" compartment="compartment" initialConcentration="7" boundaryCondition="true" constant="false">
+      <species metaid="COPASI3" id="B_id" name="B_name" compartment="compartment" initialConcentration="7" boundaryCondition="true" constant="false">
         <annotation>
           <COPASI xmlns="http://www.copasi.org/static/sbml">
             <rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
@@ -75,7 +75,7 @@
           </COPASI>
         </annotation>
       </species>
-      <species metaid="COPASI4" id="C" name="C" compartment="compartment" initialConcentration="1" boundaryCondition="false" constant="false">
+      <species metaid="COPASI4" id="C_id" name="C_name" compartment="compartment" initialConcentration="1" boundaryCondition="false" constant="false">
         <annotation>
           <COPASI xmlns="http://www.copasi.org/static/sbml">
             <rdf:RDF xmlns:dcterms="http://purl.org/dc/terms/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
@@ -92,7 +92,7 @@
       </species>
     </listOfSpecies>
     <listOfRules>
-      <assignmentRule variable="A">
+      <assignmentRule variable="A_id">
         <math xmlns="http://www.w3.org/1998/Math/MathML">
           <apply>
             <plus/>
@@ -118,7 +118,7 @@
           </COPASI>
         </annotation>
         <listOfReactants>
-          <speciesReference species="C" stoichiometry="1"/>
+          <speciesReference species="C_id" stoichiometry="1"/>
         </listOfReactants>
         <kineticLaw>
           <math xmlns="http://www.w3.org/1998/Math/MathML">
