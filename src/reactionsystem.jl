@@ -9,7 +9,7 @@ function Catalyst.ReactionSystem(model::SBML.Model; undefined_species_are_consta
     for o in obsrules
         defs[o.lhs] = substitute(o.rhs, defs)
     end
-    constant_species = Equation[constant_to_diffeq(k,v) for (k,v) in model.species if v.constant == true]
+    constant_species = Equation[constant_to_diffeq(k) for (k,v) in model.species if v.constant == true]
     undetermined_species = (undefined_species_are_constant ? get_underdetermined_species(model) : Equation[])
     constraints_sys = ODESystem(vcat(algrules, raterules, obsrules, constant_species, undetermined_species),
                                 Catalyst.DEFAULT_IV; name = gensym(:CONSTRAINTS))
