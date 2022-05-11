@@ -9,7 +9,7 @@ function Catalyst.ReactionSystem(model::SBML.Model; undefined_species_are_consta
     for o in obsrules
         defs[o.lhs] = substitute(o.rhs, defs)
     end
-    constant_species = Equation[constant_to_diffeq(s) for s in values(model.species) if s.constant == true]
+    constant_species = Equation[constant_to_diffeq(k,v) for (k,v) in model.species if v.constant == true]
     undetermined_species = (undefined_species_are_constant ? get_underdetermined_species(model) : Equation[])
     constraints_sys = ODESystem(vcat(algrules, raterules, obsrules, constant_species, undetermined_species),
                                 Catalyst.DEFAULT_IV; name = gensym(:CONSTRAINTS))
@@ -369,17 +369,17 @@ function raterule_to_diffeq(model, rule)
     end
 end
 
-function constant_to_diffeq(species)
+function constant_to_diffeq(species_id)
     D = Differential(Catalyst.DEFAULT_IV)
-    var = create_var(species.name, Catalyst.DEFAULT_IV)
-    return D(var) ~ 0
+    var = create_var(species_id, Catalyst.DEFAULT_IV)
+    return D(species_id) ~ 0
 end
 
 function get_underdetermined_species(model)
     rules = model.rules
     defined_species = String[r.id for r in rules if r isa Union{SBML.AssignmentRule, SBML.RateRule}]
     species_changed_by_reactions = get_species_changed_by_reaction(model)
-    undefined_species = [s for s in values(model.species) if !(s.name in vcat(defined_species, species_changed_by_reactions)) && !s.constant]
+    undefined_species = [k for (k,v) in model.species if !(k in vcat(defined_species, species_changed_by_reactions)) && !v.constant]
     Equation[constant_to_diffeq(s) for s in undefined_species]      
 end
 
