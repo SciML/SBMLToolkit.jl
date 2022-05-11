@@ -97,7 +97,7 @@
           <apply>
             <plus/>
             <cn> 1 </cn>
-            <ci> B </ci>
+            <ci> B_id </ci>
           </apply>
         </math>
       </assignmentRule>
@@ -126,7 +126,7 @@
               <times/>
               <ci> compartment </ci>
               <ci> k1 </ci>
-              <ci> C </ci>
+              <ci> C_id </ci>
             </apply>
           </math>
           <listOfParameters>
