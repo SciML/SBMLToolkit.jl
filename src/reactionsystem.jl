@@ -388,18 +388,11 @@ function get_species_changed_by_reaction(model)
     for reaction in values(model.reactions)
         rstoich = reaction.reactants
         pstoich = reaction.products
-        netstoich = Dict()
-        for (k, v) in rstoich
-            netstoich[k] = v
-        end
+        candidates = collect(keys(rstoich))
         for (k, v) in pstoich
-            if haskey(netstoich, k) && netstoich[k] == v
-                delete!(netstoich, k)
-            else
-                netstoich[k] = v
-            end
+            haskey(rstoich, k) && rstoich[k] == v ? delete!(candidates, k) : push!(candidates, k)
         end
-        for specie in keys(netstoich)
+        for specie in candidates
             if !model.species[specie].boundary_condition && !model.species[specie].constant
                 push!(species_changed_by_reaction, specie)
             end
