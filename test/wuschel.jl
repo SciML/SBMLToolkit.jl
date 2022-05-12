@@ -14,7 +14,7 @@ m = myread(s)
 
 rs = ReactionSystem(m)
 @test isequal(length(rs.eqs), 4139)
-@test isequal(length(rs.species), 1265)
+@test isequal(length(rs.states), 1265)
 
 ssys = structural_simplify(ODESystem(m))
 prob = ODEProblem(ssys, [], (0, 10.0))
