@@ -11,7 +11,11 @@ io = IOBuffer()
 Downloads.download(url, io)
 s = String(take!(io))
 m = myread(s)
-sys = structural_simplify(ODESystem(m))
-@test length(equations(sys)) == 1012
+
+rs = ReactionSystem(m)
+@test isequal(length(rs.eqs), 4139)
+@test isequal(length(rs.species), 1265)
+
+ssys = structural_simplify(ODESystem(m))
 prob = ODEProblem(ssys, [], (0, 10.0))
 solve(prob, Tsit5(), save_everystep = false)
