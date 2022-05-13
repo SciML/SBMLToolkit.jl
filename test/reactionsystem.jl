@@ -128,6 +128,8 @@ sol = solve(oprob, Tsit5())
 # Test checksupport
 @test_nowarn SBMLToolkit.checksupport(sbmlfile)
 @test_throws ErrorException SBMLToolkit.checksupport(joinpath("data", "unsupported.sbml"))
+@test_nowarn SBMLToolkit.checksupport("No keyword used")
+@test_throws ErrorException SBMLToolkit.checksupport("Keyword <priority> used.")
 
 
 

@@ -25,10 +25,12 @@ function ModelingToolkit.ODESystem(model::SBML.Model; include_zero_odes = false,
 end
 
 """ Check if conversion to ReactionSystem is possible """
-function checksupport(filename::String)
+function checksupport(sbml::String)
     not_implemented = ["listOfConstraints", "</delay>", "<priority>"]
-    sbml = open(filename) do file
-        read(file, String)
+    if isfile(sbml)
+        sbml = open(sbml) do file
+            read(file, String)
+        end
     end
     for item in not_implemented
         occursin(item, sbml) && throw(ErrorException("SBML models with $item are not yet implemented."))
