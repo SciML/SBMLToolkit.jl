@@ -1,13 +1,14 @@
 cd(@__DIR__)
 sbmlfile = joinpath("data", "reactionsystem_01.xml")
 @parameters t, k1, c1
-@variables s1(t), s2(t), s1s2(t)
+@variables s1(t), s2(t), s1s2(t), s3(t)
 
 kinetic_params = Dict{String,Tuple{Float64,String}}()
 
 COMP1 = SBML.Compartment("c1", true, 3, 2.0, "nl", nothing, nothing)
-SPECIES1 = SBML.Species(name = "s1", compartment = "c1", initial_amount = 1.0, substance_units = "substance", only_substance_units = true)  # Todo: Maybe not support units in initial_concentration?
+SPECIES1 = SBML.Species(name = "s1", compartment = "c1", initial_amount = 1.0, substance_units = "substance", only_substance_units = true, boundary_condition = false, constant = false)  # Todo: Maybe not support units in initial_concentration?
 SPECIES2 = SBML.Species(name = "s2", compartment = "c1", initial_amount = 1.0, substance_units = "substance/nl", only_substance_units = false)
+SPECIES3 = SBML.Species(name = "s3", compartment = "c1", initial_amount = 1.0, substance_units = "substance", only_substance_units = false, constant=true)
 KINETICMATH1 = SBML.MathIdent("k1")
 KINETICMATH2 = SBML.MathApply("*", SBML.Math[
     SBML.MathIdent("k1"), SBML.MathIdent("s2")])
@@ -30,6 +31,18 @@ REACTION3 = SBML.Reaction(
     kinetic_parameters = kinetic_params,
     kinetic_math = KINETICMATH3,
     reversible = true)
+REACTION4 = SBML.Reaction(
+    reactants = Dict("s1" => 1),
+    products = Dict("s1" => 1),
+    kinetic_parameters = kinetic_params,
+    kinetic_math = KINETICMATH1,
+    reversible = false)
+REACTION5 = SBML.Reaction(
+    reactants = Dict(),
+    products = Dict("s3" => 1),
+    kinetic_parameters = kinetic_params,
+    kinetic_math = KINETICMATH1,
+    reversible = false)
 PARAM1 = SBML.Parameter(name = "k1", value = 1.0, constant = true)
 MODEL1 = SBML.Model(
     parameters = Dict("k1" => PARAM1),
@@ -48,6 +61,25 @@ MODEL3 = SBML.Model(
     compartments = Dict("c1" => COMP1),
     species = Dict("s2" => SPECIES2),
     reactions = Dict("r3" => REACTION3),
+)
+MODEL4 = SBML.Model(
+    parameters = Dict("k1" => PARAM1),
+    compartments = Dict("c1" => COMP1),
+    species = Dict("s1" => SPECIES1),
+    reactions = Dict("r4" => REACTION4),
+)
+MODEL5 = SBML.Model(
+    parameters = Dict("k1" => PARAM1),
+    compartments = Dict("c1" => COMP1),
+    species = Dict("s3" => SPECIES3),
+    reactions = Dict("r5" => REACTION5),
+)
+MODEL6 = SBML.Model(
+    # parameters = Dict("k1" => PARAM1),
+    # compartments = Dict("c1" => COMP1),
+    species = Dict("s2" => SPECIES2),
+    # reactions = Dict("r2" => REACTION2),
+    rules = SBML.Rule[SBML.AlgebraicRule(KINETICMATH2)]
 )
 
 # Test ReactionSystem constructor
@@ -230,3 +262,25 @@ paramap = SBMLToolkit.get_paramap(MODEL1)
 
 # default test
 @test ModelingToolkit.defaults(m) == ModelingToolkit.defaults(ReactionSystem(m))
+
+# test_fix_zero_odes_to_init
+eqs = equations(ODESystem(MODEL4, include_zero_odes = true))
+fixed = SBMLToolkit.fix_zero_odes_to_init(MODEL4, eqs)
+fixed_true = Equation[s1 ~ 1.0]
+@test isequal(fixed, fixed_true)
+
+# test fix_constants_at_init
+fixed = SBMLToolkit.fix_constants_at_init(MODEL5)
+fixed_true = Equation[s3 ~ 1.0]
+@test isequal(fixed, fixed_true)
+
+# test parse_math!
+res = String[]
+SBMLToolkit.parse_math!(KINETICMATH2, res, MODEL2)
+res_true = ["s2"]
+@test isequal(res, res_true)
+
+# test get_algebraic_species
+res = SBMLToolkit.get_algebraic_species(MODEL6)
+res_true = ["s2"]
+@test isequal(res, res_true)
