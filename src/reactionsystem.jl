@@ -1,18 +1,75 @@
 """ ReactionSystem constructor """
 function Catalyst.ReactionSystem(model::SBML.Model; kwargs...)  # Todo: requires unique parameters (i.e. SBML must have been imported with localParameter promotion in libSBML)
+    # length(model.events) > 0 ? error("Model contains events. Please import with `ODESystem(model)`") : nothing  @Anand: how to suppress this when called from ODESystem
     rxs = mtk_reactions(model)
     u0map = get_u0map(model)
     parammap = get_paramap(model)
     defs = ModelingToolkit._merge(Dict(u0map), Dict(parammap))
 
     algrules, obsrules, raterules = get_rules(model)
+    constant_eqs = fix_constants_at_init(model)
     for o in obsrules
         defs[o.lhs] = substitute(o.rhs, defs)
     end
-    constraints_sys = ODESystem(vcat(algrules, raterules, obsrules), Catalyst.DEFAULT_IV; name = gensym(:CONSTRAINTS))
+    constraints_sys = ODESystem(vcat(algrules, raterules, obsrules, constant_eqs),
+                                Catalyst.DEFAULT_IV; name = gensym(:CONSTRAINTS))
 
+    # Hacky way to keep zero_ode species with contant=boundaryCondition=false in system
+    rs = ReactionSystem(rxs, Catalyst.DEFAULT_IV, first.(u0map), first.(parammap); defaults = defs, name = gensym(:SBML),
+        constraints = constraints_sys, kwargs...)
+    odessys = convert(ODESystem, rs; include_zero_odes=true)
+    unchanged_eqs = fix_zero_odes_to_init(model, equations(odessys))
+    constraints_sys = ODESystem(vcat(algrules, raterules, obsrules, constant_eqs, unchanged_eqs),
+                                Catalyst.DEFAULT_IV; name = gensym(:CONSTRAINTS))
     ReactionSystem(rxs, Catalyst.DEFAULT_IV, first.(u0map), first.(parammap); defaults = defs, name = gensym(:SBML),
         constraints = constraints_sys, kwargs...)
+end
+
+function fix_zero_odes_to_init(model, equations)
+    fix_to_init = Equation[]
+    inits = Dict(SBML.initial_amounts(model, convert_concentrations = true))
+    D = Differential(Catalyst.DEFAULT_IV)
+    assigned_species = [r.id for r in values(model.rules) if r isa Union{SBML.AssignmentRule, SBML.RateRule}]
+    algebraic_species = get_algebraic_species(model)
+    for (k, v) in model.species
+        var = create_var(k, Catalyst.DEFAULT_IV)
+        if v.boundary_condition == false && v.constant == false && !(k in vcat(assigned_species, algebraic_species))
+            eq = D(var) ~ 0
+            if eq in equations
+                push!(fix_to_init, var ~ inits[k])
+            end
+        end
+    end
+    fix_to_init
+end
+
+function get_algebraic_species(model)
+    algebraic_rules = [r.math for r in model.rules if r isa SBML.AlgebraicRule]
+    algebraic_species = String[]
+    for math in algebraic_rules
+        parse_math!(math, algebraic_species, model)
+    end
+    algebraic_species
+end
+
+function parse_math!(math, algebraic_species, model)
+    if math isa SBML.MathIdent && math.id in keys(model.species)
+        push!(algebraic_species, math.id)
+    elseif math isa Union{SBML.MathApply, SBML.MathLambda}
+        [parse_math!(arg, algebraic_species, model) for arg in math.args]
+    end
+    nothing
+end
+
+function fix_constants_at_init(model)
+    fixed_at_init = Equation[]
+    inits = Dict(SBML.initial_amounts(model, convert_concentrations = true))
+    for (k, v) in model.species
+        if v.constant==true
+            push!(fixed_at_init, create_var(k, Catalyst.DEFAULT_IV) ~ inits[k])
+        end
+    end
+    fixed_at_init
 end
 
 """ ODESystem constructor """
