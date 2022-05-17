@@ -38,6 +38,8 @@ function fix_zero_odes_to_init(model, equations)
             if eq in equations
                 push!(fix_to_init, var ~ inits[k])
             end
+        elseif v.boundary_condition == true && !(k in vcat(assigned_species, algebraic_species))
+            push!(fix_to_init, var ~ inits[k])
         end
     end
     fix_to_init
