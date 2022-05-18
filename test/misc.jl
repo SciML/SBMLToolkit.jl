@@ -1,59 +1,106 @@
-myread(fn) = readSBML(fn, doc -> begin
-    set_level_and_version(3, 2)(doc)
-    convert_simplify_math(doc)
-end)
+const cases = ["00007", "00140"]
 
-# assignment rule
-fn = "data/00038-sbml-l3v2.xml" # this case is for observable eqs
-m = myread(fn)
-@named rs = ReactionSystem(m)
+const algo = Dict("00862" => Rodas4,
+                  "00863" => Rodas4,
+                  "00864" => Rodas4,
+                  "00882" => Rodas4)
+                  
+const logdir = joinpath(@__DIR__, "logs")
+rm(logdir,recursive=true)
+mkdir(logdir)
 
-sys = convert(ODESystem, rs; include_zero_odes = false)
-@test length(equations(sys)) == 3
-ssys = structural_simplify(sys)
-@test length(observed(ssys)) == 1
-prob = ODEProblem(ssys, [], (0, 10.0))
-sol = solve(prob, Tsit5())
+function setup_settings_txt(text)
+    ls = split(text, "\n")
+    spls = split.(ls, ": ")
+    filter!(x->length(x) == 2, spls)
+    Dict(map(x -> x[1] => Meta.parse(x[2]), spls))
+end
 
-@variables t S3(t)
-obsvar_sol = sol[S3]
-@test !all(isequal(first(obsvar_sol)), obsvar_sol) # check its nonconstant
+function to_concentrations(sol, ml, results)
+    volumes = [1.]
+    sol_df = DataFrame(sol)
+    for sn in names(sol_df)[2:end]
+        if haskey(ml.species, sn[1:3-end])
+            spec = ml.species[sn[1:end-3]]
+            comp = ml.compartments[spec.compartment]
+            ic = spec.initial_concentration
+            isnothing(ic) ? push!(volumes, 1.) : push!(volumes, comp.size)
+        end
+    end
+    sol_df = sol_df./Array(volumes)'
+    
+    idx = [sol.t[i] in results[:, 1] ? true : false for i in 1:length(sol.t)]
+    sol_df = sol_df[idx, :]
+    sol_df
+end
 
-# rate rule
-fn = "data/00031-sbml-l3v2.xml" # this case is for observable eqs
-m = myread(fn)
-@named rs = ReactionSystem(m)
-sys = convert(ODESystem, rs; include_zero_odes = false)
-@variables t S1(t)
-D = Differential(t)
-@test equations(sys) == [D(S1) ~ 7]
+"plots the difference between the suites' reported solution and DiffEq's sol"
+function verify_plot(case, sys, solm, resm, ts)
+    open(joinpath(logdir, case*".txt"), "w") do file
+        write(file, "Reactions:\n")
+        write(file, repr(equations(sys))*"\n")
+        write(file, "ODEs:\n")
+        write(file, repr(equations(sys))*"\n")
+    end
+    plt = plot(ts, solm)
+    plt = plot!(ts, resm, linestyle=:dot)
+    savefig(joinpath(logdir, case*".png"))
+end
 
-# algebraic rule
-fn = "data/00039-sbml-l3v2.xml" # this case is for observable eqs
-m = myread(fn)
-@named rs = ReactionSystem(m)
-sys = convert(ODESystem, rs; include_zero_odes = false)
-ssys = structural_simplify(sys)
-prob = ODEProblem(ssys, [], (0, 10.0))
-sol = solve(prob, Tsit5())
-@variables t S2(t)
-obsvar_sol = sol[S2]
+function read_case(case)
+    base_url = "https://raw.githubusercontent.com/sbmlteam/sbml-test-suite/master/cases/semantic/$case/$case"
+    sbml_url = base_url*"-sbml-l3v2.xml"
+    settings_url = base_url*"-settings.txt"
+    results_url = base_url*"-results.csv"
+    
+    sbml = String(take!(Downloads.download(sbml_url, IOBuffer())))
+    settings = String(take!(Downloads.download(settings_url, IOBuffer())))
+    results = String(take!(Downloads.download(results_url, IOBuffer())))
+    
+    # Read results
+    settings = setup_settings_txt(settings)
+    results = CSV.read(IOBuffer(results), DataFrame)
+    (sbml, settings, results)
+end
 
-# tests that non-constant parameters become states
-fn = "data/00033-sbml-l3v2.xml"
-m = myread(fn)
-@named rs = ReactionSystem(m)
-sys = convert(ODESystem, rs)
-@variables k1(t)
-@test isequal(k1, states(sys)[end])
+function verify(case)
+    # Read case
+    sbml, settings, results = read_case(case)
+   
+    # Read SBML
+    ml = readSBMLFromString(sbml, doc -> begin
+                set_level_and_version(3, 2)(doc)
+                convert_simplify_math(doc)
+            end)
 
-# tests that non-constant compartments become states
-# WARNING the abserr wrt the reference solution is 0.04690613469254479
-# this is much higher than other tests, so simulations may be incorrect 
-# however, a very similar case (00053) passed reference tests so it may be nothing
-fn = "data/00051-sbml-l3v2.xml"
-m = myread(fn)
-@named rs = ReactionSystem(m)
-sys = convert(ODESystem, rs)
-@variables C(t)
-@test isequal(C, states(sys)[end])
+    rs = ReactionSystem(ml)
+
+    sys = convert(ODESystem, rs; include_zero_odes = false)
+    if length(ml.events) > 0
+        sys = ODESystem(ml)
+    end
+    
+    ssys = structural_simplify(sys)
+    
+    ts = results[:, 1]  # LinRange(settings["start"], settings["duration"], settings["steps"]+1)
+    prob = ODEProblem(ssys, Pair[], (settings["start"], Float64(settings["duration"])); saveat=ts, check_length=false)
+
+    algorithm = case in keys(algo) ? algo[case] : Tsit5()
+    sol = solve(prob, algorithm; abstol=settings["absolute"], reltol=settings["relative"], saveat=ts)
+    sol_df = to_concentrations(sol, ml, results)
+    CSV.write(joinpath(logdir, "SBMLTk_"*case*".csv"), sol_df)
+
+    cols = names(sol_df)[2:end]
+    res_df = results[:, [c[1:end-3] for c in cols]]
+    solm = Matrix(sol_df[:, cols])
+    resm = Matrix(res_df)
+    res = isapprox(solm, resm; atol=1e-9, rtol=3e-2)
+    @test res
+    atol = maximum(solm .- resm)
+    verify_plot(case, sys, solm, resm, ts)
+    nothing
+end
+
+for case in cases
+    verify(case)
+end

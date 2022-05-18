@@ -92,43 +92,6 @@ function checksupport(filename::String)
     occursin("<sbml xmlns:fbc=", sbml) && throw(ErrorException("This model was designed for constrained-based optimisation. Please use COBREXA.jl instead of SBMLToolkit."))
 end
 
-""" Convert intensive to extensive mathematical expression """
-function to_extensive_math!(model::SBML.Model)
-    function conv(x::SBML.MathApply)
-        SBML.MathApply(x.fn, SBML.Math[conv(x) for x in x.args])
-    end
-    function conv(x::SBML.MathIdent)
-        x_new = x
-        if x.id in keys(model.species)
-            specie = model.species[x.id]
-            if !specie.only_substance_units
-                cn = specie.compartment
-                compartment = model.compartments[cn]
-                if isnothing(compartment.size)
-                    @warn "Specie $(x.id) hasOnlySubstanceUnits but its compartment $(compartment.name) has no size. Cannot auto-correct the rate laws $(x.id) is involved in. Please check manually."
-                else
-                    if getkey(model.rules, cn, false) isa SBML.AssignmentRule
-                        size = model.rules[cn].math
-                    else
-                        size = SBML.MathVal(compartment.size)
-                    end
-                    x_new = SBML.MathApply("/", SBML.Math[x,
-                        size])
-                    specie.only_substance_units = true
-                end
-            end
-        end
-        x_new
-    end
-    conv(x::SBML.MathVal) = x
-    conv(x::SBML.MathLambda) =
-        throw(DomainError(x, "can't translate lambdas to extensive units"))
-    for reaction in values(model.reactions)
-        reaction.kinetic_math = conv(reaction.kinetic_math)
-    end
-    model
-end
-
 """ Get dictonary to change types in kineticLaw """
 function _get_substitutions(model)
     subsdict = Dict()

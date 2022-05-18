@@ -17,9 +17,13 @@ SymbolicUtils = "0.17, 0.18, 0.19"
 julia = "1.6"
 
 [extras]
+CSV = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
+DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
+Downloads = "f43a241f-c20a-4ad4-852c-f6b1247861c6"
 ModelingToolkit = "961ee093-0014-501f-94e3-6117800e7a78"
 OrdinaryDiffEq = "1dea7af3-3e70-54e6-95c3-0bf5283fa5ed"
+Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [targets]
-test = ["ModelingToolkit", "Test", "OrdinaryDiffEq"]
+test = ["CSV", "DataFrames", "Downloads", "ModelingToolkit", "OrdinaryDiffEq", "Plots", "Test"]

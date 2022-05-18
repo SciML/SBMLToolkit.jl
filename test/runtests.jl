@@ -4,6 +4,7 @@ using Test
 using SBML
 using Catalyst
 using OrdinaryDiffEq
+using CSV, DataFrames, Downloads, Plots
 
 @testset "SBMLToolkit.jl" begin
     @testset "Model to MTK conversions" begin include("reactionsystem.jl") end
