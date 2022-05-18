@@ -102,12 +102,18 @@ function to_extensive_math!(model::SBML.Model)
         if x.id in keys(model.species)
             specie = model.species[x.id]
             if !specie.only_substance_units
-                compartment = model.compartments[specie.compartment]
+                cn = specie.compartment
+                compartment = model.compartments[cn]
                 if isnothing(compartment.size)
                     @warn "Specie $(x.id) hasOnlySubstanceUnits but its compartment $(compartment.name) has no size. Cannot auto-correct the rate laws $(x.id) is involved in. Please check manually."
                 else
+                    if getkey(model.rules, cn, false) isa SBML.AssignmentRule
+                        size = model.rules[cn].math
+                    else
+                        size = SBML.MathVal(compartment.size)
+                    end
                     x_new = SBML.MathApply("/", SBML.Math[x,
-                        SBML.MathVal(compartment.size)])
+                        size])
                     specie.only_substance_units = true
                 end
             end
