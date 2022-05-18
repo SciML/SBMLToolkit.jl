@@ -41,7 +41,7 @@ jobs:
       - uses: actions/upload-artifact@v2
         with:
           name: logs
-          path: /home/runner/work/SBMLBioModelsRepository.jl/SBMLBioModelsRepository.jl/test/logs/
+          path: /home/runner/work/SBMLToolkit.jl/SBMLToolkit.jl/test/logs/
   docs:
     name: Documentation
     runs-on: ubuntu-latest
