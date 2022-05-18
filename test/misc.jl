@@ -6,7 +6,7 @@ const algo = Dict("00862" => Rodas4,
                   "00882" => Rodas4)
                   
 const logdir = joinpath(@__DIR__, "logs")
-rm(logdir,recursive=true)
+ispath(logdir) && rm(logdir,recursive=true)
 mkdir(logdir)
 
 function setup_settings_txt(text)
