@@ -12,7 +12,10 @@ SPECIES3 = SBML.Species(name = "s3", compartment = "c1", initial_amount = 1.0, s
 KINETICMATH1 = SBML.MathIdent("k1")
 KINETICMATH2 = SBML.MathApply("*", SBML.Math[
     SBML.MathIdent("k1"), SBML.MathIdent("s2")])
-KINETICMATH3 = SBML.MathApply("-", SBML.Math[KINETICMATH2, KINETICMATH1])
+KINETICMATH3 = SBML.MathApply("-",
+    SBML.Math[SBML.MathApply("*", SBML.Math[
+        SBML.MathIdent("k1"), SBML.MathIdent("s1")]),
+    KINETICMATH1])
 REACTION1 = SBML.Reaction(
     reactants = Dict(),
     products = Dict("s1" => 1),
@@ -26,7 +29,7 @@ REACTION2 = SBML.Reaction(
     kinetic_math = KINETICMATH2,
     reversible = false)
 REACTION3 = SBML.Reaction(
-    reactants = Dict("s2" => 1),
+    reactants = Dict("s1" => 1),
     products = Dict(),
     kinetic_parameters = kinetic_params,
     kinetic_math = KINETICMATH3,
@@ -59,7 +62,7 @@ MODEL2 = SBML.Model(
 MODEL3 = SBML.Model(
     parameters = Dict("k1" => PARAM1),
     compartments = Dict("c1" => COMP1),
-    species = Dict("s2" => SPECIES2),
+    species = Dict("s1" => SPECIES1),
     reactions = Dict("r3" => REACTION3),
 )
 MODEL4 = SBML.Model(
@@ -92,7 +95,7 @@ rs = ReactionSystem(MODEL1)
 isequal(nameof(rs), :rs)
 
 rs = ReactionSystem(readSBML(sbmlfile))
-@test isequal(Catalyst.get_eqs(rs), Catalyst.Reaction[Catalyst.Reaction(0.25c1 * k1, [s1, s2], [s1s2], [1.0, 1.0], [1.0])])
+@test isequal(Catalyst.get_eqs(rs), Catalyst.Reaction[Catalyst.Reaction(k1 / c1, [s1, s2], [s1s2], [1.0, 1.0], [1.0])])
 @test isequal(Catalyst.get_iv(rs), t)
 @test isequal(Catalyst.get_states(rs), [s1, s1s2, s2])
 @test isequal(Catalyst.get_ps(rs), [k1, c1])
@@ -102,12 +105,12 @@ isequal(nameof(rs), :rs)
 rs = ReactionSystem(MODEL3)  # Contains reversible reaction
 @test isequal(Catalyst.get_eqs(rs),
     Catalyst.Reaction[
-        Catalyst.Reaction(0.5k1, [s2], nothing,
+        Catalyst.Reaction(k1, [s1], nothing,
             [1], nothing),
-        Catalyst.Reaction(k1, nothing, [s2],
+        Catalyst.Reaction(k1, nothing, [s1],
             nothing, [1])])
 @test isequal(Catalyst.get_iv(rs), t)
-@test isequal(Catalyst.get_states(rs), [s2])
+@test isequal(Catalyst.get_states(rs), [s1])
 @test isequal(Catalyst.get_ps(rs), [k1, c1])
 
 @test_nowarn convert(ModelingToolkit.ODESystem, rs)
@@ -129,9 +132,9 @@ isequal(nameof(odesys), :odesys)
 
 odesys = ODESystem(readSBML(sbmlfile))
 m = readSBML(sbmlfile)
-trueeqs = Equation[Differential(t)(s1)~-0.25c1*k1*s1*s2,
-    Differential(t)(s1s2)~0.25c1*k1*s1*s2,
-    Differential(t)(s2)~-0.25c1*k1*s1*s2]
+trueeqs = Equation[Differential(t)(s1)~-((k1*s1*s2) / c1),
+    Differential(t)(s1s2)~(k1*s1*s2) / c1,
+    Differential(t)(s2)~-((k1*s1*s2) / c1)]
 @test isequal(Catalyst.get_eqs(odesys), trueeqs)
 @test isequal(Catalyst.get_iv(odesys), t)
 @test isequal(Catalyst.get_states(odesys), [s1, s1s2, s2])

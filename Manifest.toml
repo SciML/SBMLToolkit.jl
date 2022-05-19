@@ -822,8 +822,8 @@ version = "0.5.3"
 
 [[SBML]]
 deps = ["DocStringExtensions", "IfElse", "Libdl", "SBML_jll", "SparseArrays", "Symbolics", "Unitful"]
-git-tree-sha1 = "325e92ed37305b121047c6a65290b8fd2ca874ab"
-repo-rev = "pl-dynamic_compartments_math"
+git-tree-sha1 = "eedb7edbb719e3e0b1c7d068e08f61e0d20cf83c"
+repo-rev = "pl-extensivemath_compID"
 repo-url = "https://github.com/paulflang/SBML.jl.git"
 uuid = "e5567a89-2604-4b09-9718-f5f78e97c3bb"
 version = "0.10.1"
