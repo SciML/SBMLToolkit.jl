@@ -141,7 +141,6 @@ function mtk_reactions(model::SBML.Model)
             rstoichvals = stoich_convert_to_ints(rstoichvals)
             pstoichvals = stoich_convert_to_ints(pstoichvals)
             kl_fw, our = use_rate(kl_fw, reactants, rstoichvals)
-            # kl_rv = from_noncombinatoric(kl_rv, rstoichvals)
             push!(rxs, Catalyst.Reaction(kl_fw, reactants, products, rstoichvals, pstoichvals; only_use_rate = our))
 
             reagents = getreagents(rstoich, pstoich, model; rev = true)
@@ -149,7 +148,6 @@ function mtk_reactions(model::SBML.Model)
             rstoichvals_rev = stoich_convert_to_ints(rstoichvals_rev)
             pstoichvals_rev = stoich_convert_to_ints(pstoichvals_rev)
             kl_rv, our = use_rate(kl_rv, reactants_rev, rstoichvals_rev)
-            # kl_rv = from_noncombinatoric(kl_rv, rstoichvals_rev)
             push!(rxs, Catalyst.Reaction(kl_rv, reactants_rev, products_rev, rstoichvals_rev, pstoichvals_rev; only_use_rate = our))
         else
             kl = substitute(symbolic_math, subsdict)
@@ -158,24 +156,11 @@ function mtk_reactions(model::SBML.Model)
             rstoichvals = stoich_convert_to_ints(rstoichvals)
             pstoichvals = stoich_convert_to_ints(pstoichvals)
             kl, our = use_rate(kl, reactants, rstoichvals)
-            # kl = from_noncombinatoric(kl, rstoichvals)  # PL Todo: Don't enter this for non-integer stoichiometry.
             push!(rxs, Catalyst.Reaction(kl, reactants, products, rstoichvals, pstoichvals; only_use_rate = our))
         end
     end
     rxs
 end
-
-# function from_noncombinatoric(rl::Num, stoich::Union{Vector{<:Real},Nothing})
-#     if !isnothing(stoich) # && !only_use_rate  # PL: I think `&& !only_use_rate` is wrong here. only_use_rate describes wether multiplication with species is needed in convert(ODESystem, rs). combinatoric_ratelaws describes whether division by factorials is needed in convert().
-#         coef = 1
-#         for s in stoich
-#             isinteger(s) && s > 0 || throw(ErrorException("Stoichiometry must be a non-negative integer."))
-#             coef *= factorial(s::Int)
-#         end
-#         !isone(coef) && (rl *= coef)
-#     end
-#     rl
-# end
 
 """ Get kineticLaw for use in MTK.Reaction """
 function use_rate(kl::Num, react::Union{Vector{Num},Nothing}, stoich::Union{Vector{<:Real},Nothing})
