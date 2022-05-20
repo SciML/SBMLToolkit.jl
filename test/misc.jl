@@ -75,7 +75,7 @@ function verify(case)
 
     rs = ReactionSystem(ml)
 
-    sys = convert(ODESystem, rs; include_zero_odes = false)
+    sys = convert(ODESystem, rs; include_zero_odes = false, combinatoric_ratelaws=false)
     if length(ml.events) > 0
         sys = ODESystem(ml)
     end
