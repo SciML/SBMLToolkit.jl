@@ -33,13 +33,15 @@ function fix_zero_odes_to_init(model, equations)
     algebraic_species = get_algebraic_species(model)
     for (k, v) in model.species
         var = create_var(k, Catalyst.DEFAULT_IV)
-        if v.boundary_condition == false && v.constant == false && !(k in vcat(assigned_species, algebraic_species))
-            eq = D(var) ~ 0
-            if eq in equations
+        if v.constant == false && !(k in vcat(assigned_species, algebraic_species))
+            if v.boundary_condition == false
+                eq = D(var) ~ 0
+                if eq in equations
+                    push!(fix_to_init, var ~ inits[k])
+                end
+            elseif v.boundary_condition == true
                 push!(fix_to_init, var ~ inits[k])
             end
-        elseif v.boundary_condition == true && !(k in vcat(assigned_species, algebraic_species))
-            push!(fix_to_init, var ~ inits[k])
         end
     end
     fix_to_init
