@@ -272,6 +272,16 @@ fixed = SBMLToolkit.fix_zero_odes_to_init(MODEL4, eqs)
 fixed_true = Equation[s1 ~ 1.0]
 @test isequal(fixed, fixed_true)
 
+# test_fix_unassigned_nonconstant_par_to_init
+k_nonconstant = SBMLToolkit.create_var("k_nonconstant", Catalyst.DEFAULT_IV)
+m = SBML.Model(
+    parameters = Dict("k_nonconstant" => SBML.Parameter(
+        name = "k_nonconstant", value = 1.0, constant = false)),
+    rules = SBML.Rule[SBML.AlgebraicRule(KINETICMATH2)])
+fixed = SBMLToolkit.fix_unassigned_nonconstant_par_to_init(m)
+fixed_true = Equation[k_nonconstant ~ 1.0]
+@test isequal(fixed, fixed_true)
+
 # test fix_constants_at_init
 fixed = SBMLToolkit.fix_constants_at_init(MODEL5)
 fixed_true = Equation[s3 ~ 1.0]

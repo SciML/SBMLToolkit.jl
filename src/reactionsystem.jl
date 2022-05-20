@@ -8,10 +8,11 @@ function Catalyst.ReactionSystem(model::SBML.Model; kwargs...)  # Todo: requires
 
     algrules, obsrules, raterules = get_rules(model)
     constant_eqs = fix_constants_at_init(model)
+    unassigned_pars = fix_unassigned_nonconstant_par_to_init(model)
     for o in obsrules
         defs[o.lhs] = substitute(o.rhs, defs)
     end
-    constraints_sys = ODESystem(vcat(algrules, raterules, obsrules, constant_eqs),
+    constraints_sys = ODESystem(vcat(algrules, raterules, obsrules, constant_eqs, unassigned_pars),
                                 Catalyst.DEFAULT_IV; name = gensym(:CONSTRAINTS))
 
     # Hacky way to keep zero_ode species with contant=boundaryCondition=false in system
@@ -19,7 +20,7 @@ function Catalyst.ReactionSystem(model::SBML.Model; kwargs...)  # Todo: requires
         constraints = constraints_sys, kwargs...)
     odessys = convert(ODESystem, rs; include_zero_odes=true, combinatoric_ratelaws=false)
     unchanged_eqs = fix_zero_odes_to_init(model, equations(odessys))
-    constraints_sys = ODESystem(vcat(algrules, raterules, obsrules, constant_eqs, unchanged_eqs),
+    constraints_sys = ODESystem(vcat(algrules, raterules, obsrules, constant_eqs, unchanged_eqs, unassigned_pars),
                                 Catalyst.DEFAULT_IV; name = gensym(:CONSTRAINTS))
     ReactionSystem(rxs, Catalyst.DEFAULT_IV, first.(u0map), first.(parammap); defaults = defs, name = gensym(:SBML),
         constraints = constraints_sys, kwargs...)
@@ -47,20 +48,34 @@ function fix_zero_odes_to_init(model, equations)
     fix_to_init
 end
 
-function get_algebraic_species(model)
+function fix_unassigned_nonconstant_par_to_init(model)
+    fix_to_init = Equation[]
+    assigned_pars = [r.id for r in values(model.rules) if r isa Union{SBML.AssignmentRule, SBML.RateRule}]
+    algebraic_pars = get_algebraic_species(model; kind="parameter")
+    for (k, v) in model.parameters
+        var = create_var(k, Catalyst.DEFAULT_IV)
+        if v.constant == false && !(k in vcat(assigned_pars, algebraic_pars))
+            push!(fix_to_init, var ~ v.value)
+        end
+    end
+    fix_to_init
+end
+
+function get_algebraic_species(model; kind="species")
     algebraic_rules = [r.math for r in model.rules if r isa SBML.AlgebraicRule]
     algebraic_species = String[]
     for math in algebraic_rules
-        parse_math!(math, algebraic_species, model)
+        parse_math!(math, algebraic_species, model; kind=kind)
     end
     algebraic_species
 end
 
-function parse_math!(math, algebraic_species, model)
-    if math isa SBML.MathIdent && math.id in keys(model.species)
+function parse_math!(math, algebraic_species, model; kind="species")
+    k = kind == "species" ? model.species : kind == "parameter" ? model.parameters : throw(ArgumentError("kind must be either 'species' or 'parameter'"))
+    if math isa SBML.MathIdent && math.id in keys(k)
         push!(algebraic_species, math.id)
     elseif math isa Union{SBML.MathApply, SBML.MathLambda}
-        [parse_math!(arg, algebraic_species, model) for arg in math.args]
+        [parse_math!(arg, algebraic_species, model; kind=kind) for arg in math.args]
     end
     nothing
 end
