@@ -1,4 +1,4 @@
-const cases = ["00007", "00140"]
+const cases = ["00007", "00022", "00140"]
 
 const algo = Dict("00862" => Rodas4,
                   "00863" => Rodas4,

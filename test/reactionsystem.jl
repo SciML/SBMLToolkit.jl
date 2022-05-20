@@ -195,9 +195,9 @@ mod = SBML.Model(
 @test isequal(Catalyst.DEFAULT_IV, SBMLToolkit.mtk_reactions(mod)[1].rate)
 
 
-# test from_noncombinatoric
-@test isequal(4k1, SBMLToolkit.from_noncombinatoric(k1, [2, 2], false))
-@test isequal(k1, SBMLToolkit.from_noncombinatoric(k1, nothing, false))
+# # test from_noncombinatoric
+# @test isequal(4k1, SBMLToolkit.from_noncombinatoric(k1, [2, 2]))
+# @test isequal(k1, SBMLToolkit.from_noncombinatoric(k1, nothing))
 
 # Test use_rate
 @test isequal(SBMLToolkit.use_rate(k1 * s1, [s1], [1]), (k1, false))  # Case hOSU=true
