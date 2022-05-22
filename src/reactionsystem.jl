@@ -144,7 +144,7 @@ function mtk_reactions(model::SBML.Model)
     for reaction in values(model.reactions)
         extensive_math = SBML.extensive_kinetic_math(
             model, reaction.kinetic_math,
-            handle_empty_compartment_size = _ -> 1.0)
+            handle_empty_compartment_size = _ -> 1.0)  # PL: better default to the error here.
         symbolic_math = Num(convert(Num, extensive_math,
             convert_time = (x::SBML.MathTime) -> Catalyst.DEFAULT_IV))
 
@@ -346,7 +346,8 @@ function get_rules(model)
     rules = model.rules
     for r in rules
         if r isa SBML.AlgebraicRule
-            push!(algeqs, 0 ~ convert(Num, r.math))
+            math = SBML.extensive_kinetic_math(model, r.math)
+            push!(algeqs, 0 ~ convert(Num, math))
         elseif r isa SBML.AssignmentRule
             push!(obseqs, assignmentrule_to_obseq(model, r))
         elseif r isa SBML.RateRule
@@ -359,22 +360,39 @@ function get_rules(model)
     algeqs, obseqs, raterules
 end
 
-function rule_to_var_and_eq(rule)
+function rule_to_var_and_eq(model, rule; volume_correction=nothing)
     sym = Symbol(rule.id)
     var = Symbolics.unwrap(first(@variables $sym(Catalyst.DEFAULT_IV)))
-    assignment = Num(convert(Num, rule.math, convert_time = (x::SBML.MathTime) -> Catalyst.DEFAULT_IV))
+    math = SBML.extensive_kinetic_math(model, rule.math)
+    if !isnothing(volume_correction)
+        math = SBML.MathApply("*", [SBML.MathIdent(volume_correction), math])
+    end
+    assignment = Num(convert(Num, math, convert_time = (x::SBML.MathTime) -> Catalyst.DEFAULT_IV))
     var, assignment
+end
+
+handle_empty_compartment_size = (id::String) -> throw(
+    DomainError(
+        "Non-substance-only-unit reference to species `$id' in an unsized compartment."
+    ))
+
+function volume_correction(model, s_id)
+    sp = model.species[s_id]
+    comp = model.compartments[sp.compartment]
+    SBML.hassize(sp.compartment, model) || SBML.handle_empty_compartment_size(s_id)
+    comp.spatial_dimensions != 0 && sp.only_substance_units == false ? sp.compartment : nothing
 end
 
 function assignmentrule_to_obseq(model, rule)
     if haskey(model.species, rule.id)
-        var, assignment = rule_to_var_and_eq(rule)
+        vc = volume_correction(model, rule.id)
+        var, assignment = rule_to_var_and_eq(model, rule; volume_correction=vc)
         return var ~ assignment
     elseif haskey(model.compartments, rule.id)
-        var, assignment = rule_to_var_and_eq(rule)
+        var, assignment = rule_to_var_and_eq(model, rule)
         return var ~ assignment
     elseif haskey(model.parameters, rule.id)
-        var, assignment = rule_to_var_and_eq(rule)
+        var, assignment = rule_to_var_and_eq(model, rule)
         return var ~ assignment
     else
         error("invalid rule: $rule")
@@ -384,13 +402,14 @@ end
 function raterule_to_diffeq(model, rule)
     D = Differential(Catalyst.DEFAULT_IV)
     if haskey(model.species, rule.id)
-        var, assignment = rule_to_var_and_eq(rule)
+        vc = volume_correction(model, rule.id)
+        var, assignment = rule_to_var_and_eq(model, rule; volume_correction=vc)
         return D(var) ~ assignment
     elseif haskey(model.compartments, rule.id)
-        var, assignment = rule_to_var_and_eq(rule)
+        var, assignment = rule_to_var_and_eq(model, rule)
         return D(var) ~ assignment
     elseif haskey(model.parameters, rule.id)
-        var, assignment = rule_to_var_and_eq(rule)
+        var, assignment = rule_to_var_and_eq(model, rule)
         return D(var) ~ assignment
     else
         error()
@@ -404,18 +423,44 @@ end
 Note that one limitation of Event support is that ReactionSystems do not have a field for it yet.
 So in order for the system to have events, you must call `ODESystem(m::SBML.Model)` rather than `convert(ODESystem, ReactionSystem(m::SBML.Model))`
 """
+# function get_events(model, rs)
+#     subsdict = _get_substitutions(model)
+#     evs = model.events
+#     mtk_evs = Pair{Vector{Equation},Vector{Equation}}[]
+#     for (_, e) in evs
+#         args = convert(Num, e.trigger; convert_time = (x::SBML.MathTime) -> Catalyst.DEFAULT_IV).val.arguments
+#         lhs, rhs = map(x -> substitute(x, subsdict), args)
+#         trig = [lhs ~ rhs]
+#         mtk_evas = Equation[]
+#         for eva in e.event_assignments
+#             var = Symbol(eva.variable)
+#             pair = ModelingToolkit.getvar(rs, var) ~ convert(Num, eva.math)
+#             push!(mtk_evas, pair)
+#         end
+#         push!(mtk_evs, trig => mtk_evas)
+#     end
+#     mtk_evs
+# end
+
 function get_events(model, rs)
     subsdict = _get_substitutions(model)
     evs = model.events
     mtk_evs = Pair{Vector{Equation},Vector{Equation}}[]
     for (_, e) in evs
-        args = convert(Num, e.trigger; convert_time = (x::SBML.MathTime) -> Catalyst.DEFAULT_IV).val.arguments
+        trigger = SBML.extensive_kinetic_math(model, e.trigger)
+        args = convert(Num, trigger; convert_time = (x::SBML.MathTime) -> Catalyst.DEFAULT_IV).val.arguments
         lhs, rhs = map(x -> substitute(x, subsdict), args)
         trig = [lhs ~ rhs]
         mtk_evas = Equation[]
         for eva in e.event_assignments
+            if haskey(model.species, eva.variable)
+                vc = volume_correction(model, eva.variable)
+                if !isnothing(vc)
+                    math = SBML.MathApply("*", [SBML.MathIdent(vc), eva.math])
+                end
+            end
             var = Symbol(eva.variable)
-            pair = ModelingToolkit.getvar(rs, var) ~ convert(Num, eva.math)
+            pair = ModelingToolkit.getvar(rs, var) ~ convert(Num, math)
             push!(mtk_evas, pair)
         end
         push!(mtk_evs, trig => mtk_evas)

@@ -164,8 +164,6 @@ sol = solve(oprob, Tsit5())
 @test_nowarn SBMLToolkit.checksupport(sbmlfile)
 @test_throws ErrorException SBMLToolkit.checksupport(joinpath("data", "unsupported.sbml"))
 
-
-
 # Test _get_substitutions
 truesubs = Dict(Num(Symbolics.variable(:c1; T = Real)) => c1,
     Num(Symbolics.variable(:k1; T = Real)) => k1,
