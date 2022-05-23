@@ -423,25 +423,6 @@ end
 Note that one limitation of Event support is that ReactionSystems do not have a field for it yet.
 So in order for the system to have events, you must call `ODESystem(m::SBML.Model)` rather than `convert(ODESystem, ReactionSystem(m::SBML.Model))`
 """
-# function get_events(model, rs)
-#     subsdict = _get_substitutions(model)
-#     evs = model.events
-#     mtk_evs = Pair{Vector{Equation},Vector{Equation}}[]
-#     for (_, e) in evs
-#         args = convert(Num, e.trigger; convert_time = (x::SBML.MathTime) -> Catalyst.DEFAULT_IV).val.arguments
-#         lhs, rhs = map(x -> substitute(x, subsdict), args)
-#         trig = [lhs ~ rhs]
-#         mtk_evas = Equation[]
-#         for eva in e.event_assignments
-#             var = Symbol(eva.variable)
-#             pair = ModelingToolkit.getvar(rs, var) ~ convert(Num, eva.math)
-#             push!(mtk_evas, pair)
-#         end
-#         push!(mtk_evs, trig => mtk_evas)
-#     end
-#     mtk_evs
-# end
-
 function get_events(model, rs)
     subsdict = _get_substitutions(model)
     evs = model.events
