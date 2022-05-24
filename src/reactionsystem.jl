@@ -1,3 +1,23 @@
+const interpret_as_num(x::SBML.Math) = SBML.interpret_math(
+    x;
+    map_apply = (fn::String, args, interpret::Function) ->
+        Num(symbolics_mapping[fn](interpret.(args)...)),
+    map_const = (x::SBML.MathConst) -> Num(SBML.default_constants[x.id]),
+    map_ident = map_symbolics_time_ident,
+    map_lambda = (x::SBML.MathLambda) ->
+        throw(ErrorException("Symbolics.jl does not support lambda functions")),
+    map_time = map_symbolics_time_ident,
+    map_value = (x::SBML.MathVal) -> Num(x.val),
+)
+
+map_symbolics_time_ident(x) = begin
+    sym = Symbol(x.id)
+    Symbolics.unwrap(first(@variables $sym))
+end
+
+symbolicsRateOf(x) = Symbolics.Differential(convert(Num, MathTime("t")))(x)
+symbolics_mapping = Dict(SBML.default_function_mapping..., "rateOf" => symbolicsRateOf)
+
 """ ReactionSystem constructor """
 function Catalyst.ReactionSystem(model::SBML.Model; kwargs...)  # Todo: requires unique parameters (i.e. SBML must have been imported with localParameter promotion in libSBML)
     rxs = mtk_reactions(model)
@@ -99,8 +119,7 @@ function mtk_reactions(model::SBML.Model)
         extensive_math = SBML.extensive_kinetic_math(
             model, reaction.kinetic_math,
             handle_empty_compartment_size = _ -> 1.0)
-        symbolic_math = Num(convert(Num, extensive_math,
-            convert_time = (x::SBML.MathTime) -> Catalyst.DEFAULT_IV))
+        symbolic_math = interpret_as_num(extensive_math)
 
         rstoich = reaction.reactants
         pstoich = reaction.products
@@ -315,7 +334,7 @@ function get_rules(model)
     rules = model.rules
     for r in rules
         if r isa SBML.AlgebraicRule
-            push!(algeqs, 0 ~ convert(Num, r.math))
+            push!(algeqs, 0 ~ interpret_as_num(r.math))
         elseif r isa SBML.AssignmentRule
             push!(obseqs, assignmentrule_to_obseq(model, r))
         elseif r isa SBML.RateRule
@@ -331,7 +350,7 @@ end
 function rule_to_var_and_eq(rule)
     sym = Symbol(rule.id)
     var = Symbolics.unwrap(first(@variables $sym(Catalyst.DEFAULT_IV)))
-    assignment = Num(convert(Num, rule.math, convert_time = (x::SBML.MathTime) -> Catalyst.DEFAULT_IV))
+    assignment = interpret_as_num(rule.math)
     var, assignment
 end
 
@@ -378,13 +397,13 @@ function get_events(model, rs)
     evs = model.events
     mtk_evs = Pair{Vector{Equation},Vector{Equation}}[]
     for (_, e) in evs
-        args = convert(Num, e.trigger; convert_time = (x::SBML.MathTime) -> Catalyst.DEFAULT_IV).val.arguments
+        args = interpret_as_num(e.trigger)
         lhs, rhs = map(x -> substitute(x, subsdict), args)
         trig = [lhs ~ rhs]
         mtk_evas = Equation[]
         for eva in e.event_assignments
             var = Symbol(eva.variable)
-            pair = ModelingToolkit.getvar(rs, var) ~ convert(Num, eva.math)
+            pair = ModelingToolkit.getvar(rs, var) ~ interpret_as_num(eva.math)
             push!(mtk_evas, pair)
         end
         push!(mtk_evs, trig => mtk_evas)
