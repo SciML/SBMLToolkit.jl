@@ -1,3 +1,13 @@
+# Conversion to symbolics
+symbolicsRateOf(x) = Symbolics.Differential(convert(Num, MathTime("t")))(x)
+
+symbolics_mapping = Dict(SBML.default_function_mapping..., "rateOf" => symbolicsRateOf)
+
+map_symbolics_time_ident(x) = begin
+    sym = Symbol(x.id)
+    Symbolics.unwrap(first(@variables $sym))
+end
+
 const interpret_as_num(x::SBML.Math) = SBML.interpret_math(
     x;
     map_apply = (fn::String, args, interpret::Function) ->
@@ -9,14 +19,6 @@ const interpret_as_num(x::SBML.Math) = SBML.interpret_math(
     map_time = map_symbolics_time_ident,
     map_value = (x::SBML.MathVal) -> Num(x.val),
 )
-
-map_symbolics_time_ident(x) = begin
-    sym = Symbol(x.id)
-    Symbolics.unwrap(first(@variables $sym))
-end
-
-symbolicsRateOf(x) = Symbolics.Differential(convert(Num, MathTime("t")))(x)
-symbolics_mapping = Dict(SBML.default_function_mapping..., "rateOf" => symbolicsRateOf)
 
 """ ReactionSystem constructor """
 function Catalyst.ReactionSystem(model::SBML.Model; kwargs...)  # Todo: requires unique parameters (i.e. SBML must have been imported with localParameter promotion in libSBML)
