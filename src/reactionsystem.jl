@@ -5,7 +5,7 @@ symbolics_mapping = Dict(SBML.default_function_mapping..., "rateOf" => symbolics
 
 map_symbolics_time_ident(x) = begin
     sym = Symbol(x.id)
-    Symbolics.unwrap(first(@variables $sym))
+    first(@variables $sym)
 end
 
 const interpret_as_num(x::SBML.Math) = SBML.interpret_math(
@@ -16,7 +16,7 @@ const interpret_as_num(x::SBML.Math) = SBML.interpret_math(
     map_ident = map_symbolics_time_ident,
     map_lambda = (x::SBML.MathLambda) ->
         throw(ErrorException("Symbolics.jl does not support lambda functions")),
-    map_time = map_symbolics_time_ident,
+    map_time = (x::SBML.MathTime) -> Catalyst.DEFAULT_IV,
     map_value = (x::SBML.MathVal) -> Num(x.val),
 )
 
@@ -399,13 +399,17 @@ function get_events(model, rs)
     evs = model.events
     mtk_evs = Pair{Vector{Equation},Vector{Equation}}[]
     for (_, e) in evs
-        args = interpret_as_num(e.trigger)
+        println(e.trigger)
+        println(interpret_as_num(e.trigger))
+        println(Symbolics.unwrap(interpret_as_num(e.trigger)))
+        args = Symbolics.unwrap(interpret_as_num(e.trigger))
         lhs, rhs = map(x -> substitute(x, subsdict), args)
         trig = [lhs ~ rhs]
         mtk_evas = Equation[]
+        println(typeof(trig))
         for eva in e.event_assignments
             var = Symbol(eva.variable)
-            pair = ModelingToolkit.getvar(rs, var) ~ interpret_as_num(eva.math)
+            pair = ModelingToolkit.getvar(rs, var) ~ Sybmolics.unwrap(interpret_as_num(eva.math))
             push!(mtk_evas, pair)
         end
         push!(mtk_evs, trig => mtk_evas)

@@ -196,18 +196,18 @@ constmod = SBML.Model(
 
 # Test getunidirectionalcomponents
 km = SBML.MathApply("-", SBML.Math[KINETICMATH1, SBML.MathIdent("c1")])
-sm = convert(Num, km)
+sm = SBMLToolkit.interpret_as_num(km)
 kl = SBMLToolkit.getunidirectionalcomponents(sm)
 @test isequal(kl, (k1, c1))
 
 km = SBML.MathApply("-", SBML.Math[KINETICMATH1, KINETICMATH2])
-sm = convert(Num, km)
+sm = SBMLToolkit.interpret_as_num(km)
 fw, rv = SBMLToolkit.getunidirectionalcomponents(sm)
 rv = substitute(rv, Dict(SBMLToolkit.create_var("s2") => SBMLToolkit.create_var("s2", Catalyst.DEFAULT_IV)))
 @test isequal((fw, rv), (k1, k1 * s2))
 
 km = SBML.MathIdent("s1s2")
-sm1 = convert(Num, km)
+sm1 = SBMLToolkit.interpret_as_num(km)
 sm2 = sm - sm1
 @test_throws ErrorException SBMLToolkit.getunidirectionalcomponents(sm2)
 @test_throws ErrorException SBMLToolkit.getunidirectionalcomponents(:k1)
