@@ -878,7 +878,7 @@ version = "0.5.3"
 
 [[SBML]]
 deps = ["DocStringExtensions", "IfElse", "Libdl", "SBML_jll", "SparseArrays", "Unitful"]
-git-tree-sha1 = "3640619dfb0577cac56203e8695a53230b3ba603"
+git-tree-sha1 = "7eb2572d07875181278fb863678a8899915d66fd"
 repo-rev = "master"
 repo-url = "https://github.com/LCSB-BioCore/SBML.jl.git"
 uuid = "e5567a89-2604-4b09-9718-f5f78e97c3bb"

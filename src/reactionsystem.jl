@@ -10,11 +10,11 @@ end
 
 const interpret_as_num(x::SBML.Math) = SBML.interpret_math(
     x;
-    map_apply = (fn::String, args, interpret::Function) ->
-        Num(symbolics_mapping[fn](interpret.(args)...)),
+    map_apply = (x::SBML.MathApply, interpret::Function) ->
+        Num(symbolics_mapping[x.fn](interpret.(x.args)...)),
     map_const = (x::SBML.MathConst) -> Num(SBML.default_constants[x.id]),
     map_ident = map_symbolics_time_ident,
-    map_lambda = (x::SBML.MathLambda) ->
+    map_lambda = (_, _) ->
         throw(ErrorException("Symbolics.jl does not support lambda functions")),
     map_time = (x::SBML.MathTime) -> Catalyst.DEFAULT_IV,
     map_value = (x::SBML.MathVal) -> Num(x.val),
@@ -55,37 +55,6 @@ function checksupport(filename::String)
     occursin("<sbml xmlns:fbc=", sbml) && throw(ErrorException("This model was designed for constrained-based optimisation. Please use COBREXA.jl instead of SBMLToolkit."))
 end
 
-""" Convert intensive to extensive mathematical expression """
-function to_extensive_math!(model::SBML.Model)
-    function conv(x::SBML.MathApply)
-        SBML.MathApply(x.fn, SBML.Math[conv(x) for x in x.args])
-    end
-    function conv(x::SBML.MathIdent)
-        x_new = x
-        if x.id in keys(model.species)
-            specie = model.species[x.id]
-            if !specie.only_substance_units
-                compartment = model.compartments[specie.compartment]
-                if isnothing(compartment.size)
-                    @warn "Specie $(x.id) hasOnlySubstanceUnits but its compartment $(compartment.name) has no size. Cannot auto-correct the rate laws $(x.id) is involved in. Please check manually."
-                else
-                    x_new = SBML.MathApply("/", SBML.Math[x,
-                        SBML.MathVal(compartment.size)])
-                    specie.only_substance_units = true
-                end
-            end
-        end
-        x_new
-    end
-    conv(x::SBML.MathVal) = x
-    conv(x::SBML.MathLambda) =
-        throw(DomainError(x, "can't translate lambdas to extensive units"))
-    for reaction in values(model.reactions)
-        reaction.kinetic_math = conv(reaction.kinetic_math)
-    end
-    model
-end
-
 """ Get dictonary to change types in kineticLaw """
 function _get_substitutions(model)
     subsdict = Dict()
@@ -119,8 +88,7 @@ function mtk_reactions(model::SBML.Model)
     rxs = []
     for reaction in values(model.reactions)
         extensive_math = SBML.extensive_kinetic_math(
-            model, reaction.kinetic_math,
-            handle_empty_compartment_size = _ -> 1.0)
+            model, reaction.kinetic_math)
         symbolic_math = interpret_as_num(extensive_math)
 
         rstoich = reaction.reactants
@@ -399,17 +367,13 @@ function get_events(model, rs)
     evs = model.events
     mtk_evs = Pair{Vector{Equation},Vector{Equation}}[]
     for (_, e) in evs
-        println(e.trigger)
-        println(interpret_as_num(e.trigger))
-        println(Symbolics.unwrap(interpret_as_num(e.trigger)))
         args = Symbolics.unwrap(interpret_as_num(e.trigger))
-        lhs, rhs = map(x -> substitute(x, subsdict), args)
+        lhs, rhs = map(x -> substitute(x, subsdict), args.arguments)
         trig = [lhs ~ rhs]
         mtk_evas = Equation[]
-        println(typeof(trig))
         for eva in e.event_assignments
             var = Symbol(eva.variable)
-            pair = ModelingToolkit.getvar(rs, var) ~ Sybmolics.unwrap(interpret_as_num(eva.math))
+            pair = ModelingToolkit.getvar(rs, var) ~ Symbolics.unwrap(interpret_as_num(eva.math))
             push!(mtk_evas, pair)
         end
         push!(mtk_evs, trig => mtk_evas)
