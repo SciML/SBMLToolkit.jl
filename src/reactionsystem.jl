@@ -386,7 +386,7 @@ function rule_to_var_and_eq(model, rule; volume_correction=nothing)
     if !isnothing(volume_correction)
         math = SBML.MathApply("*", [SBML.MathIdent(volume_correction), math])
     end
-    assignment = interpret_as_num(rule.math)
+    assignment = interpret_as_num(math)
     var, assignment
 end
 
