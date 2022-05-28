@@ -34,18 +34,6 @@ REACTION3 = SBML.Reaction(
     kinetic_parameters = kinetic_params,
     kinetic_math = KINETICMATH3,
     reversible = true)
-REACTION4 = SBML.Reaction(
-    reactants = Dict("s1" => 1),
-    products = Dict("s1" => 1),
-    kinetic_parameters = kinetic_params,
-    kinetic_math = KINETICMATH1,
-    reversible = false)
-REACTION5 = SBML.Reaction(
-    reactants = Dict(),
-    products = Dict("s3" => 1),
-    kinetic_parameters = kinetic_params,
-    kinetic_math = KINETICMATH1,
-    reversible = false)
 PARAM1 = SBML.Parameter(name = "k1", value = 1.0, constant = true)
 MODEL1 = SBML.Model(
     parameters = Dict("k1" => PARAM1),
@@ -65,25 +53,6 @@ MODEL3 = SBML.Model(
     species = Dict("s1" => SPECIES1),
     reactions = Dict("r3" => REACTION3),
 )
-# MODEL4 = SBML.Model(
-#     parameters = Dict("k1" => PARAM1),
-#     compartments = Dict("c1" => COMP1),
-#     species = Dict("s1" => SPECIES1),
-#     reactions = Dict("r4" => REACTION4),
-# )
-# MODEL5 = SBML.Model(
-#     parameters = Dict("k1" => PARAM1),
-#     compartments = Dict("c1" => COMP1),
-#     species = Dict("s3" => SPECIES3),
-#     reactions = Dict("r5" => REACTION5),
-# )
-# MODEL6 = SBML.Model(
-#     # parameters = Dict("k1" => PARAM1),
-#     # compartments = Dict("c1" => COMP1),
-#     species = Dict("s2" => SPECIES2),
-#     # reactions = Dict("r2" => REACTION2),
-#     rules = SBML.Rule[SBML.AlgebraicRule(KINETICMATH2)]
-# )
 
 # Test ReactionSystem constructor
 rs = ReactionSystem(MODEL1)
