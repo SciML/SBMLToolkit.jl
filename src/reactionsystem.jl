@@ -1,3 +1,25 @@
+# Conversion to symbolics
+symbolicsRateOf(x) = Symbolics.Differential(convert(Num, MathTime("t")))(x)
+
+symbolics_mapping = Dict(SBML.default_function_mapping..., "rateOf" => symbolicsRateOf)
+
+map_symbolics_time_ident(x) = begin
+    sym = Symbol(x.id)
+    first(@variables $sym)
+end
+
+const interpret_as_num(x::SBML.Math) = SBML.interpret_math(
+    x;
+    map_apply = (x::SBML.MathApply, interpret::Function) ->
+        Num(symbolics_mapping[x.fn](interpret.(x.args)...)),
+    map_const = (x::SBML.MathConst) -> Num(SBML.default_constants[x.id]),
+    map_ident = map_symbolics_time_ident,
+    map_lambda = (_, _) ->
+        throw(ErrorException("Symbolics.jl does not support lambda functions")),
+    map_time = (x::SBML.MathTime) -> Catalyst.DEFAULT_IV,
+    map_value = (x::SBML.MathVal) -> Num(x.val),
+)
+
 """ ReactionSystem constructor """
 function Catalyst.ReactionSystem(model::SBML.Model; kwargs...)  # Todo: requires unique parameters (i.e. SBML must have been imported with localParameter promotion in libSBML)
     # length(model.events) > 0 ? error("Model contains events. Please import with `ODESystem(model)`") : nothing  @Anand: how to suppress this when called from ODESystem
@@ -143,10 +165,8 @@ function mtk_reactions(model::SBML.Model)
     rxs = []
     for reaction in values(model.reactions)
         extensive_math = SBML.extensive_kinetic_math(
-            model, reaction.kinetic_math,
-            handle_empty_compartment_size = _ -> 1.0)  # PL: better default to the error here.
-        symbolic_math = Num(convert(Num, extensive_math,
-            convert_time = (x::SBML.MathTime) -> Catalyst.DEFAULT_IV))
+            model, reaction.kinetic_math)
+        symbolic_math = interpret_as_num(extensive_math)
 
         rstoich = reaction.reactants
         pstoich = reaction.products
@@ -346,8 +366,7 @@ function get_rules(model)
     rules = model.rules
     for r in rules
         if r isa SBML.AlgebraicRule
-            math = SBML.extensive_kinetic_math(model, r.math)
-            push!(algeqs, 0 ~ convert(Num, math))
+            push!(algeqs, 0 ~ interpret_as_num(r.math))
         elseif r isa SBML.AssignmentRule
             push!(obseqs, assignmentrule_to_obseq(model, r))
         elseif r isa SBML.RateRule
@@ -367,7 +386,7 @@ function rule_to_var_and_eq(model, rule; volume_correction=nothing)
     if !isnothing(volume_correction)
         math = SBML.MathApply("*", [SBML.MathIdent(volume_correction), math])
     end
-    assignment = Num(convert(Num, math, convert_time = (x::SBML.MathTime) -> Catalyst.DEFAULT_IV))
+    assignment = interpret_as_num(rule.math)
     var, assignment
 end
 
@@ -429,8 +448,8 @@ function get_events(model, rs)
     mtk_evs = Pair{Vector{Equation},Vector{Equation}}[]
     for (_, e) in evs
         trigger = SBML.extensive_kinetic_math(model, e.trigger)
-        args = convert(Num, trigger; convert_time = (x::SBML.MathTime) -> Catalyst.DEFAULT_IV).val.arguments
-        lhs, rhs = map(x -> substitute(x, subsdict), args)
+        args = Symbolics.unwrap(interpret_as_num(e.trigger))
+        lhs, rhs = map(x -> substitute(x, subsdict), args.arguments)
         trig = [lhs ~ rhs]
         mtk_evas = Equation[]
         for eva in e.event_assignments
@@ -441,7 +460,7 @@ function get_events(model, rs)
                 end
             end
             var = Symbol(eva.variable)
-            pair = ModelingToolkit.getvar(rs, var) ~ convert(Num, math)
+            pair = ModelingToolkit.getvar(rs, var) ~ Symbolics.unwrap(interpret_as_num(eva.math))
             push!(mtk_evas, pair)
         end
         push!(mtk_evs, trig => mtk_evas)
