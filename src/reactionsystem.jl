@@ -398,8 +398,16 @@ handle_empty_compartment_size = (id::String) -> throw(
 function volume_correction(model, s_id)
     sp = model.species[s_id]
     comp = model.compartments[sp.compartment]
-    SBML.hassize(sp.compartment, model) || SBML.handle_empty_compartment_size(s_id)
-    comp.spatial_dimensions != 0 && sp.only_substance_units == false ? sp.compartment : nothing
+    sp.only_substance_units == true && return nothing  
+    isnothing(comp.size) && !SBML.seemsdefined(sp.compartment, model) &&
+        comp.spatial_dimensions != 0 &&  # remove this line when SBML test suite is fixed
+        throw(
+            DomainError(
+                sp.compartment,
+                "compartment size is insufficiently defined",
+            ),
+        )  
+    sp.compartment
 end
 
 function assignmentrule_to_obseq(model, rule)
