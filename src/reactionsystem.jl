@@ -456,7 +456,7 @@ function get_events(model, rs)
     mtk_evs = Pair{Vector{Equation},Vector{Equation}}[]
     for (_, e) in evs
         trigger = SBML.extensive_kinetic_math(model, e.trigger)
-        args = Symbolics.unwrap(interpret_as_num(e.trigger))
+        args = Symbolics.unwrap(interpret_as_num(trigger))
         lhs, rhs = map(x -> substitute(x, subsdict), args.arguments)
         trig = [lhs ~ rhs]
         mtk_evas = Equation[]
@@ -468,7 +468,7 @@ function get_events(model, rs)
                 end
             end
             var = Symbol(eva.variable)
-            pair = ModelingToolkit.getvar(rs, var) ~ Symbolics.unwrap(interpret_as_num(eva.math))
+            pair = ModelingToolkit.getvar(rs, var) ~ Symbolics.unwrap(interpret_as_num(math))
             push!(mtk_evas, pair)
         end
         push!(mtk_evs, trig => mtk_evas)
