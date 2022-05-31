@@ -34,7 +34,7 @@ function Catalyst.ReactionSystem(model::SBML.Model; kwargs...)  # Todo: requires
     for o in obsrules
         defs[o.lhs] = substitute(o.rhs, defs)
     end
-    constraints_sys = ODESystem(vcat(algrules, raterules, obsrules, constant_eqs, unassigned_pars),
+    constraints_sys = ODESystem(vcat(algrules, raterules, obsrules, unassigned_pars),
                                 Catalyst.DEFAULT_IV; name = gensym(:CONSTRAINTS))
 
     # Hacky way to keep zero_ode species with contant=boundaryCondition=false in system
