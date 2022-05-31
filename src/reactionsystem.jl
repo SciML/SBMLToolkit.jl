@@ -30,11 +30,11 @@ function Catalyst.ReactionSystem(model::SBML.Model; kwargs...)  # Todo: requires
 
     algrules, obsrules, raterules = get_rules(model)
     # constant_eqs = fix_constants_at_init(model)  # Todo PL: take this out
-    unassigned_pars = fix_unassigned_nonconstant_par_to_init(model)  # Todo PL: don't fix them to init, make them input=true
+    # unassigned_pars = fix_unassigned_nonconstant_par_to_init(model)  # Todo PL: don't fix them to init, make them input=true
     for o in obsrules
         defs[o.lhs] = substitute(o.rhs, defs)
     end
-    constraints_sys = ODESystem(vcat(algrules, raterules, obsrules, unassigned_pars),
+    constraints_sys = ODESystem(vcat(algrules, raterules, obsrules),
                                 Catalyst.DEFAULT_IV; name = gensym(:CONSTRAINTS))
 
     # Hacky way to keep zero_ode species with contant=boundaryCondition=false in system
@@ -42,7 +42,7 @@ function Catalyst.ReactionSystem(model::SBML.Model; kwargs...)  # Todo: requires
         constraints = constraints_sys, kwargs...)
     odessys = convert(ODESystem, rs; include_zero_odes=true, combinatoric_ratelaws=false)
     unchanged_eqs = fix_zero_odes_to_init(model, equations(odessys))  # Todo PL: Use input=true instead
-    constraints_sys = ODESystem(vcat(algrules, raterules, obsrules, unchanged_eqs, unassigned_pars),
+    constraints_sys = ODESystem(vcat(algrules, raterules, obsrules, unchanged_eqs),
                                 Catalyst.DEFAULT_IV; name = gensym(:CONSTRAINTS))
     ReactionSystem(rxs, Catalyst.DEFAULT_IV, first.(u0map), first.(parammap); defaults = defs, name = gensym(:SBML),
         constraints = constraints_sys, kwargs...)
@@ -93,7 +93,7 @@ function get_algebraic_species(model; kind="species")
 end
 
 function parse_math!(math, algebraic_species, model; kind="species")
-    k = kind == "species" ? model.species : kind == "parameter" ? model.parameters : throw(ArgumentError("kind must be either 'species' or 'parameter'"))
+    k = kind == "species" ? model.species : kind == "parameter" ? model.parameters : kind == "compartment" ? model.compartments : throw(ArgumentError("kind must be either 'species', 'parameter' or 'compartment'"))
     if math isa SBML.MathIdent && math.id in keys(k)
         push!(algebraic_species, math.id)
     elseif math isa Union{SBML.MathApply, SBML.MathLambda}
@@ -279,14 +279,17 @@ end
 
 """ Extract paramap from Model """
 function get_paramap(model)
+    assigned_pars = [r.id for r in values(model.rules) if r isa Union{SBML.AssignmentRule, SBML.RateRule}]
+    algebraic_pars = get_algebraic_species(model; kind="parameter")
     paramap = Pair{Num,Float64}[]
     for (k, v) in model.parameters
-        if v.constant
+        if v.constant || !(k in vcat(assigned_pars, algebraic_pars))
             push!(paramap, Pair(create_param(k, true), v.value))
         end
     end
+    algebraic_comps = get_algebraic_species(model; kind="compartment")
     for (k, v) in model.compartments
-        if !isnothing(v.size) && v.constant
+        if !isnothing(v.size) && (v.constant || !(k in vcat(assigned_pars, algebraic_comps)))
             push!(paramap, Pair(create_param(k, true), v.size))
         end
     end
