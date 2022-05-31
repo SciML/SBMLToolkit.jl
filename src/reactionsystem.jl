@@ -42,7 +42,7 @@ function Catalyst.ReactionSystem(model::SBML.Model; kwargs...)  # Todo: requires
         constraints = constraints_sys, kwargs...)
     odessys = convert(ODESystem, rs; include_zero_odes=true, combinatoric_ratelaws=false)
     unchanged_eqs = fix_zero_odes_to_init(model, equations(odessys))  # Todo PL: Use input=true instead
-    constraints_sys = ODESystem(vcat(algrules, raterules, obsrules, constant_eqs, unchanged_eqs, unassigned_pars),
+    constraints_sys = ODESystem(vcat(algrules, raterules, obsrules, unchanged_eqs, unassigned_pars),
                                 Catalyst.DEFAULT_IV; name = gensym(:CONSTRAINTS))
     ReactionSystem(rxs, Catalyst.DEFAULT_IV, first.(u0map), first.(parammap); defaults = defs, name = gensym(:SBML),
         constraints = constraints_sys, kwargs...)
@@ -282,12 +282,12 @@ function get_paramap(model)
     paramap = Pair{Num,Float64}[]
     for (k, v) in model.parameters
         if v.constant
-            push!(paramap, Pair(create_param(k), v.value))
+            push!(paramap, Pair(create_param(k, true), v.value))
         end
     end
     for (k, v) in model.compartments
         if !isnothing(v.size) && v.constant
-            push!(paramap, Pair(create_param(k), v.size))
+            push!(paramap, Pair(create_param(k, true), v.size))
         end
     end
     paramap
@@ -355,6 +355,10 @@ end
 function create_param(x)
     sym = Symbol(x)
     Symbolics.unwrap(first(@parameters $sym))
+end
+function create_param(x, input)
+    sym = Symbol(x)
+    Symbolics.unwrap(first(@parameters $sym [input=input]))
 end
 
 function get_rules(model)
