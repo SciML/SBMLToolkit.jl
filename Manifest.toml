@@ -118,10 +118,12 @@ uuid = "49dc2e85-a5d0-5ad3-a950-438e2897f1b9"
 version = "0.5.1"
 
 [[Catalyst]]
-deps = ["AbstractAlgebra", "DataStructures", "DiffEqBase", "DiffEqJump", "DocStringExtensions", "Graphs", "LaTeXStrings", "Latexify", "MacroTools", "ModelingToolkit", "Parameters", "Reexport", "Requires", "SparseArrays", "Symbolics"]
-git-tree-sha1 = "6374f14912732479aca4e61c42cf1cc79c2af25c"
+deps = ["DataStructures", "DiffEqBase", "DiffEqJump", "DocStringExtensions", "Graphs", "LaTeXStrings", "Latexify", "MacroTools", "ModelingToolkit", "Parameters", "Reexport", "Requires", "SparseArrays", "Symbolics"]
+git-tree-sha1 = "be7c3bd7b947aa73910fc41748f02efa367b3af3"
+repo-rev = "constant_and_bc_species"
+repo-url = "https://github.com/SciML/Catalyst.jl.git"
 uuid = "479239e8-5488-4da2-87a7-35f2df7eef83"
-version = "10.8.0"
+version = "11.0.0-DEV"
 
 [[ChainRulesCore]]
 deps = ["Compat", "LinearAlgebra", "SparseArrays"]

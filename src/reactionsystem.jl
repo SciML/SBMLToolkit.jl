@@ -8,7 +8,7 @@ map_symbolics_time_ident(x) = begin
     first(@variables $sym)
 end
 
-const interpret_as_num(x::SBML.Math) = SBML.interpret_math(
+interpret_as_num(x::SBML.Math) = SBML.interpret_math(
     x;
     map_apply = (x::SBML.MathApply, interpret::Function) ->
         Num(symbolics_mapping[x.fn](interpret.(x.args)...)),
@@ -29,8 +29,8 @@ function Catalyst.ReactionSystem(model::SBML.Model; kwargs...)  # Todo: requires
     defs = ModelingToolkit._merge(Dict(u0map), Dict(parammap))
 
     algrules, obsrules, raterules = get_rules(model)
-    constant_eqs = fix_constants_at_init(model)
-    unassigned_pars = fix_unassigned_nonconstant_par_to_init(model)
+    constant_eqs = fix_constants_at_init(model)  # Todo PL: take this out
+    unassigned_pars = fix_unassigned_nonconstant_par_to_init(model)  # Todo PL: don't fix them to init, make them input=true
     for o in obsrules
         defs[o.lhs] = substitute(o.rhs, defs)
     end
@@ -41,7 +41,7 @@ function Catalyst.ReactionSystem(model::SBML.Model; kwargs...)  # Todo: requires
     rs = ReactionSystem(rxs, Catalyst.DEFAULT_IV, first.(u0map), first.(parammap); defaults = defs, name = gensym(:SBML),
         constraints = constraints_sys, kwargs...)
     odessys = convert(ODESystem, rs; include_zero_odes=true, combinatoric_ratelaws=false)
-    unchanged_eqs = fix_zero_odes_to_init(model, equations(odessys))
+    unchanged_eqs = fix_zero_odes_to_init(model, equations(odessys))  # Todo PL: Use input=true instead
     constraints_sys = ODESystem(vcat(algrules, raterules, obsrules, constant_eqs, unchanged_eqs, unassigned_pars),
                                 Catalyst.DEFAULT_IV; name = gensym(:CONSTRAINTS))
     ReactionSystem(rxs, Catalyst.DEFAULT_IV, first.(u0map), first.(parammap); defaults = defs, name = gensym(:SBML),
@@ -55,7 +55,7 @@ function fix_zero_odes_to_init(model, equations)
     assigned_species = [r.id for r in values(model.rules) if r isa Union{SBML.AssignmentRule, SBML.RateRule}]
     algebraic_species = get_algebraic_species(model)
     for (k, v) in model.species
-        var = create_var(k, Catalyst.DEFAULT_IV)
+        var = create_var(k, Catalyst.DEFAULT_IV; constant=v.constant, boundary_condition=v.boundary_condition)
         if v.constant == false && !(k in vcat(assigned_species, algebraic_species))
             if v.boundary_condition == false
                 eq = D(var) ~ 0
@@ -107,7 +107,7 @@ function fix_constants_at_init(model)
     inits = Dict(SBML.initial_amounts(model, convert_concentrations = true))
     for (k, v) in model.species
         if v.constant==true
-            push!(fixed_at_init, create_var(k, Catalyst.DEFAULT_IV) ~ inits[k])
+            push!(fixed_at_init, create_var(k, Catalyst.DEFAULT_IV; constant=v.constant, boundary_condition=v.boundary_condition) ~ inits[k])
         end
     end
     fixed_at_init
@@ -136,7 +136,7 @@ end
 function _get_substitutions(model)
     subsdict = Dict()
     for (k, v) in model.species
-        push!(subsdict, Pair(create_var(k), create_var(k, Catalyst.DEFAULT_IV)))
+        push!(subsdict, Pair(create_var(k), create_var(k, Catalyst.DEFAULT_IV; constant=v.constant, boundary_condition=v.boundary_condition)))
     end
     for (k, v) in model.parameters
         if v.constant !== nothing && v.constant
@@ -299,7 +299,7 @@ function get_u0map(model)
     inits = Dict(SBML.initial_amounts(model, convert_concentrations = true))
 
     for (k, v) in model.species
-        p = create_var(k, Catalyst.DEFAULT_IV) => inits[k]
+        p = create_var(k, Catalyst.DEFAULT_IV; constant=v.constant, boundary_condition=v.boundary_condition) => inits[k]
         push!(u0s, p)
     end
 
@@ -347,9 +347,10 @@ function create_var(x)
     sym = Symbol(x)
     Symbolics.unwrap(first(@variables $sym))
 end
-function create_var(x, iv)
+function create_var(x, iv; constant=false, boundary_condition=false)
     sym = Symbol(x)
-    Symbolics.unwrap(first(@variables $sym(iv)))
+    # Symbolics.unwrap(first(@variables $sym(iv)))
+    Symbolics.unwrap(first(@variables $sym(iv) [isconstant=constant, isbc=boundary_condition]))
 end
 function create_param(x)
     sym = Symbol(x)
