@@ -249,6 +249,8 @@ sm2 = sm - sm1
 trueparamap = [k1 => 1.0, c1 => 2.0]
 paramap = SBMLToolkit.get_paramap(MODEL1)
 @test isequal(paramap, trueparamap)
+@test isinput(k1)
+@test isinput(c1)
 
 # Test getmassaction
 @test isequal(SBMLToolkit.getmassaction(k1 * s1, [s1], [1]), k1)  # Case hOSU=true
