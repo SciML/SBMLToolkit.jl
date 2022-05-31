@@ -280,10 +280,10 @@ fixed = SBMLToolkit.fix_unassigned_nonconstant_par_to_init(m)
 fixed_true = Equation[k_nonconstant ~ 1.0]
 @test isequal(fixed, fixed_true)
 
-# test fix_constants_at_init
-fixed = SBMLToolkit.fix_constants_at_init(MODEL5)
-fixed_true = Equation[s3 ~ 1.0]
-@test isequal(fixed, fixed_true)
+# # test fix_constants_at_init
+# fixed = SBMLToolkit.fix_constants_at_init(MODEL5)
+# fixed_true = Equation[s3 ~ 1.0]
+# @test isequal(fixed, fixed_true)
 
 # test parse_math!
 res = String[]

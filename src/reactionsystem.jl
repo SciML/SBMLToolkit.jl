@@ -29,7 +29,7 @@ function Catalyst.ReactionSystem(model::SBML.Model; kwargs...)  # Todo: requires
     defs = ModelingToolkit._merge(Dict(u0map), Dict(parammap))
 
     algrules, obsrules, raterules = get_rules(model)
-    constant_eqs = fix_constants_at_init(model)  # Todo PL: take this out
+    # constant_eqs = fix_constants_at_init(model)  # Todo PL: take this out
     unassigned_pars = fix_unassigned_nonconstant_par_to_init(model)  # Todo PL: don't fix them to init, make them input=true
     for o in obsrules
         defs[o.lhs] = substitute(o.rhs, defs)
@@ -102,16 +102,16 @@ function parse_math!(math, algebraic_species, model; kind="species")
     nothing
 end
 
-function fix_constants_at_init(model)
-    fixed_at_init = Equation[]
-    inits = Dict(SBML.initial_amounts(model, convert_concentrations = true))
-    for (k, v) in model.species
-        if v.constant==true
-            push!(fixed_at_init, create_var(k, Catalyst.DEFAULT_IV; constant=v.constant, boundary_condition=v.boundary_condition) ~ inits[k])
-        end
-    end
-    fixed_at_init
-end
+# function fix_constants_at_init(model)
+#     fixed_at_init = Equation[]
+#     inits = Dict(SBML.initial_amounts(model, convert_concentrations = true))
+#     for (k, v) in model.species
+#         if v.constant==true
+#             push!(fixed_at_init, create_var(k, Catalyst.DEFAULT_IV; constant=v.constant, boundary_condition=v.boundary_condition) ~ inits[k])
+#         end
+#     end
+#     fixed_at_init
+# end
 
 """ ODESystem constructor """
 function ModelingToolkit.ODESystem(model::SBML.Model; include_zero_odes = false, kwargs...)
