@@ -249,28 +249,28 @@ sm2 = sm - sm1
 trueparamap = [k1 => 1.0, c1 => 2.0]
 paramap = SBMLToolkit.get_paramap(MODEL1)
 @test isequal(paramap, trueparamap)
-@test isinput(first(paramap[1]))
-@test isinput(first(paramap[2]))
+# @test isinput(first(paramap[1]))
+# @test isinput(first(paramap[2]))
 
-p = SBML.Parameter(name = "k1", value = 1.0, constant=false)
-m = SBML.Model(parameters = Dict("k1" => p))
-paramap = SBMLToolkit.get_paramap(m)
-@test isinput(first(paramap[1]))
-m = SBML.Model(
-    parameters = Dict("k1" => p),
-    rules = SBML.Rule[SBML.RateRule("k1", KINETICMATH2)])
-paramap = SBMLToolkit.get_paramap(m)
-@test !isinput(first(paramap[1]))
+# p = SBML.Parameter(name = "k1", value = 1.0, constant=false)
+# m = SBML.Model(parameters = Dict("k1" => p))
+# paramap = SBMLToolkit.get_paramap(m)
+# @test isinput(first(paramap[1]))
+# m = SBML.Model(
+#     parameters = Dict("k1" => p),
+#     rules = SBML.Rule[SBML.RateRule("k1", KINETICMATH2)])
+# paramap = SBMLToolkit.get_paramap(m)
+# @test !isinput(first(paramap[1]))
 
-c = SBML.Compartment(name = "c1", value = 1.0, constant=false)
-m = SBML.Model(compartments = Dict("c1" => c))
-paramap = SBMLToolkit.get_paramap(m)
-@test isinput(first(paramap[1]))
-m = SBML.Model(
-    compartments = Dict("c1" => p),
-    rules = SBML.Rule[SBML.RateRule("c1", KINETICMATH2)])
-paramap = SBMLToolkit.get_paramap(m)
-@test !isinput(first(paramap[1]))
+# c = SBML.Compartment("c1", false, 3, 1.0, "nl", nothing, nothing)
+# m = SBML.Model(compartments = Dict("c1" => c))
+# paramap = SBMLToolkit.get_paramap(m)
+# @test isinput(first(paramap[1]))
+# m = SBML.Model(
+#     compartments = Dict("c1" => c),
+#     rules = SBML.Rule[SBML.RateRule("c1", KINETICMATH2)])
+# paramap = SBMLToolkit.get_paramap(m)
+# @test !isinput(first(paramap[1]))
 
 # Test getmassaction
 @test isequal(SBMLToolkit.getmassaction(k1 * s1, [s1], [1]), k1)  # Case hOSU=true

@@ -30,11 +30,11 @@ function Catalyst.ReactionSystem(model::SBML.Model; kwargs...)  # Todo: requires
 
     algrules, obsrules, raterules = get_rules(model)
     # constant_eqs = fix_constants_at_init(model)  # Todo PL: take this out
-    # unassigned_pars = fix_unassigned_nonconstant_par_to_init(model)  # Todo PL: don't fix them to init, make them input=true
+    unassigned_pars = fix_unassigned_nonconstant_par_to_init(model)  # @Sam: if I do not do that, there are too few equations. Do you have better suggestions?
     for o in obsrules
         defs[o.lhs] = substitute(o.rhs, defs)
     end
-    constraints_sys = ODESystem(vcat(algrules, raterules, obsrules),
+    constraints_sys = ODESystem(vcat(algrules, raterules, obsrules, unassigned_pars),
                                 Catalyst.DEFAULT_IV; name = gensym(:CONSTRAINTS))
 
     # Hacky way to keep zero_ode species with contant=boundaryCondition=false in system
@@ -42,7 +42,7 @@ function Catalyst.ReactionSystem(model::SBML.Model; kwargs...)  # Todo: requires
         constraints = constraints_sys, kwargs...)
     odessys = convert(ODESystem, rs; include_zero_odes=true, combinatoric_ratelaws=false)
     unchanged_eqs = fix_zero_odes_to_init(model, equations(odessys))  # Todo PL: Use input=true instead
-    constraints_sys = ODESystem(vcat(algrules, raterules, obsrules, unchanged_eqs),
+    constraints_sys = ODESystem(vcat(algrules, raterules, obsrules, unassigned_pars, unchanged_eqs),
                                 Catalyst.DEFAULT_IV; name = gensym(:CONSTRAINTS))
     ReactionSystem(rxs, Catalyst.DEFAULT_IV, first.(u0map), first.(parammap); defaults = defs, name = gensym(:SBML),
         constraints = constraints_sys, kwargs...)
@@ -278,19 +278,20 @@ function getunidirectionalcomponents(bidirectional_math)
 end
 
 """ Extract paramap from Model """
-function get_paramap(model)
+function get_paramap(model)  # Todo PL: merge with get_u0map.
     assigned_pars = [r.id for r in values(model.rules) if r isa Union{SBML.AssignmentRule, SBML.RateRule}]
     algebraic_pars = get_algebraic_species(model; kind="parameter")
     paramap = Pair{Num,Float64}[]
     for (k, v) in model.parameters
-        if v.constant || !(k in vcat(assigned_pars, algebraic_pars))
-            push!(paramap, Pair(create_param(k, true), v.value))
+        if v.constant || isnothing(v.value)  # !(k in vcat(assigned_pars, algebraic_pars))
+            push!(paramap, Pair(create_param(k), v.value))
         end
     end
     algebraic_comps = get_algebraic_species(model; kind="compartment")
     for (k, v) in model.compartments
-        if !isnothing(v.size) && (v.constant || !(k in vcat(assigned_pars, algebraic_comps)))
-            push!(paramap, Pair(create_param(k, true), v.size))
+        # if !isnothing(v.size) && (v.constant || !(k in vcat(assigned_pars, algebraic_comps)))
+        if isnothing(v.size) || v.constant
+            push!(paramap, Pair(create_param(k), v.size))
         end
     end
     paramap
@@ -359,10 +360,10 @@ function create_param(x)
     sym = Symbol(x)
     Symbolics.unwrap(first(@parameters $sym))
 end
-function create_param(x, input)
-    sym = Symbol(x)
-    Symbolics.unwrap(first(@parameters $sym [input=input]))
-end
+# function create_param(x, input)
+#     sym = Symbol(x)
+#     Symbolics.unwrap(first(@parameters $sym [input=input]))
+# end
 
 function get_rules(model)
     subsdict = _get_substitutions(model)
