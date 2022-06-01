@@ -10,7 +10,7 @@ SBML = "e5567a89-2604-4b09-9718-f5f78e97c3bb"
 SymbolicUtils = "d1185830-fcd6-423d-90d6-eec64667417b"
 
 [compat]
-Catalyst = "9, 10"
+Catalyst = "9, 10, 11"
 MathML = "0.1"
 SBML = "0.10"
 SymbolicUtils = "0.17, 0.18, 0.19"
