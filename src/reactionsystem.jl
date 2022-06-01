@@ -41,34 +41,68 @@ function Catalyst.ReactionSystem(model::SBML.Model; kwargs...)  # Todo: requires
     rs = ReactionSystem(rxs, Catalyst.DEFAULT_IV, first.(u0map), first.(parammap); defaults = defs, name = gensym(:SBML),
         constraints = constraints_sys, kwargs...)
     odessys = convert(ODESystem, rs; include_zero_odes=true, combinatoric_ratelaws=false)
-    unchanged_eqs = fix_zero_odes_to_init(model, equations(odessys))  # Todo PL: Use input=true instead
-    constraints_sys = ODESystem(vcat(algrules, raterules, obsrules, unassigned_pars, unchanged_eqs),
+    u0map, fixed_to_init = get_u0map(model, equations(odessys))  # Todo PL: Use input=true instead
+    constraints_sys = ODESystem(vcat(algrules, raterules, obsrules, unassigned_pars, fixed_to_init),
                                 Catalyst.DEFAULT_IV; name = gensym(:CONSTRAINTS))
     ReactionSystem(rxs, Catalyst.DEFAULT_IV, first.(u0map), first.(parammap); defaults = defs, name = gensym(:SBML),
         constraints = constraints_sys, kwargs...)
 end
 
-function fix_zero_odes_to_init(model, equations)
-    fix_to_init = Equation[]
+function get_u0map(model::SBML.Model, equations::Vector{Equation})
     inits = Dict(SBML.initial_amounts(model, convert_concentrations = true))
     D = Differential(Catalyst.DEFAULT_IV)
     assigned_species = [r.id for r in values(model.rules) if r isa Union{SBML.AssignmentRule, SBML.RateRule}]
     algebraic_species = get_algebraic_species(model)
+    u0s = Pair[]
+    fix_to_init = Equation[]
     for (k, v) in model.species
         var = create_var(k, Catalyst.DEFAULT_IV; constant=v.constant, boundary_condition=v.boundary_condition)
-        if v.constant == false && !(k in vcat(assigned_species, algebraic_species))
-            if v.boundary_condition == false
-                eq = D(var) ~ 0
-                if eq in equations
-                    push!(fix_to_init, var ~ inits[k])
-                end
-            elseif v.boundary_condition == true
-                push!(fix_to_init, var ~ inits[k])
-            end
+        search_eq = D(var) ~ 0
+        if v.constant == false && !(k in vcat(assigned_species, algebraic_species)) &&
+            ((v.boundary_condition == false && search_eq in equations) || v.boundary_condition == true)
+            push!(fix_to_init, var ~ inits[k])  # @Sam: Would it make sense to not count these species (i.e. having input=true) when comparing number of species with number of reactions? If not, I need to leave this line here to make sure we have enough equations.
+            p = create_var(k, Catalyst.DEFAULT_IV, true; constant=v.constant, boundary_condition=v.boundary_condition) => inits[k]  # Todo PL: if I fix species to their initial value as done above, they will not get removed. So no need to mark them as `input`.
+        else
+            p = create_var(k, Catalyst.DEFAULT_IV; constant=v.constant, boundary_condition=v.boundary_condition) => inits[k]
+        end
+        push!(u0s, p)
+    end
+
+    for (k, v) in model.compartments
+        if !isnothing(v.size) && !v.constant
+            push!(u0s, Pair(create_var(k, Catalyst.DEFAULT_IV), v.size))
         end
     end
-    fix_to_init
+
+    for (k, v) in model.parameters
+        if !isnothing(v.value) && !v.constant
+            push!(u0s, Pair(create_var(k, Catalyst.DEFAULT_IV), v.value))
+        end
+    end
+    u0s, fix_to_init
 end
+
+# function fix_zero_odes_to_init(model, equations)
+#     fix_to_init = Equation[]
+#     inits = Dict(SBML.initial_amounts(model, convert_concentrations = true))
+#     D = Differential(Catalyst.DEFAULT_IV)
+#     assigned_species = [r.id for r in values(model.rules) if r isa Union{SBML.AssignmentRule, SBML.RateRule}]
+#     algebraic_species = get_algebraic_species(model)
+#     for (k, v) in model.species
+#         var = create_var(k, Catalyst.DEFAULT_IV; constant=v.constant, boundary_condition=v.boundary_condition)
+#         if v.constant == false && !(k in vcat(assigned_species, algebraic_species))
+#             if v.boundary_condition == false
+#                 eq = D(var) ~ 0
+#                 if eq in equations
+#                     push!(fix_to_init, var ~ inits[k])
+#                 end
+#             elseif v.boundary_condition == true
+#                 push!(fix_to_init, var ~ inits[k])
+#             end
+#         end
+#     end
+#     fix_to_init
+# end
 
 function fix_unassigned_nonconstant_par_to_init(model)
     fix_to_init = Equation[]
@@ -355,6 +389,11 @@ function create_var(x, iv; constant=false, boundary_condition=false)
     sym = Symbol(x)
     # Symbolics.unwrap(first(@variables $sym(iv)))
     Symbolics.unwrap(first(@variables $sym(iv) [isconstant=constant, isbc=boundary_condition]))
+end
+function create_var(x, iv, input; constant=false, boundary_condition=false)
+    sym = Symbol(x)
+    # Symbolics.unwrap(first(@variables $sym(iv)))
+    Symbolics.unwrap(first(@variables $sym(iv) [input=input, isconstant=constant, isbc=boundary_condition]))
 end
 function create_param(x)
     sym = Symbol(x)

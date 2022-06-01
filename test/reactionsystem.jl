@@ -288,9 +288,9 @@ paramap = SBMLToolkit.get_paramap(MODEL1)
 
 # test_fix_zero_odes_to_init
 eqs = equations(ODESystem(MODEL4, include_zero_odes = true))
-fixed = SBMLToolkit.fix_zero_odes_to_init(MODEL4, eqs)
-fixed_true = Equation[s1 ~ 1.0]
-@test isequal(fixed, fixed_true)
+u0 = SBMLToolkit.get_u0(MODEL4, eqs)
+# u0_true = Equation[s1 ~ 1.0]
+@test isconstant(first(u0[1]))
 
 # # test_fix_unassigned_nonconstant_par_to_init
 # k_nonconstant = SBMLToolkit.create_var("k_nonconstant", Catalyst.DEFAULT_IV)
