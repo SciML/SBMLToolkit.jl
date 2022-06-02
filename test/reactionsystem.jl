@@ -287,10 +287,10 @@ paramap = SBMLToolkit.get_paramap(MODEL1)
 @test ModelingToolkit.defaults(m) == ModelingToolkit.defaults(ReactionSystem(m))
 
 # test_fix_zero_odes_to_init
-eqs = equations(ODESystem(MODEL4, include_zero_odes = true))
-u0 = SBMLToolkit.get_u0map(MODEL4, eqs)
-# u0_true = Equation[s1 ~ 1.0]
-@test isconstant(first(u0[1]))
+# eqs = equations(ODESystem(MODEL4, include_zero_odes = true))
+# u0 = SBMLToolkit.get_u0map(MODEL4, eqs)
+# # u0_true = Equation[s1 ~ 1.0]
+# @test isinput(first(u0[1]))
 
 # # test_fix_unassigned_nonconstant_par_to_init
 # k_nonconstant = SBMLToolkit.create_var("k_nonconstant", Catalyst.DEFAULT_IV)

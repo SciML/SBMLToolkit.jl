@@ -30,19 +30,29 @@ function Catalyst.ReactionSystem(model::SBML.Model; kwargs...)  # Todo: requires
 
     algrules, obsrules, raterules = get_rules(model)
     # constant_eqs = fix_constants_at_init(model)  # Todo PL: take this out
-    unassigned_pars = fix_unassigned_nonconstant_par_to_init(model)  # @Sam: if I do not do that, there are too few equations. Do you have better suggestions?
-    for o in obsrules
-        defs[o.lhs] = substitute(o.rhs, defs)
-    end
-    constraints_sys = ODESystem(vcat(algrules, raterules, obsrules, unassigned_pars),
+    # unassigned_pars = fix_unassigned_nonconstant_par_to_init(model)  # @Sam: if I do not do that, there are too few equations. Do you have better suggestions?
+    
+    # for o in obsrules
+    #     defs[o.lhs] = substitute(o.rhs, defs)
+    # end
+    constraints_sys = ODESystem(vcat(algrules, raterules, obsrules),
                                 Catalyst.DEFAULT_IV; name = gensym(:CONSTRAINTS))
 
     # Hacky way to keep zero_ode species with contant=boundaryCondition=false in system
+    println(rxs)
+    println(u0map)
+    println(parammap)
+    println(defs)
+    println("rules")
+    println(algrules)
+    println(obsrules)
+    println(raterules)
     rs = ReactionSystem(rxs, Catalyst.DEFAULT_IV, first.(u0map), first.(parammap); defaults = defs, name = gensym(:SBML),
         constraints = constraints_sys, kwargs...)
+    println(states(rs))
     odessys = convert(ODESystem, rs; include_zero_odes=true, combinatoric_ratelaws=false)
     u0map, fixed_to_init = get_u0map(model, equations(odessys))  # Todo PL: Use input=true instead
-    constraints_sys = ODESystem(vcat(algrules, raterules, obsrules, unassigned_pars, fixed_to_init),
+    constraints_sys = ODESystem(vcat(algrules, raterules, obsrules, fixed_to_init),
                                 Catalyst.DEFAULT_IV; name = gensym(:CONSTRAINTS))
     ReactionSystem(rxs, Catalyst.DEFAULT_IV, first.(u0map), first.(parammap); defaults = defs, name = gensym(:SBML),
         constraints = constraints_sys, kwargs...)
@@ -74,8 +84,9 @@ function get_u0map(model::SBML.Model, equations::Vector{Equation})
         end
     end
 
+    algebraic_pars = get_algebraic_species(model, kind="parameter")
     for (k, v) in model.parameters
-        if !isnothing(v.value) && !v.constant
+        if !isnothing(v.value) && !v.constant && (k in vcat(assigned_species, algebraic_pars))
             push!(u0s, Pair(create_var(k, Catalyst.DEFAULT_IV), v.value))
         end
     end
@@ -172,20 +183,23 @@ function _get_substitutions(model)
     for (k, v) in model.species
         push!(subsdict, Pair(create_var(k), create_var(k, Catalyst.DEFAULT_IV; constant=v.constant, boundary_condition=v.boundary_condition)))
     end
+    assigned_pars = [r.id for r in values(model.rules) if r isa Union{SBML.AssignmentRule, SBML.RateRule}]
+    algebraic_pars = get_algebraic_species(model, kind="parameter")
     for (k, v) in model.parameters
-        if v.constant !== nothing && v.constant
-            push!(subsdict, Pair(create_var(k), create_param(k)))
-        else
+        if !isnothing(v.value) && !v.constant && (k in vcat(assigned_pars, algebraic_pars))
             push!(subsdict, Pair(create_var(k), create_var(k, Catalyst.DEFAULT_IV)))
+        else
+            push!(subsdict, Pair(create_var(k), create_param(k)))
         end
     end
-    for (k, v) in model.compartments
+    for (k, v) in model.compartments  # Todo: handle compartments the same as parameters everywhere
         if v.constant
             push!(subsdict, Pair(create_var(k), create_param(k)))
         else
             push!(subsdict, Pair(create_var(k), create_var(k, Catalyst.DEFAULT_IV)))
         end
     end
+    println(subsdict)
     subsdict
 end
 
@@ -317,7 +331,7 @@ function get_paramap(model)  # Todo PL: merge with get_u0map.
     algebraic_pars = get_algebraic_species(model; kind="parameter")
     paramap = Pair{Num,Float64}[]
     for (k, v) in model.parameters
-        if v.constant || isnothing(v.value)  # !(k in vcat(assigned_pars, algebraic_pars))
+        if !(!isnothing(v.value) && !v.constant && (k in vcat(assigned_pars, algebraic_pars)))
             push!(paramap, Pair(create_param(k), v.value))
         end
     end
@@ -347,8 +361,10 @@ function get_u0map(model)
         end
     end
 
+    assigned_pars = [r.id for r in values(model.rules) if r isa Union{SBML.AssignmentRule, SBML.RateRule}]
+    algebraic_pars = get_algebraic_species(model, kind="parameter")
     for (k, v) in model.parameters
-        if !isnothing(v.value) && !v.constant
+        if !isnothing(v.value) && !v.constant && (k in vcat(assigned_pars, algebraic_pars))
             push!(u0s, Pair(create_var(k, Catalyst.DEFAULT_IV), v.value))
         end
     end
