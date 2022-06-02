@@ -32,9 +32,9 @@ function Catalyst.ReactionSystem(model::SBML.Model; kwargs...)  # Todo: requires
     # constant_eqs = fix_constants_at_init(model)  # Todo PL: take this out
     # unassigned_pars = fix_unassigned_nonconstant_par_to_init(model)  # @Sam: if I do not do that, there are too few equations. Do you have better suggestions?
     
-    # for o in obsrules
-    #     defs[o.lhs] = substitute(o.rhs, defs)
-    # end
+    for o in obsrules
+        defs[o.lhs] = substitute(o.rhs, defs)
+    end
     constraints_sys = ODESystem(vcat(algrules, raterules, obsrules),
                                 Catalyst.DEFAULT_IV; name = gensym(:CONSTRAINTS))
 
