@@ -75,7 +75,7 @@ function verify(case)
 
     rs = ReactionSystem(ml)
 
-    sys = convert(ODESystem, rs; include_zero_odes = false, combinatoric_ratelaws=false)
+    sys = convert(ODESystem, rs; include_zero_odes = true, combinatoric_ratelaws=false)
     if length(ml.events) > 0
         sys = ODESystem(ml)
     end
@@ -83,10 +83,10 @@ function verify(case)
     ssys = structural_simplify(sys)
     
     ts = results[:, 1]  # LinRange(settings["start"], settings["duration"], settings["steps"]+1)
-    prob = ODEProblem(ssys, Pair[], (settings["start"], Float64(settings["duration"])); saveat=ts, check_length=false)
+    prob = ODEProblem(ssys, Pair[], (settings["start"], Float64(settings["duration"])); saveat=ts)
 
     algorithm = case in keys(algo) ? algo[case] : Tsit5()
-    sol = solve(prob, algorithm; abstol=settings["absolute"], reltol=settings["relative"], saveat=ts)
+    sol = solve(prob, algorithm; abstol=settings["absolute"], reltol=settings["relative"])
     sol_df = to_concentrations(sol, ml, results)
     CSV.write(joinpath(logdir, "SBMLTk_"*case*".csv"), sol_df)
 
@@ -95,9 +95,8 @@ function verify(case)
     solm = Matrix(sol_df[:, cols])
     resm = Matrix(res_df)
     res = isapprox(solm, resm; atol=1e-9, rtol=3e-2)
+    res || verify_plot(case, sys, solm, resm, ts)
     @test res
-    atol = maximum(solm .- resm)
-    verify_plot(case, sys, solm, resm, ts)
     nothing
 end
 
