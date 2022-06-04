@@ -29,17 +29,17 @@ sys = convert(ODESystem, rs; include_zero_odes = true)
 D = Differential(t)
 @test equations(sys) == [D(S1) ~ 7*compartment]
 
-# # algebraic rule  # Todo: comment back in with new SBML.jl fix
-# fn = "data/00039-sbml-l3v2.xml" # this case is for observable eqs
-# m = myread(fn)
-# get_mappings(m)
-# @named rs = ReactionSystem(m)
-# sys = convert(ODESystem, rs; include_zero_odes = true)
-# ssys = structural_simplify(sys)
-# prob = ODEProblem(ssys, [], (0, 10.0))
-# sol = solve(prob, QNDF())
-# @variables t S2(t)
-# obsvar_sol = sol[S2]
+# algebraic rule
+fn = "data/00039-sbml-l3v2.xml" # this case is for observable eqs
+m = myread(fn)
+get_mappings(m)
+@named rs = ReactionSystem(m)
+sys = convert(ODESystem, rs; include_zero_odes = true)
+ssys = structural_simplify(sys)
+prob = ODEProblem(ssys, [], (0, 10.0))
+sol = solve(prob, QNDF())
+@variables t S2(t)
+obsvar_sol = sol[S2]
 
 # tests that non-constant parameters become states
 fn = "data/00033-sbml-l3v2.xml"
