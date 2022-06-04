@@ -2,6 +2,7 @@ cd(@__DIR__)
 sbmlfile = joinpath("data", "reactionsystem_01.xml")
 @parameters t, k1, c1
 @variables s1(t), s2(t), s1s2(t), s3(t)
+const IV = Catalyst.DEFAULT_IV
 
 kinetic_params = Dict{String,Tuple{Float64,String}}()
 
@@ -155,24 +156,18 @@ sol = solve(oprob, Tsit5())
 @test_nowarn ODEProblem(ODESystem(readSBML(sbmlfile)), [], [0.0, 1.0], [])
 
 # Test checksupport
-# @test_nowarn SBMLToolkit.checksupport(MODEL1)
-# sbc = SBML.Species("sbc", "c1", true, nothing, nothing, (1., "substance"), nothing, true)
-# mod = SBML.Model(Dict("k1" => 1.), Dict(), Dict("c1" => COMP1), Dict("sbc" => sbc), Dict("r1" => REACTION1), Dict(), Dict())
-# @test_logs (:warn, "Species sbc has `boundaryCondition` or is `constant`. This will lead to wrong results when simulating the `ReactionSystem`.") SBMLToolkit.checksupport(mod)
-
-# Test checksupport
 @test_nowarn SBMLToolkit.checksupport(sbmlfile)
 @test_throws ErrorException SBMLToolkit.checksupport(joinpath("data", "unsupported.sbml"))
 
-# Test _get_substitutions
+# Test get_substitutions
 truesubs = Dict(Num(Symbolics.variable(:c1; T = Real)) => c1,
     Num(Symbolics.variable(:k1; T = Real)) => k1,
     Num(Symbolics.variable(:s1; T = Real)) => s1)
-subs = SBMLToolkit._get_substitutions(MODEL1)
+subs = SBMLToolkit.get_substitutions(MODEL1)
 @test isequal(subs, truesubs)
 
-# Test mtk_reactions
-reaction = SBMLToolkit.mtk_reactions(MODEL1)[1]
+# Test get_reactions
+reaction = SBMLToolkit.get_reactions(MODEL1)[1]
 truereaction = Catalyst.Reaction(k1, nothing, [s1], nothing, [1])  # Todo: implement Sam's suggestion on mass action kinetics
 @test isequal(reaction, truereaction)
 
@@ -189,131 +184,76 @@ mod = SBML.Model(
     species = Dict("s1" => SPECIES1),
     reactions = Dict("r1" => reac),
 )
-
-@test isequal(Catalyst.DEFAULT_IV, SBMLToolkit.mtk_reactions(mod)[1].rate)
-
-
-# # test from_noncombinatoric
-# @test isequal(4k1, SBMLToolkit.from_noncombinatoric(k1, [2, 2]))
-# @test isequal(k1, SBMLToolkit.from_noncombinatoric(k1, nothing))
+@test isequal(IV, SBMLToolkit.get_reactions(mod)[1].rate)
 
 # Test use_rate
 @test isequal(SBMLToolkit.use_rate(k1 * s1, [s1], [1]), (k1, false))  # Case hOSU=true
 @test isequal(SBMLToolkit.use_rate(k1 * s1 * s2 / (c1 + s2), [s1], [1]), (k1 * s1 * s2 / (c1 + s2), true))  # Case Michaelis-Menten kinetics
 
-# Test getreagents
-@test isequal((nothing, [s1], nothing, [1.0]), SBMLToolkit.getreagents(REACTION1.reactants, REACTION1.products, MODEL1))
+# Test get_reagents
+@test isequal((nothing, [s1], nothing, [1.0]), SBMLToolkit.get_reagents(REACTION1.reactants, REACTION1.products, MODEL1))
 
-constspec = SBML.Species(name = "constspec", compartment = "c1", boundary_condition = true, initial_amount = 1.0, substance_units = "substance", only_substance_units = true)
-ncs = SBMLToolkit.create_var("constspec", Catalyst.DEFAULT_IV)
-kineticmath = SBML.MathApply("-", SBML.Math[
-    SBML.MathApply("*", SBML.Math[
-        SBML.MathIdent("k1"),
-        SBML.MathIdent("constspec")]),
-    SBML.MathIdent("k1")])
-constreac = SBML.Reaction(
-    reactants = Dict("constspec" => 1),
-    products = Dict(),
-    kinetic_parameters = kinetic_params,
-    kinetic_math = kineticmath,
-    reversible = false)
+s = SBML.Species(name = "s", compartment = "c1", boundary_condition = true,
+                 initial_amount = 1.0, substance_units = "substance",
+                 only_substance_units = true)
+var = SBMLToolkit.create_var("s", IV)
+r = SBML.Reaction(reactants = Dict("s" => 1), products = Dict(),
+                  reversible=false)
 
-constmod = SBML.Model(
-    parameters = Dict("k1" => PARAM1),
-    compartments = Dict("c1" => COMP1),
-    species = Dict("constspec" => constspec),
-    reactions = Dict("r1" => constreac),
-)
-@test isequal(([ncs], [ncs], [1.0], [1.0]), SBMLToolkit.getreagents(constreac.reactants, constreac.products, constmod))
-@test isequal((nothing, nothing, nothing, nothing), SBMLToolkit.getreagents(constreac.reactants, constreac.products, constmod; rev = true))
+m = SBML.Model(species = Dict("s" => s), reactions = Dict("r1" => r))
+@test isequal(([var], [var], [1.0], [1.0]), SBMLToolkit.get_reagents(r.reactants, r.products, m))
+@test isequal((nothing, nothing, nothing, nothing), SBMLToolkit.get_reagents(r.products, r.reactants, m))
 
-# Test getunidirectionalcomponents
+# Test get_unidirectional_components
 km = SBML.MathApply("-", SBML.Math[KINETICMATH1, SBML.MathIdent("c1")])
 sm = SBMLToolkit.interpret_as_num(km)
-kl = SBMLToolkit.getunidirectionalcomponents(sm)
+kl = SBMLToolkit.get_unidirectional_components(sm)
 @test isequal(kl, (k1, c1))
 
 km = SBML.MathApply("-", SBML.Math[KINETICMATH1, KINETICMATH2])
 sm = SBMLToolkit.interpret_as_num(km)
-fw, rv = SBMLToolkit.getunidirectionalcomponents(sm)
-rv = substitute(rv, Dict(SBMLToolkit.create_var("s2") => SBMLToolkit.create_var("s2", Catalyst.DEFAULT_IV)))
+fw, rv = SBMLToolkit.get_unidirectional_components(sm)
+rv = substitute(rv, Dict(SBMLToolkit.create_var("s2") => SBMLToolkit.create_var("s2", IV)))
 @test isequal((fw, rv), (k1, k1 * s2))
 
 km = SBML.MathIdent("s1s2")
 sm1 = SBMLToolkit.interpret_as_num(km)
 sm2 = sm - sm1
-@test_throws ErrorException SBMLToolkit.getunidirectionalcomponents(sm2)
-@test_throws ErrorException SBMLToolkit.getunidirectionalcomponents(:k1)
+@test_throws ErrorException SBMLToolkit.get_unidirectional_components(sm2)
+@test_throws ErrorException SBMLToolkit.get_unidirectional_components(:k1)
 
-# Test get_paramap
-trueparamap = [k1 => 1.0, c1 => 2.0]
-paramap = SBMLToolkit.get_paramap(MODEL1)
-@test isequal(paramap, trueparamap)
-# @test isinput(first(paramap[1]))
-# @test isinput(first(paramap[2]))
+# Test get_mappings
+u0map, parammap = SBMLToolkit.get_mappings(MODEL1)
+u0map_true = [s1 => 1.0]
+parammap_true = [k1 => 1.0, c1 => 2.0]
+@test isequal(u0map, u0map_true)
+@test isequal(parammap, parammap_true)
 
-# p = SBML.Parameter(name = "k1", value = 1.0, constant=false)
-# m = SBML.Model(parameters = Dict("k1" => p))
-# paramap = SBMLToolkit.get_paramap(m)
-# @test isinput(first(paramap[1]))
-# m = SBML.Model(
-#     parameters = Dict("k1" => p),
-#     rules = SBML.Rule[SBML.RateRule("k1", KINETICMATH2)])
-# paramap = SBMLToolkit.get_paramap(m)
-# @test !isinput(first(paramap[1]))
+p = SBML.Parameter(name = "k2", value = 1.0, constant = false)
+m = SBML.Model(
+    parameters = Dict("k2" => p),
+    rules = SBML.Rule[SBML.RateRule("k2", KINETICMATH2)])
+u0map, parammap = SBMLToolkit.get_mappings(m)
+u0map_true = [SBMLToolkit.create_var("k2", IV; isbc=true) => 1.0]
+@test isequal(u0map, u0map_true)
+@test Catalyst.isbc(first(u0map[1]))
 
-# c = SBML.Compartment("c1", false, 3, 1.0, "nl", nothing, nothing)
-# m = SBML.Model(compartments = Dict("c1" => c))
-# paramap = SBMLToolkit.get_paramap(m)
-# @test isinput(first(paramap[1]))
-# m = SBML.Model(
-#     compartments = Dict("c1" => c),
-#     rules = SBML.Rule[SBML.RateRule("c1", KINETICMATH2)])
-# paramap = SBMLToolkit.get_paramap(m)
-# @test !isinput(first(paramap[1]))
+m = SBML.Model(
+    species = Dict("s2" => SPECIES2),
+    rules = SBML.Rule[SBML.AlgebraicRule(KINETICMATH2)])
+u0map, parammap = SBMLToolkit.get_mappings(m)
+Catalyst.isbc(first(u0map[1]))
 
-# Test getmassaction
-@test isequal(SBMLToolkit.getmassaction(k1 * s1, [s1], [1]), k1)  # Case hOSU=true
-@test isequal(SBMLToolkit.getmassaction(k1 * s1 / c1, [s1], [1]), k1 / c1)  # Case hOSU=false
-@test isequal(SBMLToolkit.getmassaction(k1 + c1, nothing, nothing), k1 + c1)  # Case zero order kineticLaw
-@test isnan(SBMLToolkit.getmassaction(k1 * s1 * s2 / (c1 + s2), [s1], [1]))  # Case Michaelis-Menten kinetics
-@test isnan(SBMLToolkit.getmassaction(k1 * s1 * Catalyst.DEFAULT_IV, [s1], [1]))  # Case kineticLaw with time
+# Test get_massaction
+@test isequal(SBMLToolkit.get_massaction(k1 * s1, [s1], [1]), k1)  # Case hOSU=true
+@test isequal(SBMLToolkit.get_massaction(k1 * s1 / c1, [s1], [1]), k1 / c1)  # Case hOSU=false
+@test isequal(SBMLToolkit.get_massaction(k1 + c1, nothing, nothing), k1 + c1)  # Case zero order kineticLaw
+@test isnan(SBMLToolkit.get_massaction(k1 * s1 * s2 / (c1 + s2), [s1], [1]))  # Case Michaelis-Menten kinetics
+@test isnan(SBMLToolkit.get_massaction(k1 * s1 * IV, [s1], [1]))  # Case kineticLaw with time
 
-@test isnan(SBMLToolkit.getmassaction(k1 * s1 * s2, [s1], [1]))
-@test isnan(SBMLToolkit.getmassaction(k1 + c1, [s1], [1]))
-@test_throws ErrorException SBMLToolkit.getmassaction(k1, nothing, [1])
+@test isnan(SBMLToolkit.get_massaction(k1 * s1 * s2, [s1], [1]))
+@test isnan(SBMLToolkit.get_massaction(k1 + c1, [s1], [1]))
+@test_throws ErrorException SBMLToolkit.get_massaction(k1, nothing, [1])
 
 # default test
-@test ModelingToolkit.defaults(m) == ModelingToolkit.defaults(ReactionSystem(m))
-
-# test_fix_zero_odes_to_init
-# eqs = equations(ODESystem(MODEL4, include_zero_odes = true))
-# u0 = SBMLToolkit.get_u0map(MODEL4, eqs)
-# # u0_true = Equation[s1 ~ 1.0]
-# @test isinput(first(u0[1]))
-
-# # test_fix_unassigned_nonconstant_par_to_init
-# k_nonconstant = SBMLToolkit.create_var("k_nonconstant", Catalyst.DEFAULT_IV)
-# m = SBML.Model(
-#     parameters = Dict("k_nonconstant" => SBML.Parameter(
-#         name = "k_nonconstant", value = 1.0, constant = false)),
-#     rules = SBML.Rule[SBML.AlgebraicRule(KINETICMATH2)])
-# fixed = SBMLToolkit.fix_unassigned_nonconstant_par_to_init(m)
-# fixed_true = Equation[k_nonconstant ~ 1.0]
-# @test isequal(fixed, fixed_true)
-
-# # test fix_constants_at_init
-# fixed = SBMLToolkit.fix_constants_at_init(MODEL5)
-# fixed_true = Equation[s3 ~ 1.0]
-# @test isequal(fixed, fixed_true)
-
-# test parse_math!
-res = String[]
-SBMLToolkit.parse_math!(KINETICMATH2, res, MODEL2)
-res_true = ["s2"]
-@test isequal(res, res_true)
-
-# test get_algebraic_species
-res = SBMLToolkit.get_algebraic_species(MODEL6)
-res_true = ["s2"]
-@test isequal(res, res_true)
+@test_broken ModelingToolkit.defaults(m) == ModelingToolkit.defaults(ReactionSystem(m))

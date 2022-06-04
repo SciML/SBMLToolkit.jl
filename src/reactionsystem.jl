@@ -28,6 +28,7 @@ function get_mappings(model::SBML.Model)
     u0map = Pair[]
     parammap = Pair[]
     for (k, v) in model.species
+        SBML.seemsdefined(k, model)
         var = create_var(k, IV; constant=v.constant,
                          isbc=SBML.seemsdefined(k, model))  # To remove defined species from rules.
         push!(u0map, var => inits[k])
