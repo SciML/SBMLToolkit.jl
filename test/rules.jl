@@ -32,7 +32,6 @@ D = Differential(t)
 # algebraic rule
 fn = "data/00039-sbml-l3v2.xml" # this case is for observable eqs
 m = myread(fn)
-get_mappings(m)
 @named rs = ReactionSystem(m)
 sys = convert(ODESystem, rs; include_zero_odes = true)
 ssys = structural_simplify(sys)
