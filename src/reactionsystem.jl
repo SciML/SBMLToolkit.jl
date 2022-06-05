@@ -28,16 +28,14 @@ function get_mappings(model::SBML.Model)
     u0map = Pair[]
     parammap = Pair[]
     for (k, v) in model.species
-        println(all([netstoich(k, r) == 0 for r in values(model.reactions)]))
-        println("yoyoyo")
         var = create_var(k, IV; constant=v.constant,
                          isbc=has_rule_type(k, model, SBML.RateRule) ||
                               has_rule_type(k, model, SBML.AssignmentRule) ||
                               (has_rule_type(k, model, SBML.AlgebraicRule) &&
-                               all(
-                                   [netstoich(k, r) == 0 for r in values(model.reactions)]
-                                   )
-                               )
+                              (
+                                  all([netstoich(k, r) == 0 for r in values(model.reactions)]) ||
+                                  v.boundary_condition == true)
+                              )
                         )  # To remove species that are otherwise defined
         push!(u0map, var => inits[k])
     end
@@ -63,8 +61,6 @@ function get_mappings(model::SBML.Model)
 end
 
 function netstoich(id, reaction)
-    println(id)
-    println(reaction)
     netstoich = 0
     netstoich -= get(reaction.reactants, id, 0)
     netstoich += get(reaction.products, id, 0)
