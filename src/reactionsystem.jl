@@ -28,9 +28,17 @@ function get_mappings(model::SBML.Model)
     u0map = Pair[]
     parammap = Pair[]
     for (k, v) in model.species
-        SBML.seemsdefined(k, model)
+        println(all([netstoich(k, r) == 0 for r in values(model.reactions)]))
+        println("yoyoyo")
         var = create_var(k, IV; constant=v.constant,
-                         isbc=SBML.seemsdefined(k, model))  # To remove defined species from rules.
+                         isbc=has_rule_type(k, model, SBML.RateRule) ||
+                              has_rule_type(k, model, SBML.AssignmentRule) ||
+                              (has_rule_type(k, model, SBML.AlgebraicRule) &&
+                               all(
+                                   [netstoich(k, r) == 0 for r in values(model.reactions)]
+                                   )
+                               )
+                        )  # To remove species that are otherwise defined
         push!(u0map, var => inits[k])
     end
     for (k, v) in model.parameters
@@ -52,6 +60,14 @@ function get_mappings(model::SBML.Model)
         end
     end
     u0map, parammap
+end
+
+function netstoich(id, reaction)
+    println(id)
+    println(reaction)
+    netstoich = 0
+    netstoich -= get(reaction.reactants, id, 0)
+    netstoich += get(reaction.products, id, 0)
 end
 
 """ Check if conversion to ReactionSystem is possible """
@@ -200,7 +216,7 @@ function get_massaction(kl::Num, reactants::Union{Vector{Num},Nothing}, stoich::
     else
         rate_const = SymbolicUtils.simplify_fractions(kl / *((.^(reactants, stoich))...))
     end
-    isnan(check_args(rate_const.val)) ? NaN : rate_const  # Todo: use Boolean instead of NaN here.
+    isnan(check_args(rate_const.val)) ? NaN : rate_const
 end
 
 ### rules.jl ###
@@ -294,22 +310,6 @@ function get_substitutions(model)
         k = create_var(string(item.name))
         subsdict[k] = item
     end
-    # for (k, v) in model.species
-    #     push!(subsdict, Pair(create_var(k),
-    #           create_var(k, IV; constant=v.constant,
-    #                      isbc=v.boundary_condition)))
-    # end
-    # for k in keys(model.parameters)
-    #     # SBML.seemsdefined(k, model) && push!(subsdict, Pair(create_var(k), create_var(k, IV)))
-    #     push!(subsdict, Pair(create_var(k), create_param(k)))
-    # end
-    # for k in keys(merge(model.parameters, model.compartments))  # Todo: handle compartments the same as parameters everywhere
-    #     if SBML.seemsdefined(k, model)
-    #         push!(subsdict, Pair(create_var(k), create_var(k, IV)))
-    #     else
-    #         push!(subsdict, Pair(create_var(k), create_param(k)))
-    #     end
-    # end
     subsdict
 end
 
@@ -324,6 +324,11 @@ end
 function create_param(x)
     sym = Symbol(x)
     Symbolics.unwrap(first(@parameters $sym))
+end
+
+function has_rule_type(id::String, m::SBML.Model, T::Type{<:SBML.Rule})
+    T == SBML.AlgebraicRule && return any(SBML.isfreein(id, r.math) for r in m.rules if r isa SBML.AlgebraicRule)
+    any(r.id == id for r in m.rules if r isa T)
 end
 
 ### events.jl ###
