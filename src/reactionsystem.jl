@@ -67,11 +67,11 @@ function netstoich(id, reaction)
 end
 
 """ Check if conversion to ReactionSystem is possible """
-function checksupport(filename::String)
+function checksupport(file::String)
     not_implemented = ["listOfConstraints", "</delay>", "<priority>", "spatialDimensions=\"0\""]
-    sbml = open(filename) do file
+    sbml = isfile(file) ? open(file) do file
         read(file, String)
-    end
+    end : file
     for item in not_implemented
         occursin(item, sbml) && throw(ErrorException("SBML models with $item are not yet implemented."))
     end

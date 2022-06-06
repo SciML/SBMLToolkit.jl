@@ -1,6 +1,7 @@
-const cases = ["00007", "00022", "00140", "00170", "00679"]
+const case_ids = [7, 22, 140, 170, 679]
+const cases = map(x -> x[end-4:end], .*("0000", string.(case_ids)))
 
-const algo = Dict("00862" => Rodas4,
+const algomap = Dict("00862" => Rodas4,
                   "00863" => Rodas4,
                   "00864" => Rodas4,
                   "00882" => Rodas4)
@@ -9,6 +10,16 @@ const logdir = joinpath(@__DIR__, "logs")
 ispath(logdir) && rm(logdir,recursive=true)
 mkdir(logdir)
 
+const expected_errs = 
+    ["Model contains no reactions.",
+    "are not yet implemented.",
+    "Please make reaction irreversible or rearrange kineticLaw to the form `term1 - term2`.",
+    "BoundsError(String[], (1,))",  # Occurs wher no V3L2 file is available
+    "COBREXA.jl",
+    "no method matching length(::Nothing)", "MethodError(iterate, (nothing,),", # Occurs for insance in case 00029, where S1(t) = 7 is the only eqn.
+    "Stoichiometry must be a non-negative integer.",
+    "NaN result for non-NaN input."]
+
 function setup_settings_txt(text)
     ls = split(text, "\n")
     spls = split.(ls, ": ")
@@ -16,7 +27,7 @@ function setup_settings_txt(text)
     Dict(map(x -> x[1] => Meta.parse(x[2]), spls))
 end
 
-function to_concentrations(sol, ml, results)
+function to_concentrations(sol, ml, results, ia)
     volumes = [1.]
     sol_df = DataFrame(sol)
     for sn in names(sol_df)[2:end]
@@ -24,7 +35,7 @@ function to_concentrations(sol, ml, results)
             spec = ml.species[sn[1:end-3]]
             comp = ml.compartments[spec.compartment]
             ic = spec.initial_concentration
-            isnothing(ic) ? push!(volumes, 1.) : push!(volumes, comp.size)
+            isnothing(ic) || haskey(ia, sn[1:end-3]) ? push!(volumes, 1.) : push!(volumes, comp.size)
         end
     end
     sol_df = sol_df./Array(volumes)'
@@ -63,43 +74,84 @@ function read_case(case)
     (sbml, settings, results)
 end
 
-function verify(case)
+function verify_case(case; verbose=true)
+    k = 0
+    diffeq_retcode = :nothing
+    expected_err = false
+    res = false
+    err = ""
+    try
     # Read case
-    sbml, settings, results = read_case(case)
-   
-    # Read SBML
-    ml = readSBMLFromString(sbml, doc -> begin
-                set_level_and_version(3, 2)(doc)
-                convert_simplify_math(doc)
-            end)
+        sbml, settings, results = read_case(case)
+    
+        # Read SBML
+        ml = readSBMLFromString(sbml, doc -> begin
+            set_level_and_version(3, 2)(doc)
+            convert_simplify_math(doc)
+        end)
+        ia = readSBML(model_fn, doc -> begin
+            set_level_and_version(3, 2)(doc)
+        end)
+        ia = ia.initial_assignments
+        k = 1
 
-    rs = ReactionSystem(ml)
+        rs = ReactionSystem(ml)
+        k = 2
+        
+        sys = convert(ODESystem, rs; include_zero_odes = true, combinatoric_ratelaws=false)
+        if length(ml.events) > 0
+            sys = ODESystem(ml)
+        end
+        k = 3
+        
+        ssys = structural_simplify(sys)
+        k = 4
+        
+        ts = results[:, 1]  # LinRange(settings["start"], settings["duration"], settings["steps"]+1)
+        prob = ODEProblem(ssys, Pair[], (settings["start"], Float64(settings["duration"])); saveat=ts)
+        k = 5
+        
+        algorithm = get(algomap, case, Tsit5())
+        sol = solve(prob, algorithm; abstol=settings["absolute"], reltol=settings["relative"])
+        diffeq_retcode = sol.retcode
+        k = diffeq_retcode == :Success ? 6 : k
 
-    sys = convert(ODESystem, rs; include_zero_odes = true, combinatoric_ratelaws=false)
-    if length(ml.events) > 0
-        sys = ODESystem(ml)
+        sol_df = to_concentrations(sol, ml, results, ia)
+        CSV.write(joinpath(logdir, "SBMLTk_"*case*".csv"), sol_df)
+
+        cols = names(sol_df)[2:end]
+        res_df = results[:, [c[1:end-3] for c in cols]]
+        solm = Matrix(sol_df[:, cols])
+        resm = Matrix(res_df)
+        res = isapprox(solm, resm; atol=1e-9, rtol=3e-2)
+        res || verify_plot(case, sys, solm, resm, ts)
+    catch e
+        err = string(e)
+        expected_err = any(occursin.(expected_errs, err))
+        if length(err) > 1000 # cutoff since I got ArgumentError: row size (9088174) too large 
+            err = err[1:1000]
+        end
+    finally
+        verbose && @info("Case $(case) done with a code $k and error msg: $err")
+        return (case, expected_err, res, err, k, diffeq_retcode)
     end
-    
-    ssys = structural_simplify(sys)
-    
-    ts = results[:, 1]  # LinRange(settings["start"], settings["duration"], settings["steps"]+1)
-    prob = ODEProblem(ssys, Pair[], (settings["start"], Float64(settings["duration"])); saveat=ts)
-
-    algorithm = case in keys(algo) ? algo[case] : Tsit5()
-    sol = solve(prob, algorithm; abstol=settings["absolute"], reltol=settings["relative"])
-    sol_df = to_concentrations(sol, ml, results)
-    CSV.write(joinpath(logdir, "SBMLTk_"*case*".csv"), sol_df)
-
-    cols = names(sol_df)[2:end]
-    res_df = results[:, [c[1:end-3] for c in cols]]
-    solm = Matrix(sol_df[:, cols])
-    resm = Matrix(res_df)
-    res = isapprox(solm, resm; atol=1e-9, rtol=3e-2)
-    res || verify_plot(case, sys, solm, resm, ts)
-    @test res
-    nothing
 end
 
-for case in cases
-    verify(case)
+function verify_all(cases; verbose=true)
+    df = DataFrame(case=String[], expected_err=Bool[], res=Bool[],
+                   error=String[], k=Int64[], diffeq_retcode=Symbol[])
+    for case in cases
+        ret = verify_case(case; verbose=verbose)
+        verbose && @info ret 
+        push!(df, ret)
+    end
+    verbose && print(df)
+    fn = joinpath(logdir, "test_suite_$(cases[1])-$(cases[end]).csv")
+    CSV.write(fn, df)
+    df
+end
+
+df = verify_all(cases)
+for i in range(cases)
+    @test all(.!Matrix(df[i, ["expected_err", "res"]]), dims=2)
 end

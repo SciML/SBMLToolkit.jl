@@ -127,6 +127,8 @@ sol = solve(oprob, Tsit5())
 # Test checksupport
 @test_nowarn SBMLToolkit.checksupport(sbmlfile)
 @test_throws ErrorException SBMLToolkit.checksupport(joinpath("data", "unsupported.sbml"))
+@test_nowarn SBMLToolkit.checksupport("all good")
+@test_throws ErrorException SBMLToolkit.checksupport("contains </delay>")
 
 # Test get_substitutions
 truesubs = Dict(Num(Symbolics.variable(:c1; T = Real)) => c1,
