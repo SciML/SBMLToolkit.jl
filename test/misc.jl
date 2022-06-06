@@ -1,4 +1,5 @@
-const case_ids = [7, 22, 140, 170, 679]
+# const case_ids = [7, 22, 140, 170, 679]
+const case_ids = [1:500...]
 const cases = map(x -> x[end-4:end], .*("0000", string.(case_ids)))
 
 const algomap = Dict("00862" => Rodas4,
@@ -153,5 +154,5 @@ end
 
 df = verify_all(cases)
 for i in 1:length(cases)
-    @test all(.!Matrix(df[i, ["expected_err", "res"]]), dims=2)
+    @test all(.!Vector(df[i, ["expected_err", "res"]]), dims=2)
 end
