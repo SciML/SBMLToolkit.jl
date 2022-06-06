@@ -89,7 +89,7 @@ function verify_case(case; verbose=true)
             set_level_and_version(3, 2)(doc)
             convert_simplify_math(doc)
         end)
-        ia = readSBML(sbml, doc -> begin
+        ia = readSBMLFromString(sbml, doc -> begin
             set_level_and_version(3, 2)(doc)
         end)
         ia = ia.initial_assignments
