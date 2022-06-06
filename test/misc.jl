@@ -6,7 +6,8 @@ const algomap = Dict("00862" => Rodas4,
                   "00863" => Rodas4,
                   "00864" => Rodas4,
                   "00882" => Rodas4)
-                  
+
+const ss_fail = ["00023", "00024"]
 const logdir = joinpath(@__DIR__, "logs")
 ispath(logdir) && rm(logdir,recursive=true)
 mkdir(logdir)
@@ -37,13 +38,17 @@ function to_concentrations(sol, ml, results, ia)
             comp = ml.compartments[spec.compartment]
             ic = spec.initial_concentration
             isnothing(ic) || haskey(ia, sn[1:end-3]) ? push!(volumes, 1.) : push!(volumes, comp.size)
+        else
+            push!(volumes, 1.)
         end
     end
     sol_df = sol_df./Array(volumes)'
     
     idx = [sol.t[i] in results[:, 1] ? true : false for i in 1:length(sol.t)]
     sol_df = sol_df[idx, :]
-    sol_df
+    rename!(sol_df, "timestamp" => "time")
+    rename!(sol_df, [rstrip(n, ['(', 't', ')']) for n in names(sol_df)])
+    sol_df[:, [c for c in names(results)]]
 end
 
 "plots the difference between the suites' reported solution and DiffEq's sol"
@@ -104,6 +109,7 @@ function verify_case(case; verbose=true)
             sys = ODESystem(ml)
         end
         k = 3
+        Main.xx[] = sys
         
         ssys = structural_simplify(sys)
         k = 4
@@ -120,9 +126,10 @@ function verify_case(case; verbose=true)
         sol_df = to_concentrations(sol, ml, results, ia)
         CSV.write(joinpath(logdir, "SBMLTk_"*case*".csv"), sol_df)
 
-        cols = names(sol_df)[2:end]
-        res_df = results[:, [c[1:end-3] for c in cols]]
-        solm = Matrix(sol_df[:, cols])
+        println(sol_df)
+        println(results)
+        res_df = results  # [:, [c for c in names(df)]]
+        solm = Matrix(sol_df)
         resm = Matrix(res_df)
         res = isapprox(solm, resm; atol=1e-9, rtol=3e-2)
         res || verify_plot(case, sys, solm, resm, ts)
@@ -152,7 +159,9 @@ function verify_all(cases; verbose=true)
     df
 end
 
+xx = Ref{Any}()
 df = verify_all(cases)
+sys = xx[]
 # for i in 1:length(cases)
 #     @test !all(Vector(df[i, ["expected_err", "res"]]))
 # end
