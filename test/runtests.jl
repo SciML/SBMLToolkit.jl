@@ -11,4 +11,5 @@ using CSV, DataFrames, Downloads, Plots
     @testset "Rules" begin include("rules.jl") end
     @testset "Events" begin include("events.jl") end
     @testset "Misc" begin include("misc.jl") end
+    @testset "Wuschel" begin include("wuschel.jl") end
 end
