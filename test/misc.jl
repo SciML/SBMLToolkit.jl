@@ -152,6 +152,6 @@ function verify_all(cases; verbose=true)
 end
 
 df = verify_all(cases)
-for i in range(cases)
+for i in 1:length(cases)
     @test all(.!Matrix(df[i, ["expected_err", "res"]]), dims=2)
 end
