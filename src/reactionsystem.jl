@@ -346,8 +346,8 @@ function get_events(model, rs)  # Todo: implement up or downpass and parameters
         trig = [lhs ~ rhs]
         mtk_evas = Equation[]
         for eva in e.event_assignments
+            math = eva.math
             if haskey(model.species, eva.variable)
-                math = eva.math
                 vc = get_volume_correction(model, eva.variable)
                 if !isnothing(vc)
                     math = SBML.MathApply("*", [SBML.MathIdent(vc), math])
