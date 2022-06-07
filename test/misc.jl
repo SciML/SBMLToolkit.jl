@@ -29,7 +29,7 @@ function setup_settings_txt(text)
     Dict(map(x -> x[1] => Meta.parse(x[2]), spls))
 end
 
-function to_concentrations(sol, ml, results, ia)
+function to_concentrations(sol, ml, res_df, ia)
     volumes = [1.]
     sol_df = DataFrame(sol)
     for sn in names(sol_df)[2:end]
@@ -44,11 +44,11 @@ function to_concentrations(sol, ml, results, ia)
     end
     sol_df = sol_df./Array(volumes)'
     
-    idx = [sol.t[i] in results[:, 1] ? true : false for i in 1:length(sol.t)]
+    idx = [sol.t[i] in res_df[:, 1] ? true : false for i in 1:length(sol.t)]
     sol_df = sol_df[idx, :]
     rename!(sol_df, "timestamp" => "time")
     rename!(sol_df, [rstrip(n, ['(', 't', ')']) for n in names(sol_df)])
-    sol_df[:, [c for c in names(results)]]
+    sol_df[:, [c for c in names(res_df)]]
 end
 
 "plots the difference between the suites' reported solution and DiffEq's sol"
@@ -76,8 +76,8 @@ function read_case(case)
     
     # Read results
     settings = setup_settings_txt(settings)
-    results = CSV.read(IOBuffer(results), DataFrame)
-    (sbml, settings, results)
+    res_df = CSV.read(IOBuffer(results), DataFrame)
+    (sbml, settings, res_df)
 end
 
 function verify_case(case; verbose=true)
@@ -88,7 +88,7 @@ function verify_case(case; verbose=true)
     err = ""
     try
     # Read case
-        sbml, settings, results = read_case(case)
+        sbml, settings, res_df = read_case(case)
     
         # Read SBML
         ml = readSBMLFromString(sbml, doc -> begin
@@ -114,7 +114,7 @@ function verify_case(case; verbose=true)
         ssys = structural_simplify(sys)
         k = 4
         
-        ts = results[:, 1]  # LinRange(settings["start"], settings["duration"], settings["steps"]+1)
+        ts = res_df[:, 1]  # LinRange(settings["start"], settings["duration"], settings["steps"]+1)
         prob = ODEProblem(ssys, Pair[], (settings["start"], Float64(settings["duration"])); saveat=ts)
         k = 5
         
@@ -123,12 +123,9 @@ function verify_case(case; verbose=true)
         diffeq_retcode = sol.retcode
         k = diffeq_retcode == :Success ? 6 : k
 
-        sol_df = to_concentrations(sol, ml, results, ia)
+        sol_df = to_concentrations(sol, ml, res_df, ia)
         CSV.write(joinpath(logdir, "SBMLTk_"*case*".csv"), sol_df)
 
-        println(sol_df)
-        println(results)
-        res_df = results  # [:, [c for c in names(df)]]
         solm = Matrix(sol_df)
         resm = Matrix(res_df)
         res = isapprox(solm, resm; atol=1e-9, rtol=3e-2)
