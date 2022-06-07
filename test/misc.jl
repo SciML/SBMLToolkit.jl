@@ -2,7 +2,8 @@
 const case_ids = [1:200...]
 const cases = map(x -> x[end-4:end], .*("0000", string.(case_ids)))
 
-const algomap = Dict("00862" => Rodas4,
+const algomap = Dict("00177" => Rodas4,
+                  "00862" => Rodas4,
                   "00863" => Rodas4,
                   "00864" => Rodas4,
                   "00882" => Rodas4)
@@ -111,7 +112,6 @@ function verify_case(case; verbose=true)
             sys = ODESystem(ml)
         end
         k = 3
-        Main.xx[] = sys
         
         # ssys = structural_simplify(sys)
         k = 4
@@ -129,7 +129,7 @@ function verify_case(case; verbose=true)
         CSV.write(joinpath(logdir, "SBMLTk_"*case*".csv"), sol_df)
 
         solm = Matrix(sol_df)
-        resm = Matrix(res_df[c for c in names(sol_df) if c in names(res_df)])
+        resm = Matrix(res_df[:, [c for c in names(sol_df) if c in names(res_df)]])
         res = isapprox(solm, resm; atol=1e-9, rtol=3e-2)
         res || verify_plot(case, sys, solm, resm, ts)
     catch e
@@ -158,7 +158,6 @@ function verify_all(cases; verbose=true)
     df
 end
 
-xx = Ref{Any}()
 df = verify_all(cases)
 # sys = xx[]
 # for i in 1:length(cases)
