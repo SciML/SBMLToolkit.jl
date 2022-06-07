@@ -20,7 +20,8 @@ const expected_errs =
     "COBREXA.jl",
     "no method matching length(::Nothing)", "MethodError(iterate, (nothing,),", # Occurs for insance in case 00029, where S1(t) = 7 is the only eqn.
     "Stoichiometry must be a non-negative integer.",
-    "NaN result for non-NaN input."]
+    "NaN result for non-NaN input.",
+    "RequestError("]
 
 function setup_settings_txt(text)
     ls = split(text, "\n")
@@ -48,7 +49,7 @@ function to_concentrations(sol, ml, res_df, ia)
     sol_df = sol_df[idx, :]
     rename!(sol_df, "timestamp" => "time")
     rename!(sol_df, [rstrip(n, ['(', 't', ')']) for n in names(sol_df)])
-    sol_df[:, [c for c in names(res_df)]]
+    sol_df[:, [c for c in names(res_df) if c in names(sol_df)]]
 end
 
 "plots the difference between the suites' reported solution and DiffEq's sol"
@@ -91,6 +92,7 @@ function verify_case(case; verbose=true)
         sbml, settings, res_df = read_case(case)
     
         # Read SBML
+        SBMLToolkit.checksupport(sbml)
         ml = readSBMLFromString(sbml, doc -> begin
             set_level_and_version(3, 2)(doc)
             convert_simplify_math(doc)
@@ -111,11 +113,11 @@ function verify_case(case; verbose=true)
         k = 3
         Main.xx[] = sys
         
-        ssys = structural_simplify(sys)
+        # ssys = structural_simplify(sys)
         k = 4
         
         ts = res_df[:, 1]  # LinRange(settings["start"], settings["duration"], settings["steps"]+1)
-        prob = ODEProblem(ssys, Pair[], (settings["start"], Float64(settings["duration"])); saveat=ts)
+        prob = ODEProblem(sys, Pair[], (settings["start"], Float64(settings["duration"])); saveat=ts)
         k = 5
         
         algorithm = get(algomap, case, Tsit5())
@@ -127,7 +129,7 @@ function verify_case(case; verbose=true)
         CSV.write(joinpath(logdir, "SBMLTk_"*case*".csv"), sol_df)
 
         solm = Matrix(sol_df)
-        resm = Matrix(res_df)
+        resm = Matrix(res_df[c for c in names(sol_df) if c in names(res_df)])
         res = isapprox(solm, resm; atol=1e-9, rtol=3e-2)
         res || verify_plot(case, sys, solm, resm, ts)
     catch e
@@ -158,7 +160,7 @@ end
 
 xx = Ref{Any}()
 df = verify_all(cases)
-sys = xx[]
+# sys = xx[]
 # for i in 1:length(cases)
-#     @test !all(Vector(df[i, ["expected_err", "res"]]))
+#     @test sum(Vector(df[i, ["expected_err", "res"]])) == 1
 # end
