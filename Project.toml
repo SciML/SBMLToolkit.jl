@@ -12,8 +12,8 @@ SymbolicUtils = "d1185830-fcd6-423d-90d6-eec64667417b"
 [compat]
 Catalyst = "11"
 MathML = "0.1"
-SymbolicUtils = "0.17, 0.18, 0.19"
 SBML = "0.10.2"
+SymbolicUtils = "0.17, 0.18, 0.19"
 julia = "1.6"
 
 [extras]

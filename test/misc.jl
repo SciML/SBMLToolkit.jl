@@ -1,12 +1,16 @@
-# const case_ids = [7, 22, 140, 170, 679]
-const case_ids = [300:700...]
+const case_ids = [7, 22, 140, 170, 325, 679]
+# const case_ids = [325]
 const cases = map(x -> x[end-4:end], .*("0000", string.(case_ids)))
 
-const algomap = Dict("00177" => Rodas4,
-                  "00862" => Rodas4,
-                  "00863" => Rodas4,
-                  "00864" => Rodas4,
-                  "00882" => Rodas4)
+const algomap = Dict("00177" => Rodas4(),
+                  "00325" => Rodas5(),
+                  "00862" => Rodas4(),
+                  "00863" => Rodas4(),
+                  "00864" => Rodas4(),
+                  "00882" => Rodas4()
+                )
+                  
+const special_tolerances = Dict("00201" => 100)
 
 const ss_fail = ["00023", "00024"]
 const logdir = joinpath(@__DIR__, "logs")
@@ -17,12 +21,14 @@ const expected_errs =
     ["Model contains no reactions.",
     "are not yet implemented.",
     "Please make reaction irreversible or rearrange kineticLaw to the form `term1 - term2`.",
-    "BoundsError(String[], (1,))",  # Occurs wher no V3L2 file is available
-    "COBREXA.jl",
+    "BoundsError(String[], (1,))",  # Occurs where no V3L2 file is available
+    "COBREXA.jl",  # Occurs when model requires fbc package
     "no method matching length(::Nothing)", "MethodError(iterate, (nothing,),", # Occurs for insance in case 00029, where S1(t) = 7 is the only eqn.
     "Stoichiometry must be a non-negative integer.",
-    "NaN result for non-NaN input.",
-    "RequestError("]
+    "NaN result for non-NaN input.",  # Todo: remove this once you can handle factorials
+    "RequestError(",
+    "structural_simplify"  # Todo: remove once structural_simplify works with `constant` and `isbc`.
+    ]
 
 function setup_settings_txt(text)
     ls = split(text, "\n")
@@ -120,8 +126,9 @@ function verify_case(case; verbose=true)
         prob = ODEProblem(sys, Pair[], (settings["start"], Float64(settings["duration"])); saveat=ts)
         k = 5
         
-        algorithm = get(algomap, case, Tsit5())
-        sol = solve(prob, algorithm; abstol=settings["absolute"], reltol=settings["relative"])
+        algorithm = get(algomap, case, CVODE_BDF())
+        f = get(special_tolerances, case, 1.)
+        sol = solve(prob, algorithm; abstol=settings["absolute"]/f, reltol=settings["relative"]/f)
         diffeq_retcode = sol.retcode
         k = diffeq_retcode == :Success ? 6 : k
 
@@ -159,7 +166,7 @@ function verify_all(cases; verbose=true)
 end
 
 df = verify_all(cases)
-# sys = xx[]
-# for i in 1:length(cases)
-#     @test sum(Vector(df[i, ["expected_err", "res"]])) == 1
-# end
+
+for i in 1:length(cases)
+    @test sum(Vector(df[i, ["expected_err", "res"]])) == 1
+end
