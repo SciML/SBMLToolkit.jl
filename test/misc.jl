@@ -1,8 +1,14 @@
-const case_ids = [7, 22, 140, 170, 325, 679]
+const case_ids = [7, 22,
+                #140, requires structural_simplify fix
+                170, 325,
+                # 679 requires structural_simplify fix
+                ]
+
 # const case_ids = [325]
 const cases = map(x -> x[end-4:end], .*("0000", string.(case_ids)))
 
 const algomap = Dict("00177" => Rodas4(),
+                  "00170" => Rodas5(),
                   "00325" => Rodas5(),
                   "00862" => Rodas4(),
                   "00863" => Rodas4(),
