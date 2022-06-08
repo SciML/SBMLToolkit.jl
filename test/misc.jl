@@ -126,7 +126,7 @@ function verify_case(case; verbose=true)
         prob = ODEProblem(sys, Pair[], (settings["start"], Float64(settings["duration"])); saveat=ts)
         k = 5
         
-        algorithm = get(algomap, case, CVODE_BDF())
+        algorithm = get(algomap, case, Sundials.CVODE_BDF())
         f = get(special_tolerances, case, 1.)
         sol = solve(prob, algorithm; abstol=settings["absolute"]/f, reltol=settings["relative"]/f)
         diffeq_retcode = sol.retcode

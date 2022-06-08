@@ -3,7 +3,7 @@ using Test
 
 using SBML
 using Catalyst
-using OrdinaryDiffEq
+using OrdinaryDiffEq, Sundials
 using CSV, DataFrames, Downloads, Plots
 
 @testset "SBMLToolkit.jl" begin
