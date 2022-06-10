@@ -76,6 +76,7 @@ function checksupport(file::String)
         occursin(item, sbml) && throw(ErrorException("SBML models with $item are not yet implemented."))
     end
     occursin("<sbml xmlns:fbc=", sbml) && throw(ErrorException("This model was designed for constrained-based optimisation. Please use COBREXA.jl instead of SBMLToolkit."))
+    true
 end
 
 ### reactions.jl ###
