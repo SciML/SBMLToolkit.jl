@@ -106,25 +106,20 @@ end
 """ Infer forward and reverse components of bidirectional kineticLaw """
 function get_unidirectional_components(bidirectional_math)
     err = "Cannot separate bidirectional kineticLaw `$bidirectional_math` to forward and reverse part. Please make reaction irreversible or rearrange kineticLaw to the form `term1 - term2`."
-    bidirectional_math = Symbolics.tosymbol(bidirectional_math)
-    bidirectional_math = simplify(bidirectional_math; expand = true)
-    if (bidirectional_math isa Union{Real,Symbol}) || (SymbolicUtils.operation(bidirectional_math) != +)
-        throw(ErrorException(err))
-    end
-    terms = SymbolicUtils.arguments(bidirectional_math)
-    fw_terms = []
-    rv_terms = []
-    for term in terms
-        if (term isa SymbolicUtils.Mul) && (term.coeff < 0)
-            push!(rv_terms, Num(-term))  # PL: @Anand: Perhaps we should to create_var(term) or so?
+    bmdict = bidirectional_math.val.dict
+    length(bmdict) > 2 && throw(ErrorException(err))
+    signs = collect(values(bmdict))
+    signs[1] == signs[2] && throw(ErrorException(err))
+    fw_term = 0
+    rv_term = 0
+    for (k, v) in bmdict
+        if v > 0
+            fw_term = v*k
         else
-            push!(fw_terms, Num(term))  # PL: @Anand: Perhaps we should to create_var(term) or so?
+            rv_term = -v*k
         end
     end
-    if (length(fw_terms) != 1) || (length(rv_terms) != 1)
-        throw(ErrorException(err))
-    end
-    return (fw_terms[1], rv_terms[1])
+    return (Num(fw_term), Num(rv_term))
 end
 
 function add_reaction!(rxs::Vector{Reaction},
