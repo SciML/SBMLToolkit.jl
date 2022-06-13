@@ -1,6 +1,6 @@
 const case_ids = [7, 22,
                 #140, requires structural_simplify fix
-                170, 325,
+                170, 305, 325,
                 # 679 requires structural_simplify fix
                 ]
 

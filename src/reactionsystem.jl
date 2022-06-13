@@ -222,7 +222,7 @@ function get_rules(model)
             push!(algeqs, 0 ~ interpret_as_num(r.math))
         elseif r isa SBML.AssignmentRule
             var, ass = get_var_and_assignment(model, r)
-            push!(obseqs, var ~ ass)
+            push!(obseqs, 0 ~ ass - var)
         elseif r isa SBML.RateRule
             var, ass = get_var_and_assignment(model, r)
             push!(raterules, D(var) ~ ass)
