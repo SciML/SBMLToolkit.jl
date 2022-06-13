@@ -205,7 +205,7 @@ m = SBML.Model(
     parameters = Dict("k2" => p),
     rules = SBML.Rule[SBML.RateRule("k2", KINETICMATH2)])
 u0map, parammap = SBMLToolkit.get_mappings(m)
-u0map_true = [SBMLToolkit.create_var("k2", IV; isbc=true) => 1.0]
+u0map_true = [SBMLToolkit.create_var("k2", IV; isbcspecies=true) => 1.0]
 @test isequal(u0map, u0map_true)
 @test Catalyst.isbc(first(u0map[1]))
 

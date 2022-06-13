@@ -30,7 +30,7 @@ function get_mappings(model::SBML.Model)
     for (k, v) in model.species
         if v.constant == true
             var = create_param(k; isconstantspecies=true)
-            push!(parammap, var => v.value)
+            push!(parammap, var => inits[k])
         else
             var = create_var(k, IV;
                             isbcspecies=has_rule_type(k, model, SBML.RateRule) ||
