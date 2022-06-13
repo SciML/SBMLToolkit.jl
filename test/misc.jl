@@ -1,4 +1,4 @@
-const case_ids = [7, 22,
+const case_ids = [7, 22, 23,
                 #140, requires structural_simplify fix
                 170, 325,
                 # 679 requires structural_simplify fix
@@ -125,11 +125,11 @@ function verify_case(case; verbose=true)
         end
         k = 3
         
-        # ssys = structural_simplify(sys)
+        ssys = structural_simplify(sys)
         k = 4
         
         ts = res_df[:, 1]  # LinRange(settings["start"], settings["duration"], settings["steps"]+1)
-        prob = ODEProblem(sys, Pair[], (settings["start"], Float64(settings["duration"])); saveat=ts)
+        prob = ODEProblem(ssys, Pair[], (settings["start"], Float64(settings["duration"])); saveat=ts)
         k = 5
         
         algorithm = get(algomap, case, Sundials.CVODE_BDF())
