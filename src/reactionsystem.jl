@@ -6,10 +6,12 @@ function Catalyst.ReactionSystem(model::SBML.Model; kwargs...)  # Todo: requires
     defs = ModelingToolkit._merge(Dict(u0map), Dict(parammap))
 
     algrules, obsrules, raterules = get_rules(model)
+    obsrules_rearranged = Equation[]
     for o in obsrules
         defs[o.lhs] = substitute(o.rhs, defs)
+        push!(obsrules_rearranged, 0 ~ o.rhs - o.lhs)
     end
-    constraints_sys = ODESystem(vcat(algrules, raterules, obsrules),
+    constraints_sys = ODESystem(vcat(algrules, raterules, obsrules_rearranged),
                                 IV; name = gensym(:CONSTRAINTS))
     ReactionSystem(rxs, IV, first.(u0map), first.(parammap);
                    defaults = defs, name = gensym(:SBML),
@@ -222,7 +224,7 @@ function get_rules(model)
             push!(algeqs, 0 ~ interpret_as_num(r.math))
         elseif r isa SBML.AssignmentRule
             var, ass = get_var_and_assignment(model, r)
-            push!(obseqs, 0 ~ ass - var)
+            push!(obseqs, var ~ ass)
         elseif r isa SBML.RateRule
             var, ass = get_var_and_assignment(model, r)
             push!(raterules, D(var) ~ ass)
