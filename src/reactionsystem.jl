@@ -73,13 +73,17 @@ end
 
 """ Check if conversion to ReactionSystem is possible """
 function checksupport(file::String)
+    println(file)
     not_implemented = ["listOfConstraints", "</delay>", "<priority>", "spatialDimensions=\"0\""]
+    println(isfile(file))
     sbml = isfile(file) ? open(file) do file
         read(file, String)
     end : file
+    println(sbml)
     for item in not_implemented
         occursin(item, sbml) && throw(ErrorException("SBML models with $item are not yet implemented."))
     end
+    println("no error yet")
     occursin("<sbml xmlns:fbc=", sbml) && throw(ErrorException("This model was designed for constrained-based optimisation. Please use COBREXA.jl instead of SBMLToolkit."))
     true
 end
