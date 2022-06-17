@@ -1,7 +1,7 @@
 name = "SBMLToolkit"
 uuid = "86080e66-c8ac-44c2-a1a0-9adaadfe4a4e"
 authors = ["paulflang", "anandijain"]
-version = "0.1.14"
+version = "0.1.15"
 
 [deps]
 Catalyst = "479239e8-5488-4da2-87a7-35f2df7eef83"
@@ -10,6 +10,7 @@ SBML = "e5567a89-2604-4b09-9718-f5f78e97c3bb"
 SymbolicUtils = "d1185830-fcd6-423d-90d6-eec64667417b"
 
 [compat]
+Catalyst = "12"
 MathML = "0.1"
 SBML = "0.10.2"
 SymbolicUtils = "0.17, 0.18, 0.19"
