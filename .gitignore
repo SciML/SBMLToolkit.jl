@@ -2,4 +2,5 @@
 *.jl.cov
 *.jl.mem
 /docs/build/
+/test/logs/
 *Manifest.toml
