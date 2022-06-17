@@ -103,18 +103,23 @@ function verify_case(case; verbose=true)
     err = ""
     try
     # Read case
+        println(11)
         sbml, settings, res_df = read_case(case)
-    
+        println(22)
         # Read SBML
         SBMLToolkit.checksupport(sbml)
+        println(33)
         ml = readSBMLFromString(sbml, doc -> begin
             set_level_and_version(3, 2)(doc)
             convert_simplify_math(doc)
         end)
+        println(44)
         ia = readSBMLFromString(sbml, doc -> begin
             set_level_and_version(3, 2)(doc)
         end)
+        println(55)
         ia = ia.initial_assignments
+        println(66)
         k = 1
 
         rs = ReactionSystem(ml)
