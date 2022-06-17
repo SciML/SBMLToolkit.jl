@@ -1,10 +1,12 @@
-const case_ids = [7, 22, 23,
-                #140, requires structural_simplify fix
-                170, 325,
-                # 679 requires structural_simplify fix
-                ]
+const case_ids = [7,  # boundary_condition
+                  22,  # non-integer stoichiometry
+                  23,  # species with constant=boundaryCondition="true"
+                  140,  # compartment size overridden with assignmentRule
+                  170,  # Model using parameters and rules only
+                  325,  # One reactions and two rate rules with four species in a 2D compartment
+                  679  # Initial value calculated by assignmentRule in compartment of non-unit size
+                 ]
 
-# const case_ids = [325]
 const cases = map(x -> x[end-4:end], .*("0000", string.(case_ids)))
 
 const algomap = Dict("00177" => Rodas4(),
@@ -18,7 +20,6 @@ const algomap = Dict("00177" => Rodas4(),
                   
 const special_tolerances = Dict("00201" => 100)
 
-const ss_fail = ["00023", "00024"]
 const logdir = joinpath(@__DIR__, "logs")
 ispath(logdir) && rm(logdir,recursive=true)
 mkdir(logdir)
