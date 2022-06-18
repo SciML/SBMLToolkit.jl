@@ -10,6 +10,7 @@ jobs:
       fail-fast: false
       matrix:
         version:
+          - '1.7.2'
           - '1.6'
           - '1'
         os:
@@ -33,8 +34,6 @@ jobs:
             ${{ runner.os }}-test-
             ${{ runner.os }}-
       - uses: julia-actions/julia-buildpkg@v1
-      - name: Setup tmate session
-        uses: mxschmitt/action-tmate@v3
       - uses: julia-actions/julia-runtest@v1
       - uses: actions/upload-artifact@v3
         if: failure() || success()
