@@ -76,9 +76,19 @@ function checksupport(file::String)
     println(file)
     not_implemented = ["listOfConstraints", "</delay>", "<priority>", "spatialDimensions=\"0\""]
     println(isfile(file))
-    sbml = isfile(file) ? open(file) do file
-        read(file, String)
-    end : file
+    # sbml = isfile(file) ? open(file) do file
+    #     read(file, String)
+    # end : file
+    if isfile(file)
+        println("inside if")
+        sbml = open(file) do file
+            read(file, String)
+            println("done with if")
+        end
+    else
+        println("inside else")
+        sbml = file
+    end
     println(sbml)
     for item in not_implemented
         occursin(item, sbml) && throw(ErrorException("SBML models with $item are not yet implemented."))

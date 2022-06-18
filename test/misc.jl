@@ -154,7 +154,7 @@ function verify_case(case; verbose=true)
     catch e
         err = string(e)
         expected_err = any(occursin.(expected_errs, err))
-        println(err)
+        println(err[end-1000:end])
         # if length(err) > 1000 # cutoff since I got ArgumentError: row size (9088174) too large 
         #     err = err[1:1000]
         # end
