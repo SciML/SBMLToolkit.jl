@@ -154,9 +154,10 @@ function verify_case(case; verbose=true)
     catch e
         err = string(e)
         expected_err = any(occursin.(expected_errs, err))
-        if length(err) > 1000 # cutoff since I got ArgumentError: row size (9088174) too large 
-            err = err[1:1000]
-        end
+        println(err)
+        # if length(err) > 1000 # cutoff since I got ArgumentError: row size (9088174) too large 
+        #     err = err[1:1000]
+        # end
     finally
         verbose && @info("Case $(case) done with a code $k and error msg: $err")
         return (case, expected_err, res, err, k, diffeq_retcode)
