@@ -18,6 +18,8 @@ jobs:
           - x64
     steps:
       - uses: actions/checkout@v2
+      - name: Setup tmate session
+        uses: mxschmitt/action-tmate@v3
       - uses: julia-actions/setup-julia@v1
         with:
           version: ${{ matrix.version }}
