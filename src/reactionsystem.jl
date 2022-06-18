@@ -71,30 +71,21 @@ function netstoich(id, reaction)
     netstoich += get(reaction.products, id, 0)
 end
 
-""" Check if conversion to ReactionSystem is possible """
-function checksupport(file::String)
-    println(file)
+""" Check if conversion of file to ReactionSystem is possible """
+function checksupport_file(filename::String)
+    string = open(filename) do file
+        read(file, String)
+    end
+    checksupport_string(string)
+end
+
+""" Check if conversion of xml-string to ReactionSystem is possible """
+function checksupport_string(xml::String)
     not_implemented = ["listOfConstraints", "</delay>", "<priority>", "spatialDimensions=\"0\""]
-    println(isfile(file))
-    # sbml = isfile(file) ? open(file) do file
-    #     read(file, String)
-    # end : file
-    if isfile(file)
-        println("inside if")
-        sbml = open(file) do file
-            read(file, String)
-            println("done with if")
-        end
-    else
-        println("inside else")
-        sbml = file
-    end
-    println(sbml)
     for item in not_implemented
-        occursin(item, sbml) && throw(ErrorException("SBML models with $item are not yet implemented."))
+        occursin(item, xml) && throw(ErrorException("SBML models with $item are not yet implemented."))
     end
-    println("no error yet")
-    occursin("<sbml xmlns:fbc=", sbml) && throw(ErrorException("This model was designed for constrained-based optimisation. Please use COBREXA.jl instead of SBMLToolkit."))
+    occursin("<sbml xmlns:fbc=", xml) && throw(ErrorException("This model was designed for constrained-based optimisation. Please use COBREXA.jl instead of SBMLToolkit."))
     true
 end
 

@@ -103,23 +103,18 @@ function verify_case(case; verbose=true)
     err = ""
     try
     # Read case
-        println(11)
         sbml, settings, res_df = read_case(case)
-        println(22)
         # Read SBML
-        SBMLToolkit.checksupport(sbml)
-        println(33)
+        SBMLToolkit.checksupport_string(sbml)
         ml = readSBMLFromString(sbml, doc -> begin
             set_level_and_version(3, 2)(doc)
             convert_simplify_math(doc)
         end)
-        println(44)
         ia = readSBMLFromString(sbml, doc -> begin
             set_level_and_version(3, 2)(doc)
         end)
-        println(55)
+
         ia = ia.initial_assignments
-        println(66)
         k = 1
 
         rs = ReactionSystem(ml)
@@ -154,10 +149,9 @@ function verify_case(case; verbose=true)
     catch e
         err = string(e)
         expected_err = any(occursin.(expected_errs, err))
-        println(err[end-1000:end])
-        # if length(err) > 1000 # cutoff since I got ArgumentError: row size (9088174) too large 
-        #     err = err[1:1000]
-        # end
+        if length(err) > 1000 # cutoff since I got ArgumentError: row size (9088174) too large 
+            err = err[1:1000]
+        end
     finally
         verbose && @info("Case $(case) done with a code $k and error msg: $err")
         return (case, expected_err, res, err, k, diffeq_retcode)
