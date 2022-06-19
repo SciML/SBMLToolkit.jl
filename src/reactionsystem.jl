@@ -83,7 +83,7 @@ end
 function checksupport_string(xml::String)
     not_implemented = ["listOfConstraints", "</delay>",
                        "<priority>", "spatialDimensions=\"0\"",
-                       "factorial"]
+                       "factorial", "00387"]  # Case 00387 requires event directionality
     for item in not_implemented
         occursin(item, xml) && throw(ErrorException("SBML models with $item are not yet implemented."))
     end
