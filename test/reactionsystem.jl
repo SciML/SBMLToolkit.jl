@@ -125,10 +125,10 @@ sol = solve(oprob, Tsit5())
 @test_nowarn ODEProblem(ODESystem(readSBML(sbmlfile)), [], [0.0, 1.0], [])
 
 # Test checksupport
-@test_nowarn SBMLToolkit.checksupport(sbmlfile)
-@test_throws ErrorException SBMLToolkit.checksupport(joinpath("data", "unsupported.sbml"))
-@test_nowarn SBMLToolkit.checksupport("all good")
-@test_throws ErrorException SBMLToolkit.checksupport("contains </delay>")
+@test_nowarn SBMLToolkit.checksupport_file(sbmlfile)
+@test_throws ErrorException SBMLToolkit.checksupport_file(joinpath("data", "unsupported.sbml"))
+@test_nowarn SBMLToolkit.checksupport_string("all good")
+@test_throws ErrorException SBMLToolkit.checksupport_string("contains </delay>")
 
 # Test get_substitutions
 truesubs = Dict(Num(Symbolics.variable(:c1; T = Real)) => c1,
@@ -205,7 +205,7 @@ m = SBML.Model(
     parameters = Dict("k2" => p),
     rules = SBML.Rule[SBML.RateRule("k2", KINETICMATH2)])
 u0map, parammap = SBMLToolkit.get_mappings(m)
-u0map_true = [SBMLToolkit.create_var("k2", IV; isbc=true) => 1.0]
+u0map_true = [SBMLToolkit.create_var("k2", IV; isbcspecies=true) => 1.0]
 @test isequal(u0map, u0map_true)
 @test Catalyst.isbc(first(u0map[1]))
 
@@ -225,6 +225,3 @@ Catalyst.isbc(first(u0map[1]))
 @test isnan(SBMLToolkit.get_massaction(k1 * s1 * s2, [s1], [1]))
 @test isnan(SBMLToolkit.get_massaction(k1 + c1, [s1], [1]))
 @test_throws ErrorException SBMLToolkit.get_massaction(k1, nothing, [1])
-
-# default test
-@test_broken ModelingToolkit.defaults(m) == ModelingToolkit.defaults(ReactionSystem(m))

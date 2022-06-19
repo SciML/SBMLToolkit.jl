@@ -28,20 +28,25 @@ function get_mappings(model::SBML.Model)
     u0map = Pair[]
     parammap = Pair[]
     for (k, v) in model.species
-        var = create_var(k, IV; constant=v.constant,
-                         isbc=has_rule_type(k, model, SBML.RateRule) ||
-                              has_rule_type(k, model, SBML.AssignmentRule) ||
-                              (has_rule_type(k, model, SBML.AlgebraicRule) &&
-                              (
-                                  all([netstoich(k, r) == 0 for r in values(model.reactions)]) ||
-                                  v.boundary_condition == true)
-                              )
-                        )  # To remove species that are otherwise defined
-        push!(u0map, var => inits[k])
+        if v.constant == true
+            var = create_param(k; isconstantspecies=true)
+            push!(parammap, var => inits[k])
+        else
+            var = create_var(k, IV;
+                            isbcspecies=has_rule_type(k, model, SBML.RateRule) ||
+                                has_rule_type(k, model, SBML.AssignmentRule) ||
+                                (has_rule_type(k, model, SBML.AlgebraicRule) &&
+                                (
+                                    all([netstoich(k, r) == 0 for r in values(model.reactions)]) ||
+                                    v.boundary_condition == true)
+                                )
+                            )  # To remove species that are otherwise defined
+            push!(u0map, var => inits[k])
+        end
     end
     for (k, v) in model.parameters
         if v.constant == false && SBML.seemsdefined(k, model)
-            var = create_var(k, IV; isbc=true)
+            var = create_var(k, IV; isbcspecies=true)
             push!(u0map, var => v.value)
         else
             var = create_param(k)
@@ -50,7 +55,7 @@ function get_mappings(model::SBML.Model)
     end
     for (k, v) in model.compartments
         if v.constant == false && SBML.seemsdefined(k, model)
-            var = create_var(k, IV; isbc=true)
+            var = create_var(k, IV; isbcspecies=true)
             push!(u0map, var => v.size)
         else
             var = create_param(k)
@@ -66,16 +71,24 @@ function netstoich(id, reaction)
     netstoich += get(reaction.products, id, 0)
 end
 
-""" Check if conversion to ReactionSystem is possible """
-function checksupport(file::String)
-    not_implemented = ["listOfConstraints", "</delay>", "<priority>", "spatialDimensions=\"0\""]
-    sbml = isfile(file) ? open(file) do file
+""" Check if conversion of file to ReactionSystem is possible """
+function checksupport_file(filename::String)
+    string = open(filename) do file
         read(file, String)
-    end : file
-    for item in not_implemented
-        occursin(item, sbml) && throw(ErrorException("SBML models with $item are not yet implemented."))
     end
-    occursin("<sbml xmlns:fbc=", sbml) && throw(ErrorException("This model was designed for constrained-based optimisation. Please use COBREXA.jl instead of SBMLToolkit."))
+    checksupport_string(string)
+end
+
+""" Check if conversion of xml-string to ReactionSystem is possible """
+function checksupport_string(xml::String)
+    not_implemented = ["listOfConstraints", "</delay>",
+                       "<priority>", "spatialDimensions=\"0\"",
+                       "factorial", "00387"]  # Case 00387 requires event directionality
+    for item in not_implemented
+        occursin(item, xml) && throw(ErrorException("SBML models with $item are not yet implemented."))
+    end
+    occursin("<sbml xmlns:fbc=", xml) && throw(ErrorException("This model was designed for constrained-based optimisation. Please use COBREXA.jl instead of SBMLToolkit."))
+    !(occursin("<reaction", xml) || occursin("rateRule", xml)) && throw(ErrorException("Models that contain neither reactions or rateRules will fail in simulation."))
     true
 end
 
@@ -310,17 +323,17 @@ function get_substitutions(model)
     subsdict
 end
 
-function create_var(x; constant=false, isbc=false)
+function create_var(x; isbcspecies=false)
     sym = Symbol(x)
-    Symbolics.unwrap(first(@variables $sym [isconstant=constant, isbc=isbc]))
+    Symbolics.unwrap(first(@variables $sym [isbcspecies=isbcspecies]))
 end
-function create_var(x, iv; constant=false, isbc=false)
+function create_var(x, iv; isbcspecies=false)
     sym = Symbol(x)
-    Symbolics.unwrap(first(@variables $sym(iv) [isconstant=constant, isbc=isbc]))
+    Symbolics.unwrap(first(@variables $sym(iv) [isbcspecies=isbcspecies]))
 end
-function create_param(x)
+function create_param(x; isconstantspecies=false)
     sym = Symbol(x)
-    Symbolics.unwrap(first(@parameters $sym))
+    Symbolics.unwrap(first(@parameters $sym [isconstantspecies=isconstantspecies]))
 end
 
 function has_rule_type(id::String, m::SBML.Model, T::Type{<:SBML.Rule})
@@ -354,8 +367,10 @@ function get_events(model, rs)  # Todo: implement up or downpass and parameters
                     math = SBML.MathApply("*", [SBML.MathIdent(vc), math])
                 end
             end
-            var = Symbol(eva.variable)  # Todo: try create_var(eva.variable, IV)
-            effect = ModelingToolkit.getvar(rs, var) ~ Symbolics.unwrap(interpret_as_num(math))
+            var = create_var(eva.variable, IV)
+            math = substitute(Symbolics.unwrap(interpret_as_num(math)),
+                              subsdict)
+            effect = var ~ math
             push!(mtk_evas, effect)
         end
         push!(mtk_evs, trig => mtk_evas)
