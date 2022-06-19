@@ -81,11 +81,14 @@ end
 
 """ Check if conversion of xml-string to ReactionSystem is possible """
 function checksupport_string(xml::String)
-    not_implemented = ["listOfConstraints", "</delay>", "<priority>", "spatialDimensions=\"0\""]
+    not_implemented = ["listOfConstraints", "</delay>",
+                       "<priority>", "spatialDimensions=\"0\"",
+                       "factorial", "00387"]  # Case 00387 requires event directionality
     for item in not_implemented
         occursin(item, xml) && throw(ErrorException("SBML models with $item are not yet implemented."))
     end
     occursin("<sbml xmlns:fbc=", xml) && throw(ErrorException("This model was designed for constrained-based optimisation. Please use COBREXA.jl instead of SBMLToolkit."))
+    !(occursin("<reaction", xml) || occursin("rateRule", xml)) && throw(ErrorException("Models that contain neither reactions or rateRules will fail in simulation."))
     true
 end
 
@@ -364,8 +367,10 @@ function get_events(model, rs)  # Todo: implement up or downpass and parameters
                     math = SBML.MathApply("*", [SBML.MathIdent(vc), math])
                 end
             end
-            var = Symbol(eva.variable)  # Todo: try create_var(eva.variable, IV)
-            effect = ModelingToolkit.getvar(rs, var) ~ Symbolics.unwrap(interpret_as_num(math))
+            var = create_var(eva.variable, IV)
+            math = substitute(Symbolics.unwrap(interpret_as_num(math)),
+                              subsdict)
+            effect = var ~ math
             push!(mtk_evas, effect)
         end
         push!(mtk_evs, trig => mtk_evas)
