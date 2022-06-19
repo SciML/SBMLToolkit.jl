@@ -1,11 +1,12 @@
-const case_ids = [7,  # boundary_condition
-                  22,  # non-integer stoichiometry
-                  23,  # species with constant=boundaryCondition="true"
-                  140,  # compartment size overridden with assignmentRule
-                  170,  # Model using parameters and rules only
-                  325,  # One reactions and two rate rules with four species in a 2D compartment
-                  679  # Initial value calculated by assignmentRule in compartment of non-unit size
-                 ]
+# const case_ids = [7,  # boundary_condition
+#                   22,  # non-integer stoichiometry
+#                   23,  # species with constant=boundaryCondition="true"
+#                   140,  # compartment size overridden with assignmentRule
+#                   170,  # Model using parameters and rules only
+#                   325,  # One reactions and two rate rules with four species in a 2D compartment
+#                   679  # Initial value calculated by assignmentRule in compartment of non-unit size
+#                  ]
+const case_ids = [1:1200...]
 
 const cases = map(x -> x[end-4:end], .*("0000", string.(case_ids)))
 
