@@ -107,7 +107,7 @@ function get_reactions(model::SBML.Model)
         if reaction.reversible
             symbolic_math = get_unidirectional_components(symbolic_math)
             kl_fw, kl_rv = [substitute(x, subsdict) for x in symbolic_math]
-            enforce_rate = kl_rv == 0
+            enforce_rate = isequal(kl_rv, 0)
             add_reaction!(rxs, kl_fw, rstoich, pstoich, model; enforce_rate=enforce_rate)
             add_reaction!(rxs, kl_rv, pstoich, rstoich, model; enforce_rate=enforce_rate)
         else
