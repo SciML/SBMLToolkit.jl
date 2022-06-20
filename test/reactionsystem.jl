@@ -190,8 +190,8 @@ rv = substitute(rv, Dict(SBMLToolkit.create_var("s2") => SBMLToolkit.create_var(
 km = SBML.MathIdent("s1s2")
 sm1 = SBMLToolkit.interpret_as_num(km)
 sm2 = sm - sm1
-@test_throws ErrorException SBMLToolkit.get_unidirectional_components(sm2)
-@test_throws ErrorException SBMLToolkit.get_unidirectional_components(:k1)
+@test isequal(SBMLToolkit.get_unidirectional_components(sm2), (sm2, 0))
+@test isequal(SBMLToolkit.get_unidirectional_components(:k1), (:k1, 0))
 
 # Test get_mappings
 u0map, parammap = SBMLToolkit.get_mappings(MODEL1)

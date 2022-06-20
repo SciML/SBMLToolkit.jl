@@ -139,7 +139,8 @@ function get_unidirectional_components(bidirectional_math)
         end
     end
     if (length(fw_terms) != 1) || (length(rv_terms) != 1)
-        throw(ErrorException(err))
+        @warn "Cannot separate bidirectional kineticLaw `$bidirectional_math` to forward and reverse part. Setting forward to `$bidirectional_math` and reverse to `0`."
+        return (bidirectional_math, 0)
     end
     return (fw_terms[1], rv_terms[1])
 end
