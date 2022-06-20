@@ -1,11 +1,12 @@
 const case_ids = [7,  # boundary_condition
                   22,  # non-integer stoichiometry
+                  23,  # species with constant=boundaryCondition="true"
+                  140,  # compartment size overridden with assignmentRule
                   170,  # Model using parameters and rules only
                   325,  # One reactions and two rate rules with four species in a 2D compartment
                   679  # Initial value calculated by assignmentRule in compartment of non-unit size
                  ]
 
-# const case_ids = [325]
 const cases = map(x -> x[end-4:end], .*("0000", string.(case_ids)))
 
 const algomap = Dict("00177" => Rodas4(),
@@ -17,25 +18,22 @@ const algomap = Dict("00177" => Rodas4(),
                   "00882" => Rodas4()
                 )
                   
-const special_tolerances = Dict("00201" => 100)
+const special_tolerances = Dict("00172" => 100,
+                                "00201" => 100,
+                                "00358" => 100,
+                                "00387" => 100)
 
-const ss_fail = ["00023", "00024"]
 const logdir = joinpath(@__DIR__, "logs")
 ispath(logdir) && rm(logdir,recursive=true)
 mkdir(logdir)
 
 const expected_errs = 
-    ["Model contains no reactions.",
-    "are not yet implemented.",
+    ["are not yet implemented.",
     "Please make reaction irreversible or rearrange kineticLaw to the form `term1 - term2`.",
-    "BoundsError(String[], (1,))",  # Occurs where no V3L2 file is available
     "COBREXA.jl",  # Occurs when model requires fbc package
-    "no method matching length(::Nothing)", "MethodError(iterate, (nothing,),", # Occurs for insance in case 00029, where S1(t) = 7 is the only eqn.
     "Stoichiometry must be a non-negative integer.",
-    "NaN result for non-NaN input.",  # Todo: remove this once you can handle factorials
     "RequestError(",
-    "structural_simplify"  # Todo: remove once structural_simplify works with `constant` and `isbc`.
-    ]
+    "neither reactions or rateRules"]
 
 function setup_settings_txt(text)
     ls = split(text, "\n")
@@ -48,11 +46,12 @@ function to_concentrations(sol, ml, res_df, ia)
     volumes = [1.]
     sol_df = DataFrame(sol)
     for sn in names(sol_df)[2:end]
-        if haskey(ml.species, sn[1:3-end])
+        if haskey(ml.species, sn[1:end-3])
             spec = ml.species[sn[1:end-3]]
             comp = ml.compartments[spec.compartment]
             ic = spec.initial_concentration
-            isnothing(ic) || haskey(ia, sn[1:end-3]) ? push!(volumes, 1.) : push!(volumes, comp.size)
+            # isnothing(ic) || haskey(ia, sn[1:end-3]) ? push!(volumes, 1.) : push!(volumes, comp.size)
+            isnothing(spec.initial_amount) ? push!(volumes, comp.size) : push!(volumes, 1.)  # Todo: see if this line works better than the above
         else
             push!(volumes, 1.)
         end
@@ -104,17 +103,18 @@ function verify_case(case; verbose=true)
     try
     # Read case
         sbml, settings, res_df = read_case(case)
-    
         # Read SBML
-        SBMLToolkit.checksupport(sbml)
+        SBMLToolkit.checksupport_string(sbml)
         ml = readSBMLFromString(sbml, doc -> begin
             set_level_and_version(3, 2)(doc)
             convert_simplify_math(doc)
         end)
-        ia = readSBMLFromString(sbml, doc -> begin
-            set_level_and_version(3, 2)(doc)
-        end)
-        ia = ia.initial_assignments
+        # ia = readSBMLFromString(sbml, doc -> begin
+        #     set_level_and_version(3, 2)(doc)
+        # end)
+
+        # ia = ia.initial_assignments
+        ia = Dict()  # Todo: figure out if ia are divided by volume or not (688 isn't)
         k = 1
 
         rs = ReactionSystem(ml)
@@ -126,11 +126,11 @@ function verify_case(case; verbose=true)
         end
         k = 3
         
-        # ssys = structural_simplify(sys)
+        ssys = structural_simplify(sys)
         k = 4
         
         ts = res_df[:, 1]  # LinRange(settings["start"], settings["duration"], settings["steps"]+1)
-        prob = ODEProblem(sys, Pair[], (settings["start"], Float64(settings["duration"])); saveat=ts)
+        prob = ODEProblem(ssys, Pair[], (settings["start"], Float64(settings["duration"])); saveat=ts)
         k = 5
         
         algorithm = get(algomap, case, Sundials.CVODE_BDF())
