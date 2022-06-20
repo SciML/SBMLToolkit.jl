@@ -83,8 +83,9 @@ end
 function checksupport_string(xml::String)
     not_implemented = ["listOfConstraints", "</delay>",
                        "<priority>", "spatialDimensions=\"0\"",
-                       "factorial", "00387"]  # Case 00387 requires event directionality
-    for item in not_implemented
+                       "factorial", "00387",  # Case 00387 requires event directionality
+                       "</eventAssignment>\n          <eventAssignment"]
+                       for item in not_implemented
         occursin(item, xml) && throw(ErrorException("SBML models with $item are not yet implemented."))
     end
     occursin("<sbml xmlns:fbc=", xml) && throw(ErrorException("This model was designed for constrained-based optimisation. Please use COBREXA.jl instead of SBMLToolkit."))
