@@ -127,7 +127,7 @@ sol = solve(oprob, Tsit5())
 # Test checksupport
 @test_nowarn SBMLToolkit.checksupport_file(sbmlfile)
 @test_throws ErrorException SBMLToolkit.checksupport_file(joinpath("data", "unsupported.sbml"))
-@test_nowarn SBMLToolkit.checksupport_string("all good")
+@test_nowarn SBMLToolkit.checksupport_string("all good <reaction")
 @test_throws ErrorException SBMLToolkit.checksupport_string("contains </delay>")
 
 # Test get_substitutions
