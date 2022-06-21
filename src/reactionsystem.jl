@@ -109,8 +109,9 @@ function get_reactions(model::SBML.Model)
         if reaction.reversible
             symbolic_math = get_unidirectional_components(symbolic_math)
             kl_fw, kl_rv = [substitute(x, subsdict) for x in symbolic_math]
-            add_reaction!(rxs, kl_fw, rstoich, pstoich, model)
-            add_reaction!(rxs, kl_rv, pstoich, rstoich, model)
+            enforce_rate = isequal(kl_rv, 0)
+            add_reaction!(rxs, kl_fw, rstoich, pstoich, model; enforce_rate=enforce_rate)
+            add_reaction!(rxs, kl_rv, pstoich, rstoich, model; enforce_rate=enforce_rate)
         else
             kl = substitute(symbolic_math, subsdict)  # Todo: use SUBSDICT
             add_reaction!(rxs, kl, rstoich, pstoich, model)
@@ -122,12 +123,14 @@ end
 """ Infer forward and reverse components of bidirectional kineticLaw """
 function get_unidirectional_components(bidirectional_math)
     err = "Cannot separate bidirectional kineticLaw `$bidirectional_math` to forward and reverse part. Please make reaction irreversible or rearrange kineticLaw to the form `term1 - term2`."
-    bidirectional_math = Symbolics.tosymbol(bidirectional_math)
-    bidirectional_math = simplify(bidirectional_math; expand = true)
-    if (bidirectional_math isa Union{Real,Symbol}) || (SymbolicUtils.operation(bidirectional_math) != +)
-        throw(ErrorException(err))
+    bm = Symbolics.tosymbol(bidirectional_math)
+    bm = simplify(bm; expand = true)
+    if (bm isa Union{Real,Symbol}) || (SymbolicUtils.operation(bm) != +)
+        # throw(ErrorException(err))
+        @warn "Cannot separate bidirectional kineticLaw `$bidirectional_math` to forward and reverse part. Setting forward to `$bidirectional_math` and reverse to `0`."
+        return (bidirectional_math, Num(0))
     end
-    terms = SymbolicUtils.arguments(bidirectional_math)
+    terms = SymbolicUtils.arguments(bm)
     fw_terms = []
     rv_terms = []
     for term in terms
@@ -138,7 +141,8 @@ function get_unidirectional_components(bidirectional_math)
         end
     end
     if (length(fw_terms) != 1) || (length(rv_terms) != 1)
-        throw(ErrorException(err))
+        @warn "Cannot separate bidirectional kineticLaw `$bidirectional_math` to forward and reverse part. Setting forward to `$bidirectional_math` and reverse to `0`."
+        return (bidirectional_math, Num(0))
     end
     return (fw_terms[1], rv_terms[1])
 end
@@ -146,12 +150,14 @@ end
 function add_reaction!(rxs::Vector{Reaction},
                        kl::Num,
                        rstoich::Dict{String,Float64}, pstoich::Dict{String,Float64},
-                       model::SBML.Model)  
+                       model::SBML.Model;
+                       enforce_rate=false)  
     reactants, products, rstoichvals, pstoichvals = get_reagents(rstoich, pstoich, model)
     isnothing(reactants) && isnothing(products) && return
     rstoichvals = stoich_convert_to_ints(rstoichvals)
     pstoichvals = stoich_convert_to_ints(pstoichvals)
     kl, our = use_rate(kl, reactants, rstoichvals)
+    our = enforce_rate ? true : our
     push!(rxs, Catalyst.Reaction(kl, reactants, products, rstoichvals, pstoichvals; only_use_rate = our))
 end
 
