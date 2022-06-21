@@ -11,6 +11,7 @@ const cases = map(x -> x[end-4:end], .*("0000", string.(case_ids)))
 
 const algomap = Dict("00177" => Rodas4(),
                   "00170" => Rodas5(),
+                  "00305" => Rodas5(),
                   "00325" => Rodas5(),
                   "00862" => Rodas4(),
                   "00863" => Rodas4(),
