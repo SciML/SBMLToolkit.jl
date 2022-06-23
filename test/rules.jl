@@ -1,7 +1,7 @@
 myread(fn) = readSBML(fn, doc -> begin
-    set_level_and_version(3, 2)(doc)
-    convert_simplify_math(doc)
-end)
+                          set_level_and_version(3, 2)(doc)
+                          convert_simplify_math(doc)
+                      end)
 
 # assignment rule
 fn = "data/00038-sbml-l3v2.xml" # this case is for observable eqs
@@ -27,7 +27,7 @@ sys = convert(ODESystem, rs; include_zero_odes = true)
 @variables t S1(t)
 @parameters compartment
 D = Differential(t)
-@test equations(sys) == [D(S1) ~ 7*compartment]
+@test equations(sys) == [D(S1) ~ 7 * compartment]
 
 # algebraic rule
 fn = "data/00039-sbml-l3v2.xml" # this case is for observable eqs
@@ -63,7 +63,7 @@ sys = convert(ODESystem, rs)
 fn = "data/00328-sbml-l3v2.xml"
 m = myread(fn)
 @named rs = ReactionSystem(m)
-sys = convert(ODESystem, rs; include_zero_odes = true, combinatoric_ratelaws=false)
+sys = convert(ODESystem, rs; include_zero_odes = true, combinatoric_ratelaws = false)
 ssys = structural_simplify(sys)
 rhs = last(equations(ssys)).rhs
 @variables S4(t)
