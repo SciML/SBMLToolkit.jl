@@ -1,4 +1,5 @@
-using SBMLToolkit, OrdinaryDiffEq, Sundials
+using SBMLToolkit
+using ModelingToolkit, OrdinaryDiffEq, Sundials
 using CSV, DataFrames, Downloads, Plots
 using Test
 

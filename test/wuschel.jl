@@ -2,7 +2,7 @@
 # SBML.Model with 4139 reactions, 1265 species, and 522 parameters. (1012 equations)
 
 using SBMLToolkit
-using Downloads, ModelingToolkit
+using Downloads, ModelingToolkit, OrdinaryDiffEq
 using Test
 
 sbml_url = "https://www.ebi.ac.uk/biomodels/model/download/MODEL1112100000.2?filename=MODEL1112100000_url.xml"
