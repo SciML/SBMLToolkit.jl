@@ -1,7 +1,7 @@
 myread(fn) = readSBML(fn, doc -> begin
-    set_level_and_version(3, 2)(doc)
-    convert_simplify_math(doc)
-end)
+                          set_level_and_version(3, 2)(doc)
+                          convert_simplify_math(doc)
+                      end)
 
 # 1 single trigger, single affect
 fn = "data/00026-sbml-l3v2.xml"
