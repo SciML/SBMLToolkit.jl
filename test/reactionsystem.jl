@@ -1,3 +1,8 @@
+using SBMLToolkit
+using Catalyst, SBML, ModelingToolkit
+using OrdinaryDiffEq
+using Test
+
 cd(@__DIR__)
 sbmlfile = joinpath("data", "reactionsystem_01.xml")
 @parameters t, k1, c1

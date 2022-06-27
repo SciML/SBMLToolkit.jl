@@ -1,6 +1,10 @@
 # this file tests that a big model simulates
 # SBML.Model with 4139 reactions, 1265 species, and 522 parameters. (1012 equations)
 
+using SBMLToolkit
+using Downloads, ModelingToolkit
+using Test
+
 sbml_url = "https://www.ebi.ac.uk/biomodels/model/download/MODEL1112100000.2?filename=MODEL1112100000_url.xml"
 sbml = String(take!(Downloads.download(sbml_url, IOBuffer())))
 m = readSBMLFromString(sbml, doc -> begin
