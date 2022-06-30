@@ -6,6 +6,7 @@ on:
   workflow_dispatch:
 jobs:
   test:
+    if: github.event_name == 'workflow_dispatch' || github.actor == 'JuliaTagBot'
     name: ${{ matrix.package.repo }}/${{ matrix.package.group }}
     runs-on: ${{ matrix.os }}
     continue-on-error: true
