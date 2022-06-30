@@ -12,17 +12,18 @@ function Catalyst.ReactionSystem(model::SBML.Model; kwargs...)  # Todo: requires
         push!(obsrules_rearranged, 0 ~ o.rhs - o.lhs)
     end
     constraints_sys = ODESystem(vcat(algrules, raterules, obsrules_rearranged),
-                                IV; name = gensym(:CONSTRAINTS))
+                                IV; name = gensym(:CONSTRAINTS),
+                                continuous_events = get_events(model))
     ReactionSystem(rxs, IV, first.(u0map), first.(parammap);
                    defaults = defs, name = gensym(:SBML),
-                   constraints = constraints_sys, kwargs...)
+                   constraints = constraints_sys,
+                   combinatoric_ratelaws = false, kwargs...)
 end
 
 """ ODESystem constructor """
 function ModelingToolkit.ODESystem(model::SBML.Model; include_zero_odes = true, kwargs...)
     rs = ReactionSystem(model; kwargs...)
-    convert(ODESystem, rs; include_zero_odes = include_zero_odes,
-            continuous_events = get_events(model, rs), combinatoric_ratelaws = false)
+    convert(ODESystem, rs; include_zero_odes = include_zero_odes)
 end
 
 function get_mappings(model::SBML.Model)
@@ -359,7 +360,7 @@ end
 Note that one limitation of Event support is that ReactionSystems do not have a field for it yet.
 So in order for the system to have events, you must call `ODESystem(m::SBML.Model)` rather than `convert(ODESystem, ReactionSystem(m::SBML.Model))`
 """
-function get_events(model, rs)  # Todo: implement up or downpass and parameters
+function get_events(model)  # Todo: implement up or downpass and parameters
     subsdict = get_substitutions(model)  # Todo: use SUBSDICT
     evs = model.events
     mtk_evs = Pair{Vector{Equation}, Vector{Equation}}[]

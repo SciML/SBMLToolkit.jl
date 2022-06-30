@@ -6,7 +6,8 @@ myread(fn) = readSBML(fn, doc -> begin
 # 1 single trigger, single affect
 fn = "data/00026-sbml-l3v2.xml"
 m = myread(fn)
-@named sys = ODESystem(m)
+@named rs = ReactionSystem(m)
+sys = convert(ODESystem, rs)
 ssys = structural_simplify(sys)
 @test length(ModelingToolkit.get_continuous_events(ssys)) == 1
 prob = ODEProblem(ssys, [], (0, 5.0); saveat = 0:0.1:5.0)
