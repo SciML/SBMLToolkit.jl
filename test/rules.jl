@@ -1,3 +1,7 @@
+using SBMLToolkit
+using ModelingToolkit, OrdinaryDiffEq
+using Test
+
 myread(fn) = readSBML(fn, doc -> begin
                           set_level_and_version(3, 2)(doc)
                           convert_simplify_math(doc)
