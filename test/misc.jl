@@ -1,6 +1,7 @@
 const case_ids = [7,  # boundary_condition
     22,  # non-integer stoichiometry
     23,  # species with constant=boundaryCondition="true"
+    41,  # events
     140,  # compartment size overridden with assignmentRule
     170,  # Model using parameters and rules only
     325,  # One reactions and two rate rules with four species in a 2D compartment
