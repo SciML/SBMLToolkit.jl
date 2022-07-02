@@ -1,10 +1,10 @@
 # Conversion to symbolics
-symbolicsRateOf(x) = Differential(t)(x)
-
 const IV = Catalyst.DEFAULT_IV
+const D = Differential(IV)
+symbolicsRateOf(x) = D(x)
 const symbolics_mapping = Dict(SBML.default_function_mapping...,
                                "rateOf" => symbolicsRateOf)
-const D = Differential(IV)
+
 # const SUBSDICT = get_substitutions(model)
 
 map_symbolics_ident(x) = begin
