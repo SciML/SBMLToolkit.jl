@@ -35,9 +35,9 @@ reac = SBML.Reaction(reactants = Dict("s1" => 1),
                      kinetic_math = km,
                      reversible = false)
 model = SBML.Model(parameters = Dict("k1" => PARAM1),
-                 compartments = Dict("c1" => COMP1),
-                 species = Dict("s1" => SPECIES1),
-                 reactions = Dict("r1" => reac))
+                   compartments = Dict("c1" => COMP1),
+                   species = Dict("s1" => SPECIES1),
+                   reactions = Dict("r1" => reac))
 @test isequal(IV, SBMLToolkit.get_reactions(model)[1].rate)
 
 # Test get_unidirectional_components
@@ -64,12 +64,13 @@ SBMLToolkit.add_reaction!(rxs, k1, Dict{String, Float64}(), Dict{String, Float64
 @test isequal(rxs, Catalyst.Reaction[])
 
 rxs = Catalyst.Reaction[]
-SBMLToolkit.add_reaction!(rxs, k1*s1, Dict("s1" => 1.0), Dict{String, Float64}(), MODEL1)
+SBMLToolkit.add_reaction!(rxs, k1 * s1, Dict("s1" => 1.0), Dict{String, Float64}(), MODEL1)
 reaction_true = Catalyst.Reaction(k1, [s1], nothing, [1], nothing, only_use_rate = false)
 @test isequal(rxs[1], reaction_true)
 
 rxs = Catalyst.Reaction[]
-SBMLToolkit.add_reaction!(rxs, k1*s1, Dict("s1" => 1.0), Dict{String, Float64}(), MODEL1, enforce_rate = true)
+SBMLToolkit.add_reaction!(rxs, k1 * s1, Dict("s1" => 1.0), Dict{String, Float64}(), MODEL1,
+                          enforce_rate = true)
 reaction_true = Catalyst.Reaction(k1, [s1], nothing, [1], nothing, only_use_rate = true)
 @test isequal(rxs, [reaction_true])
 

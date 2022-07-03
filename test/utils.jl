@@ -2,12 +2,13 @@ using SBMLToolkit
 using SBML, SBMLToolkitTestSuite
 using Test
 
+function readmodel(sbml)
+    SBMLToolkit.readSBMLFromString(sbml, doc -> begin
+                                       set_level_and_version(3, 2)(doc)
+                                       convert_simplify_math(doc)
+                                   end)
+end
 
-readmodel(sbml) = SBMLToolkit.readSBMLFromString(sbml, doc -> begin
-                            set_level_and_version(3, 2)(doc)
-                            convert_simplify_math(doc)
-                        end)
-                        
 const IV = Catalyst.DEFAULT_IV
 @variables s1(IV)
 # Test symbolicsRateOf
@@ -23,28 +24,16 @@ sym = SBMLToolkit.map_symbolics_ident(SBML.MathIdent("s1"))
 # Test interpret_as_num
 @variables A B C D Time
 
-test = SBML.MathApply(
-    "*",
-    SBML.Math[
-        SBML.MathApply(
-            "+",
-            SBML.Math[
-                SBML.MathApply(
-                    "*",
-                    SBML.Math[SBML.MathIdent("A"), SBML.MathIdent("B")],
-                ),
-                SBML.MathApply(
-                    "-",
-                    SBML.Math[SBML.MathApply(
-                        "*",
-                        SBML.Math[SBML.MathIdent("C"), SBML.MathIdent("D")],
-                    )],
-                ),
-            ],
-        ),
-        SBML.MathTime("Time"),
-    ],
-)
+test = SBML.MathApply("*",
+                      SBML.Math[SBML.MathApply("+",
+                                               SBML.Math[SBML.MathApply("*",
+                                                                        SBML.Math[SBML.MathIdent("A"),
+                                                                                  SBML.MathIdent("B")]),
+                                                         SBML.MathApply("-",
+                                                                        SBML.Math[SBML.MathApply("*",
+                                                                                                 SBML.Math[SBML.MathIdent("C"),
+                                                                                                           SBML.MathIdent("D")])])]),
+                                SBML.MathTime("Time")])
 
 @test isequal(SBMLToolkit.interpret_as_num(test), IV * (A * B - C * D))
 
