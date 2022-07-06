@@ -1,5 +1,5 @@
 using SBMLToolkit
-using SBML, SBMLToolkitTestSuite
+using Catalyst, SBML, SBMLToolkitTestSuite
 using Test
 
 function readmodel(sbml)
