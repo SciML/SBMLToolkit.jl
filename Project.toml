@@ -24,8 +24,9 @@ ModelingToolkit = "961ee093-0014-501f-94e3-6117800e7a78"
 OrdinaryDiffEq = "1dea7af3-3e70-54e6-95c3-0bf5283fa5ed"
 Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
 SafeTestsets = "1bc83da4-3b8d-516f-aca4-4fe02f6d838f"
+SBMLToolkitTestSuite = "792e603a-1588-414c-b272-614011baa40e"
 Sundials = "c3572dad-4567-51f8-b174-8c6c989267f4"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [targets]
-test = ["CSV", "DataFrames", "Downloads", "ModelingToolkit", "OrdinaryDiffEq", "Plots", "SafeTestsets", "Sundials", "Test"]
+test = ["CSV", "DataFrames", "Downloads", "ModelingToolkit", "OrdinaryDiffEq", "Plots", "SafeTestsets", "SBMLToolkitTestSuite", "Sundials", "Test"]
