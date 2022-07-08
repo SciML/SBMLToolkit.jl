@@ -84,7 +84,7 @@ end
 
 """ Check if conversion of xml-string to ReactionSystem is possible """
 function checksupport_string(xml::String)
-    not_implemented = ["listOfConstraints", "</delay>",
+    not_implemented = ["listOfConstraints", "/delay",
         "<priority>", "spatialDimensions=\"0\"",
         "factorial", "00387",  # Case 00387 requires event directionality
         "</eventAssignment>\n          <eventAssignment"]
