@@ -41,9 +41,9 @@ function create_var(x; isbcspecies = false)
     sym = Symbol(x)
     Symbolics.unwrap(first(@variables $sym [isbcspecies = isbcspecies]))
 end
-function create_var(x, iv; isbcspecies = false)
+function create_var(x, iv; isbcspecies = false, irreducible=false)
     sym = Symbol(x)
-    Symbolics.unwrap(first(@variables $sym(iv) [isbcspecies = isbcspecies]))
+    Symbolics.unwrap(first(@variables $sym(iv) [isbcspecies = isbcspecies, irreducible = irreducible]))
 end
 function create_param(x; isconstantspecies = false)
     sym = Symbol(x)
