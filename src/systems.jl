@@ -7,10 +7,8 @@ function Catalyst.ReactionSystem(model::SBML.Model; kwargs...)  # Todo: requires
 
     algrules, obsrules, raterules = get_rules(model)
     obsrules_rearranged = Equation[]
-    tdefs = defs
-    tdefs[Catalyst.DEFAULT_IV.val] = 0
     for o in obsrules
-        defs[o.lhs] = substitute(o.rhs, tdefs)
+        defs[o.lhs] = substitute(o.rhs, ModelingToolkit._merge(defs, Dict(Catalyst.DEFAULT_IV.val=>0)))
         push!(obsrules_rearranged, 0 ~ o.rhs - o.lhs)
     end
     constraints_sys = ODESystem(vcat(algrules, raterules, obsrules_rearranged),
