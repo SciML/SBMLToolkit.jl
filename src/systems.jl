@@ -87,13 +87,17 @@ function checksupport_string(xml::String)
     not_implemented = ["listOfConstraints", "/delay",
         "<priority>", "spatialDimensions=\"0\"",
         "factorial", "00387",  # Case 00387 requires event directionality
-        "</eventAssignment>\n          <eventAssignment"]
+        "01071",  # require event directionality, I think
+        "</eventAssignment>\n          <eventAssignment",
+        "<speciesReference id="]  # Level 3 stuff that assigns ID to the stoichiometry for use elswhere.
     for item in not_implemented
         occursin(item, xml) &&
             throw(ErrorException("SBML models with $item are not yet implemented."))
     end
     occursin("<sbml xmlns:fbc=", xml) &&
         throw(ErrorException("This model was designed for constrained-based optimisation. Please use COBREXA.jl instead of SBMLToolkit."))
+    occursin("<sbml xmlns:comp=", xml) &&
+        throw(ErrorException("This model uses the SBML \"comp\" package, which is not yet implemented."))
     !(occursin("<reaction", xml) || occursin("rateRule", xml)) &&
         throw(ErrorException("Models that contain neither reactions or rateRules will fail in simulation."))
     true
