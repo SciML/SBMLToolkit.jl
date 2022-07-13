@@ -25,5 +25,6 @@ function get_events(model)  # Todo: implement up or downpass and parameters
         end
         push!(mtk_evs, trig => mtk_evas)
     end
+    @warn "SBMLToolkit currently fires events regardless of uppass or downpass trigger."
     isempty(mtk_evs) ? nothing : mtk_evs
 end
