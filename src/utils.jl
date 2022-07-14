@@ -19,7 +19,7 @@ function interpret_as_num(x::SBML.Math)
                         map_ident = map_symbolics_ident,
                         map_lambda = (_, _) -> throw(ErrorException("Symbolics.jl does not support lambda functions")),
                         map_time = (x::SBML.MathTime) -> IV,
-                        map_value = (x::SBML.MathVal) -> Num(x.val))
+                        map_value = (x::SBML.MathVal) -> x.val)
 end
 
 """ Get dictonary to change types in kineticLaw """
