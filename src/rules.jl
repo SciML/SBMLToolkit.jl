@@ -32,6 +32,14 @@ function get_var_and_assignment(model, rule)
         math = SBML.MathApply("*", [SBML.MathIdent(vc), math])
     end
     assignment = interpret_as_num(math)
+    if rule isa SBML.RateRule && and model.haskey(model.species, rule.variable)
+        sp = model.species[rule.id]
+        comp = model.compartments[sp.compartment]
+        comp.constant == false && sp.only_substance_units == false && begin
+            c = create_var(sp.compartment, IV)
+            assignment = c * assignment + var/c * D(c)
+        end
+    end
     var, assignment
 end
 
