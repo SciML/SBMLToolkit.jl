@@ -53,5 +53,5 @@ end
 function has_rule_type(id::String, m::SBML.Model, T::Type{<:SBML.Rule})
     T == SBML.AlgebraicRule &&
         return any(SBML.isfreein(id, r.math) for r in m.rules if r isa SBML.AlgebraicRule)
-    any(r.id == id for r in m.rules if r isa T)
+    any(r.variable == id for r in m.rules if r isa T)
 end
