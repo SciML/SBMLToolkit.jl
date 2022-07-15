@@ -22,12 +22,12 @@ function get_rules(model)
 end
 
 function get_var_and_assignment(model, rule)
-    if !haskey(merge(model.species, model.compartments, model.parameters), rule.id)
-        error("Cannot find target for rule with ID `$rule.id`")
+    if !haskey(merge(model.species, model.compartments, model.parameters), rule.variable)
+        error("Cannot find target for rule with ID `$rule.variable`")
     end
-    var = create_var(rule.id, IV)
+    var = create_var(rule.variable, IV)
     math = SBML.extensive_kinetic_math(model, rule.math)
-    vc = get_volume_correction(model, rule.id)
+    vc = get_volume_correction(model, rule.variable)
     if !isnothing(vc)
         math = SBML.MathApply("*", [SBML.MathIdent(vc), math])
     end
