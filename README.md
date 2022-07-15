@@ -28,12 +28,12 @@ SBML models can be simulated with the following steps (note that `sol` is in abs
   end)
   rs = ReactionSystem(mdl)
   odesys = convert(ODESystem, rs)
+  odesys = structural_simplify(odesys)  # Optional. Leave out if it errors.
 
   tspan = [0., 1.]
   prob = ODEProblem(odesys, [], tspan, [])
   sol = solve(prob, Tsit5())
   ```
-
 
 ## License
 The package is released under the [MIT license](https://github.com/paulflang/SBMLToolkit.jl/blob/main/LICENSE).
