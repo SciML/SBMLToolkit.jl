@@ -16,7 +16,18 @@ function Catalyst.ReactionSystem(model::SBML.Model; kwargs...)  # Todo: requires
         defs[o.lhs] = substitute(rhs, ModelingToolkit._merge(defs, Dict(Catalyst.DEFAULT_IV.val=>0)))
         push!(obsrules_rearranged, 0 ~ rhs - o.lhs)
     end
-    constraints_sys = ODESystem(vcat(algrules, raterules, obsrules_rearranged),
+    raterules_subs = []
+    for o in raterules
+        rhs = o.rhs
+        for r in raterules
+            if isequal(rhs, r.lhs)
+                rhs = r.rhs
+            end
+        end 
+        defs[o.lhs] = substitute(rhs, ModelingToolkit._merge(defs, Dict(Catalyst.DEFAULT_IV.val=>0)))
+        push!(raterules_subs, rhs ~ o.lhs)
+    end
+    constraints_sys = ODESystem(vcat(algrules, raterules_subs, obsrules_rearranged),
                                 IV; name = gensym(:CONSTRAINTS),
                                 continuous_events = get_events(model))
     ReactionSystem(rxs, IV, first.(u0map), first.(parammap);
