@@ -23,7 +23,7 @@ end
 
 function get_var_and_assignment(model, rule)
     if !haskey(merge(model.species, model.compartments, model.parameters), rule.variable)
-        error("Cannot find target for rule with ID `$rule.variable`")
+        error("Cannot find target for rule with ID `$(rule.variable)`")
     end
     var = create_var(rule.variable, IV)
     math = SBML.extensive_kinetic_math(model, rule.math)
@@ -32,8 +32,8 @@ function get_var_and_assignment(model, rule)
         math = SBML.MathApply("*", [SBML.MathIdent(vc), math])
     end
     assignment = interpret_as_num(math)
-    if rule isa SBML.RateRule && and model.haskey(model.species, rule.variable)
-        sp = model.species[rule.id]
+    if rule isa SBML.RateRule && haskey(model.species, rule.variable)
+        sp = model.species[rule.variable]
         comp = model.compartments[sp.compartment]
         comp.constant == false && sp.only_substance_units == false && begin
             c = create_var(sp.compartment, IV)
