@@ -4,12 +4,17 @@ function Catalyst.ReactionSystem(model::SBML.Model; kwargs...)  # Todo: requires
     rxs = get_reactions(model)
     u0map, parammap = get_mappings(model)
     defs = ModelingToolkit._merge(Dict(u0map), Dict(parammap))
-
     algrules, obsrules, raterules = get_rules(model)
     obsrules_rearranged = Equation[]
     for o in obsrules
-        defs[o.lhs] = substitute(o.rhs, ModelingToolkit._merge(defs, Dict(Catalyst.DEFAULT_IV.val=>0)))
-        push!(obsrules_rearranged, 0 ~ o.rhs - o.lhs)
+        rhs = o.rhs
+        for r in raterules
+            if isequal(rhs, r.lhs)
+                rhs = r.rhs
+            end
+        end 
+        defs[o.lhs] = substitute(rhs, ModelingToolkit._merge(defs, Dict(Catalyst.DEFAULT_IV.val=>0)))
+        push!(obsrules_rearranged, 0 ~ rhs - o.lhs)
     end
     constraints_sys = ODESystem(vcat(algrules, raterules, obsrules_rearranged),
                                 IV; name = gensym(:CONSTRAINTS),
