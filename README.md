@@ -19,9 +19,9 @@ SBMLToolkit.jl is available on the Julia package managing system. To install SBM
 ## Tutorial
 SBML models can be simulated with the following steps (note that `sol` is in absolute quantities rather than concentrations):
   ```julia
-  using SBMLToolkit, ModelingToolkit
+  using SBMLToolkit, ModelingToolkit, OrdinaryDiffEq
 
-  SBMLToolkit.checksupport("my_model.xml")
+  SBMLToolkit.checksupport_file("my_model.xml")
   mdl = readSBML("my_model.xml", doc -> begin
       set_level_and_version(3, 2)(doc)
       convert_simplify_math(doc)
