@@ -1,4 +1,10 @@
-""" ReactionSystem constructor """
+"""
+    ReactionSystem(model::SBML.Model; kwargs...)
+
+Create a `ReactionSystem` from an `SBML.Model`.
+
+See also [`ODESystem`](@ref), [`readSBML`](@ref).
+"""
 function Catalyst.ReactionSystem(model::SBML.Model; kwargs...)  # Todo: requires unique parameters (i.e. SBML must have been imported with localParameter promotion in libSBML)
     # length(model.events) > 0 ? error("Model contains events. Please import with `ODESystem(model)`") : nothing  @Anand: how to suppress this when called from ODESystem
     rxs = get_reactions(model)
@@ -20,7 +26,13 @@ function Catalyst.ReactionSystem(model::SBML.Model; kwargs...)  # Todo: requires
                    combinatoric_ratelaws = false, kwargs...)
 end
 
-""" ODESystem constructor """
+"""
+    ODESystem(model::SBML.Model; include_zero_odes = true, kwargs...)
+
+Create an `ODESystem` from an `SBML.Model`.
+
+See also [`ReactionSystem`](@ref), [`readSBML`](@ref).
+"""
 function ModelingToolkit.ODESystem(model::SBML.Model; include_zero_odes = true, kwargs...)
     rs = ReactionSystem(model; kwargs...)
     convert(ODESystem, rs; include_zero_odes = include_zero_odes)
@@ -72,7 +84,11 @@ function netstoich(id, reaction)
     netstoich += get(reaction.products, id, 0)
 end
 
-""" Check if conversion of file to ReactionSystem is possible """
+"""
+    checksupport_file(filename::String)
+
+Check if SBML file is supported by SBMLToolkit.jl.
+"""
 function checksupport_file(filename::String)
     string = open(filename) do file
         read(file, String)
@@ -80,7 +96,11 @@ function checksupport_file(filename::String)
     checksupport_string(string)
 end
 
-""" Check if conversion of xml-string to ReactionSystem is possible """
+"""
+    checksupport_string(filename::String)
+
+Check if SBML passed as string is supported by SBMLToolkit.jl.
+"""
 function checksupport_string(xml::String)
     not_implemented = ["listOfConstraints", "</delay>",
         "<priority>", "spatialDimensions=\"0\"",
