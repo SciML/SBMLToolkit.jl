@@ -84,8 +84,10 @@ end
 
 function netstoich(id, reaction)
     netstoich = 0
-    netstoich -= get(reaction.reactants, id, 0)
-    netstoich += get(reaction.products, id, 0)
+    rdict = Dict(getproperty.(reaction.reactants, :species) .=> getproperty.(reaction.reactants, :stoichiometry))
+    pdict = Dict(getproperty.(reaction.products, :species) .=> getproperty.(reaction.products, :stoichiometry))
+    netstoich -= get(rdict, id, 0)
+    netstoich += get(pdict, id, 0)
 end
 
 """ Check if conversion of file to ReactionSystem is possible """
