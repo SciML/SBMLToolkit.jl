@@ -17,4 +17,4 @@ makedocs(;
          ])
 
 deploydocs(;
-           repo = "github.com/paulflang/SBMLToolkit.jl")
+           repo = "github.com/SciML/SBMLToolkit.jl")
