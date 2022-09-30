@@ -10,27 +10,27 @@ SBMLToolkit uses the [SBML.jl](https://github.com/LCSB-BioCore/SBML.jl) wrapper 
 
 ## Installation
 SBMLToolkit.jl is available on the Julia package managing system. To install SBMLToolkit run the following in the REPL:
-  ```
-  ]add SBMLToolkit
-  ```
+```
+]add SBMLToolkit
+```
 
 ## Tutorial
 SBML models can be simulated with the following steps (note that `sol` is in absolute quantities rather than concentrations):
-  ```julia
-  using SBMLToolkit, ModelingToolkit, OrdinaryDiffEq
+```julia
+using SBMLToolkit, ModelingToolkit, OrdinaryDiffEq
 
-  SBMLToolkit.checksupport_file("my_model.xml")
-  mdl = readSBML("my_model.xml", doc -> begin
-      set_level_and_version(3, 2)(doc)
-      convert_simplify_math(doc)
-  end)
-  rs = ReactionSystem(mdl)  # If you want to create a reaction system
-  odesys = convert(ODESystem, rs)  # Alternatively: ODESystem(mdl)
+SBMLToolkit.checksupport_file("my_model.xml")
+mdl = readSBML("my_model.xml", doc -> begin
+    set_level_and_version(3, 2)(doc)
+    convert_simplify_math(doc)
+end)
+rs = ReactionSystem(mdl)  # If you want to create a reaction system
+odesys = convert(ODESystem, rs)  # Alternatively: ODESystem(mdl)
 
-  tspan = (0., 1.)
-  prob = ODEProblem(odesys, [], tspan, [])
-  sol = solve(prob, Tsit5())
-  ```
+tspan = (0., 1.)
+prob = ODEProblem(odesys, [], tspan, [])
+sol = solve(prob, Tsit5())
+```
 
 
 ## License
@@ -43,11 +43,3 @@ This package was developed by [Paul F. Lang](https://www.linkedin.com/in/paul-la
 
 ## Questions and comments
 Please use GitHub issues, the #sciml-sysbio channel in the [Julia Slack workspace](https://julialang.org/slack/) or email [Paul F. Lang](mailto:paul.lang@juliacomputing.com) or [Anand Jain](mailto:anandj@uchicago.edu) with any questions or comments.
-
-
-```@index
-```
-
-```@autodocs
-Modules = [SBMLToolkit]
-```

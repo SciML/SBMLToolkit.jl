@@ -3,7 +3,7 @@
 
 Create a `ReactionSystem` from an `SBML.Model`.
 
-See also [`ODESystem`](@ref), [`readSBML`](@ref).
+See also [`ODESystem`](@ref).
 """
 function Catalyst.ReactionSystem(model::SBML.Model; kwargs...)  # Todo: requires unique parameters (i.e. SBML must have been imported with localParameter promotion in libSBML)
     # length(model.events) > 0 ? error("Model contains events. Please import with `ODESystem(model)`") : nothing  @Anand: how to suppress this when called from ODESystem
@@ -31,7 +31,7 @@ end
 
 Create an `ODESystem` from an `SBML.Model`.
 
-See also [`ReactionSystem`](@ref), [`readSBML`](@ref).
+See also [`ReactionSystem`](@ref).
 """
 function ModelingToolkit.ODESystem(model::SBML.Model; include_zero_odes = true, kwargs...)
     rs = ReactionSystem(model; kwargs...)
