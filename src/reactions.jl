@@ -79,6 +79,10 @@ function get_reagents(reactant_references::Vector{SBML.SpeciesReference},
     for rr in reactant_references
         sn = rr.species
         stoich = rr.stoichiometry
+        if isnothing(stoich)
+            @warn "Stoichiometries of SpeciesReferences are not defined. Setting to 1." maxlog = 1
+            stoich = 1.0
+        end
         iszero(stoich) && @error("Stoichiometry of $sn must be non-zero")
         push!(reactants, create_var(sn, IV))
         push!(rstoich, stoich)
@@ -90,6 +94,10 @@ function get_reagents(reactant_references::Vector{SBML.SpeciesReference},
     for pr in product_references
         sn = pr.species
         stoich = pr.stoichiometry
+        if isnothing(stoich)
+            @warn "Stoichiometries of SpeciesReferences are not defined. Setting to 1." maxlog = 1
+            stoich = 1.0
+        end
         iszero(stoich) && @error("Stoichiometry of $sn must be non-zero")
         if model.species[sn].boundary_condition != true
             push!(products, create_var(sn, IV))
