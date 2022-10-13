@@ -14,7 +14,8 @@ makedocs(;
                                   assets = String[]),
          pages = [
              "Home" => "index.md",
+             "API documentation" => "api.md",
          ])
 
 deploydocs(;
-           repo = "github.com/paulflang/SBMLToolkit.jl")
+           repo = "github.com/SciML/SBMLToolkit.jl")
