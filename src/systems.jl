@@ -18,8 +18,10 @@ function Catalyst.ReactionSystem(model::SBML.Model; kwargs...)  # Todo: requires
             if isequal(rhs, r.lhs)
                 rhs = r.rhs
             end
-        end 
-        defs[o.lhs] = substitute(rhs, ModelingToolkit._merge(defs, Dict(Catalyst.DEFAULT_IV.val=>0)))
+        end
+        defs[o.lhs] = substitute(rhs,
+                                 ModelingToolkit._merge(defs,
+                                                        Dict(Catalyst.DEFAULT_IV.val => 0)))
         push!(obsrules_rearranged, 0 ~ rhs - o.lhs)
     end
     raterules_subs = []
@@ -29,8 +31,10 @@ function Catalyst.ReactionSystem(model::SBML.Model; kwargs...)  # Todo: requires
             if isequal(rhs, r.lhs)
                 rhs = r.rhs
             end
-        end 
-        defs[o.lhs] = substitute(rhs, ModelingToolkit._merge(defs, Dict(Catalyst.DEFAULT_IV.val=>0)))
+        end
+        defs[o.lhs] = substitute(rhs,
+                                 ModelingToolkit._merge(defs,
+                                                        Dict(Catalyst.DEFAULT_IV.val => 0)))
         push!(raterules_subs, rhs ~ o.lhs)
     end
     constraints_sys = ODESystem(vcat(algrules, raterules_subs, obsrules_rearranged),
@@ -96,8 +100,10 @@ end
 
 function netstoich(id, reaction)
     netstoich = 0
-    rdict = Dict(getproperty.(reaction.reactants, :species) .=> getproperty.(reaction.reactants, :stoichiometry))
-    pdict = Dict(getproperty.(reaction.products, :species) .=> getproperty.(reaction.products, :stoichiometry))
+    rdict = Dict(getproperty.(reaction.reactants, :species) .=>
+                     getproperty.(reaction.reactants, :stoichiometry))
+    pdict = Dict(getproperty.(reaction.products, :species) .=>
+                     getproperty.(reaction.products, :stoichiometry))
     netstoich -= get(rdict, id, 0)
     netstoich += get(pdict, id, 0)
 end

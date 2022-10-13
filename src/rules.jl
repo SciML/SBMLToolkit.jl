@@ -35,10 +35,11 @@ function get_var_and_assignment(model, rule)
     if rule isa SBML.RateRule && haskey(model.species, rule.variable)
         sp = model.species[rule.variable]
         comp = model.compartments[sp.compartment]
-        comp.constant == false && sp.only_substance_units == false && begin
-            c = create_var(sp.compartment, IV)
-            assignment = c * assignment + var/c * D(c)
-        end
+        comp.constant == false && sp.only_substance_units == false &&
+            begin
+                c = create_var(sp.compartment, IV)
+                assignment = c * assignment + var / c * D(c)
+            end
     end
     var, assignment
 end

@@ -11,8 +11,10 @@ function get_reactions(model::SBML.Model)
             symbolic_math = get_unidirectional_components(symbolic_math)
             kl_fw, kl_rv = [substitute(x, subsdict) for x in symbolic_math]
             enforce_rate = isequal(kl_rv, 0)
-            add_reaction!(rxs, kl_fw, reactant_references, product_references, model; enforce_rate = enforce_rate)
-            add_reaction!(rxs, kl_rv, product_references, reactant_references, model; enforce_rate = enforce_rate)
+            add_reaction!(rxs, kl_fw, reactant_references, product_references, model;
+                          enforce_rate = enforce_rate)
+            add_reaction!(rxs, kl_rv, product_references, reactant_references, model;
+                          enforce_rate = enforce_rate)
         else
             kl = substitute(symbolic_math, subsdict)  # Todo: use SUBSDICT
             add_reaction!(rxs, kl, reactant_references, product_references, model)
@@ -52,7 +54,8 @@ function add_reaction!(rxs::Vector{Reaction},
                        product_references::Vector{SBML.SpeciesReference},
                        model::SBML.Model;
                        enforce_rate = false)
-    reactants, products, rstoichvals, pstoichvals = get_reagents(reactant_references, product_references, model)
+    reactants, products, rstoichvals, pstoichvals = get_reagents(reactant_references,
+                                                                 product_references, model)
     isnothing(reactants) && isnothing(products) && return
     rstoichvals = stoich_convert_to_ints(rstoichvals)
     pstoichvals = stoich_convert_to_ints(pstoichvals)
@@ -80,7 +83,7 @@ function get_reagents(reactant_references::Vector{SBML.SpeciesReference},
         sn = rr.species
         stoich = rr.stoichiometry
         if isnothing(stoich)
-            @warn "Stoichiometries of SpeciesReferences are not defined. Setting to 1." maxlog = 1
+            @warn "Stoichiometries of SpeciesReferences are not defined. Setting to 1." maxlog=1
             stoich = 1.0
         end
         iszero(stoich) && @error("Stoichiometry of $sn must be non-zero")
@@ -95,7 +98,7 @@ function get_reagents(reactant_references::Vector{SBML.SpeciesReference},
         sn = pr.species
         stoich = pr.stoichiometry
         if isnothing(stoich)
-            @warn "Stoichiometries of SpeciesReferences are not defined. Setting to 1." maxlog = 1
+            @warn "Stoichiometries of SpeciesReferences are not defined. Setting to 1." maxlog=1
             stoich = 1.0
         end
         iszero(stoich) && @error("Stoichiometry of $sn must be non-zero")

@@ -17,7 +17,7 @@ function get_events(model)  # Todo: implement up or downpass and parameters
                     math = SBML.MathApply("*", [SBML.MathIdent(vc), math])
                 end
             end
-            var = create_var(eva.variable, IV; irreducible=true)
+            var = create_var(eva.variable, IV; irreducible = true)
             math = substitute(Symbolics.unwrap(interpret_as_num(math)),
                               subsdict)
             effect = var ~ math

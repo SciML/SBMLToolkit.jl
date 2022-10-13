@@ -8,13 +8,16 @@ const IV = Catalyst.DEFAULT_IV
 @parameters k1, c1
 @variables s1(IV), s2(IV), s1s2(IV)
 
-COMP1 = SBML.Compartment("c1", true, 3, 2.0, "nl", nothing, nothing, nothing, nothing, SBML.CVTerm[])
+COMP1 = SBML.Compartment("c1", true, 3, 2.0, "nl", nothing, nothing, nothing, nothing,
+                         SBML.CVTerm[])
 SPECIES1 = SBML.Species(name = "s1", compartment = "c1", initial_amount = 1.0,
                         substance_units = "substance", only_substance_units = true,
                         boundary_condition = false, constant = false)  # Todo: Maybe not support units in initial_concentration?
 KINETICMATH1 = SBML.MathIdent("k1")
 KINETICMATH2 = SBML.MathApply("*", SBML.Math[SBML.MathIdent("k1"), SBML.MathIdent("s2")])
-REACTION1 = SBML.Reaction(products = [SBML.SpeciesReference(species = "s1", stoichiometry = 1)],
+REACTION1 = SBML.Reaction(products = [
+                              SBML.SpeciesReference(species = "s1", stoichiometry = 1),
+                          ],
                           kinetic_math = KINETICMATH1,
                           reversible = false)
 PARAM1 = SBML.Parameter(name = "k1", value = 1.0, constant = true)
@@ -29,7 +32,9 @@ truereaction = Catalyst.Reaction(k1, nothing, [s1], nothing, [1])  # Todo: imple
 @test isequal(reaction, truereaction)
 
 km = SBML.MathTime("x")
-reac = SBML.Reaction(reactants = [SBML.SpeciesReference(species = "s1", stoichiometry = 1.0)],
+reac = SBML.Reaction(reactants = [
+                         SBML.SpeciesReference(species = "s1", stoichiometry = 1.0),
+                     ],
                      kinetic_math = km,
                      reversible = false)
 model = SBML.Model(parameters = Dict("k1" => PARAM1),
@@ -62,12 +67,16 @@ SBMLToolkit.add_reaction!(rxs, k1, SBML.SpeciesReference[], SBML.SpeciesReferenc
 @test isequal(rxs, Catalyst.Reaction[])
 
 rxs = Catalyst.Reaction[]
-SBMLToolkit.add_reaction!(rxs, k1 * s1, [SBML.SpeciesReference(species = "s1", stoichiometry = 1.0)], SBML.SpeciesReference[], MODEL1)
+SBMLToolkit.add_reaction!(rxs, k1 * s1,
+                          [SBML.SpeciesReference(species = "s1", stoichiometry = 1.0)],
+                          SBML.SpeciesReference[], MODEL1)
 reaction_true = Catalyst.Reaction(k1, [s1], nothing, [1], nothing, only_use_rate = false)
 @test isequal(rxs[1], reaction_true)
 
 rxs = Catalyst.Reaction[]
-SBMLToolkit.add_reaction!(rxs, k1 * s1, [SBML.SpeciesReference(species = "s1", stoichiometry = 1.0)], SBML.SpeciesReference[], MODEL1,
+SBMLToolkit.add_reaction!(rxs, k1 * s1,
+                          [SBML.SpeciesReference(species = "s1", stoichiometry = 1.0)],
+                          SBML.SpeciesReference[], MODEL1,
                           enforce_rate = true)
 reaction_true = Catalyst.Reaction(k1, [s1], nothing, [1], nothing, only_use_rate = true)
 @test isequal(rxs, [reaction_true])
