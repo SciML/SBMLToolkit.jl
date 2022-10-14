@@ -1,5 +1,5 @@
 using SBMLToolkit
-using SBMLToolkitTestSuite
+using SBML, SBMLToolkitTestSuite
 using Catalyst, ModelingToolkit, OrdinaryDiffEq
 using Test
 
@@ -41,6 +41,9 @@ var_true = S1
 assignment_true = 7 * compartment
 @test isequal(var, var_true)
 @test isequal(assignment, assignment_true)
+
+r = SBML.AssignmentRule("S2", SBML.MathVal(1))
+@test_throws ErrorException("Cannot find target for rule with ID `S2`") SBMLToolkit.get_var_and_assignment(m, r)
 
 # Test get_volume_correction
 vc = SBMLToolkit.get_volume_correction(m, "notaspecies")
