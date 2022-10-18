@@ -127,11 +127,10 @@ Check if SBML passed as string is supported by SBMLToolkit.jl.
 """
 function checksupport_string(xml::String)
     not_implemented = ["listOfConstraints", "/delay",
-        "<priority>", "spatialDimensions=\"0\"",
-        "factorial", "00387",  # Case 00387 requires event directionality
-        "01071",  # require event directionality, I think
-        "</eventAssignment>\n          <eventAssignment",
-        "<speciesReference id="]  # Level 3 stuff that assigns ID to the stoichiometry for use elswhere.
+        "<priority>",
+        "factorial", "id=\"case00387\"",  # Case 00387 requires event directionality
+        "id=\"case01071\"",  # require event directionality, I think
+        "</eventAssignment>\n          <eventAssignment",]
     for item in not_implemented
         occursin(item, xml) &&
             throw(ErrorException("SBML models with $item are not yet implemented."))
