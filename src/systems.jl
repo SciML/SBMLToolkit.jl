@@ -130,7 +130,7 @@ function checksupport_string(xml::String)
         "<priority>",
         "factorial", "id=\"case00387\"",  # Case 00387 requires event directionality
         "id=\"case01071\"",  # require event directionality, I think
-        "</eventAssignment>\n          <eventAssignment",]
+        "</eventAssignment>\n          <eventAssignment"]
     for item in not_implemented
         occursin(item, xml) &&
             throw(ErrorException("SBML models with $item are not yet implemented."))
