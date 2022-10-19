@@ -8,7 +8,8 @@ const IV = Catalyst.DEFAULT_IV
 @parameters k1, c1
 @variables s1(IV), s2(IV), s1s2(IV)
 
-COMP1 = SBML.Compartment("c1", true, 3, 2.0, "nl", nothing, nothing)
+COMP1 = SBML.Compartment("c1", true, 3, 2.0, "nl", nothing, nothing, nothing, nothing,
+                         SBML.CVTerm[])
 SPECIES1 = SBML.Species(name = "s1", compartment = "c1", initial_amount = 1.0,
                         substance_units = "substance", only_substance_units = true,
                         boundary_condition = false, constant = false)  # Todo: Maybe not support units in initial_concentration?
@@ -21,12 +22,14 @@ KINETICMATH3 = SBML.MathApply("-",
                                                        SBML.Math[SBML.MathIdent("k1"),
                                                                  SBML.MathIdent("s1")]),
                                         KINETICMATH1])
-REACTION1 = SBML.Reaction(reactants = Dict(),
-                          products = Dict("s1" => 1),
+REACTION1 = SBML.Reaction(products = [
+                              SBML.SpeciesReference(species = "s1", stoichiometry = 1.0),
+                          ],
                           kinetic_math = KINETICMATH1,
                           reversible = false)
-REACTION2 = SBML.Reaction(reactants = Dict("s1" => 1),
-                          products = Dict(),
+REACTION2 = SBML.Reaction(reactants = [
+                              SBML.SpeciesReference(species = "s1", stoichiometry = 1.0),
+                          ],
                           kinetic_math = KINETICMATH3,
                           reversible = true)
 PARAM1 = SBML.Parameter(name = "k1", value = 1.0, constant = true)
@@ -131,15 +134,14 @@ u0map, parammap = SBMLToolkit.get_mappings(m)
 Catalyst.isbc(first(u0map[1]))
 
 # Test get_netstoich
-r = SBML.Reaction(reactants = Dict("s1" => 1),
-                  products = Dict(),
+r = SBML.Reaction(reactants = [SBML.SpeciesReference(species = "s1", stoichiometry = 1.0)],
                   kinetic_math = KINETICMATH1,
                   reversible = false)
 ns = SBMLToolkit.netstoich("s1", r)
 @test isequal(ns, -1)
 
-r = SBML.Reaction(reactants = Dict("s1" => 1),
-                  products = Dict("s1" => 2),
+r = SBML.Reaction(reactants = [SBML.SpeciesReference(species = "s1", stoichiometry = 1.0)],
+                  products = [SBML.SpeciesReference(species = "s1", stoichiometry = 2.0)],
                   kinetic_math = KINETICMATH1,
                   reversible = false)
 ns = SBMLToolkit.netstoich("s1", r)

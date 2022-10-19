@@ -28,7 +28,7 @@ KINETICMATH3 = SBML.MathApply("-",
                                                                  SBML.MathIdent("s1")]),
                                         KINETICMATH1])
 REACTION1 = SBML.Reaction(reactants = Dict(),
-                          products = Dict("s1" => 1),
+                          products = Dict("s1" => 1),  # Todo: update all tests with [SBML.SpeciesReference("s1", 1)], etc.
                           kinetic_parameters = kinetic_params,
                           kinetic_math = KINETICMATH1,
                           reversible = false)

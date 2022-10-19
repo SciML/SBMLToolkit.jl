@@ -10,14 +10,34 @@ function Catalyst.ReactionSystem(model::SBML.Model; kwargs...)  # Todo: requires
     rxs = get_reactions(model)
     u0map, parammap = get_mappings(model)
     defs = ModelingToolkit._merge(Dict(u0map), Dict(parammap))
-
     algrules, obsrules, raterules = get_rules(model)
     obsrules_rearranged = Equation[]
     for o in obsrules
-        defs[o.lhs] = substitute(o.rhs, defs)
-        push!(obsrules_rearranged, 0 ~ o.rhs - o.lhs)
+        rhs = o.rhs
+        for r in raterules
+            if isequal(rhs, r.lhs)
+                rhs = r.rhs
+            end
+        end
+        defs[o.lhs] = substitute(rhs,
+                                 ModelingToolkit._merge(defs,
+                                                        Dict(Catalyst.DEFAULT_IV.val => 0)))
+        push!(obsrules_rearranged, 0 ~ rhs - o.lhs)
     end
-    constraints_sys = ODESystem(vcat(algrules, raterules, obsrules_rearranged),
+    raterules_subs = []
+    for o in raterules
+        rhs = o.rhs
+        for r in raterules
+            if isequal(rhs, r.lhs)
+                rhs = r.rhs
+            end
+        end
+        defs[o.lhs] = substitute(rhs,
+                                 ModelingToolkit._merge(defs,
+                                                        Dict(Catalyst.DEFAULT_IV.val => 0)))
+        push!(raterules_subs, rhs ~ o.lhs)
+    end
+    constraints_sys = ODESystem(vcat(algrules, raterules_subs, obsrules_rearranged),
                                 IV; name = gensym(:CONSTRAINTS),
                                 continuous_events = get_events(model))
     ReactionSystem(rxs, IV, first.(u0map), first.(parammap);
@@ -80,8 +100,12 @@ end
 
 function netstoich(id, reaction)
     netstoich = 0
-    netstoich -= get(reaction.reactants, id, 0)
-    netstoich += get(reaction.products, id, 0)
+    rdict = Dict(getproperty.(reaction.reactants, :species) .=>
+                     getproperty.(reaction.reactants, :stoichiometry))
+    pdict = Dict(getproperty.(reaction.products, :species) .=>
+                     getproperty.(reaction.products, :stoichiometry))
+    netstoich -= get(rdict, id, 0)
+    netstoich += get(pdict, id, 0)
 end
 
 """
@@ -102,9 +126,10 @@ end
 Check if SBML passed as string is supported by SBMLToolkit.jl.
 """
 function checksupport_string(xml::String)
-    not_implemented = ["listOfConstraints", "</delay>",
-        "<priority>", "spatialDimensions=\"0\"",
-        "factorial", "00387",  # Case 00387 requires event directionality
+    not_implemented = ["listOfConstraints", "/delay",
+        "<priority>",
+        "factorial", "id=\"case00387\"",  # Case 00387 requires event directionality
+        "id=\"case01071\"",  # require event directionality, I think
         "</eventAssignment>\n          <eventAssignment"]
     for item in not_implemented
         occursin(item, xml) &&
@@ -112,6 +137,8 @@ function checksupport_string(xml::String)
     end
     occursin("<sbml xmlns:fbc=", xml) &&
         throw(ErrorException("This model was designed for constrained-based optimisation. Please use COBREXA.jl instead of SBMLToolkit."))
+    occursin("<sbml xmlns:comp=", xml) &&
+        throw(ErrorException("This model uses the SBML \"comp\" package, which is not yet implemented."))
     !(occursin("<reaction", xml) || occursin("rateRule", xml)) &&
         throw(ErrorException("Models that contain neither reactions or rateRules will fail in simulation."))
     true

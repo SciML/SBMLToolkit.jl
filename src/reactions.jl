@@ -5,17 +5,19 @@ function get_reactions(model::SBML.Model)
     for reaction in values(model.reactions)
         extensive_math = SBML.extensive_kinetic_math(model, reaction.kinetic_math)
         symbolic_math = interpret_as_num(extensive_math)
-        rstoich = reaction.reactants
-        pstoich = reaction.products
+        reactant_references = reaction.reactants
+        product_references = reaction.products
         if reaction.reversible
             symbolic_math = get_unidirectional_components(symbolic_math)
             kl_fw, kl_rv = [substitute(x, subsdict) for x in symbolic_math]
             enforce_rate = isequal(kl_rv, 0)
-            add_reaction!(rxs, kl_fw, rstoich, pstoich, model; enforce_rate = enforce_rate)
-            add_reaction!(rxs, kl_rv, pstoich, rstoich, model; enforce_rate = enforce_rate)
+            add_reaction!(rxs, kl_fw, reactant_references, product_references, model;
+                          enforce_rate = enforce_rate)
+            add_reaction!(rxs, kl_rv, product_references, reactant_references, model;
+                          enforce_rate = enforce_rate)
         else
             kl = substitute(symbolic_math, subsdict)  # Todo: use SUBSDICT
-            add_reaction!(rxs, kl, rstoich, pstoich, model)
+            add_reaction!(rxs, kl, reactant_references, product_references, model)
         end
     end
     rxs
@@ -48,10 +50,12 @@ end
 
 function add_reaction!(rxs::Vector{Reaction},
                        kl::Num,
-                       rstoich::Dict{String, Float64}, pstoich::Dict{String, Float64},
+                       reactant_references::Vector{SBML.SpeciesReference},
+                       product_references::Vector{SBML.SpeciesReference},
                        model::SBML.Model;
                        enforce_rate = false)
-    reactants, products, rstoichvals, pstoichvals = get_reagents(rstoich, pstoich, model)
+    reactants, products, rstoichvals, pstoichvals = get_reagents(reactant_references,
+                                                                 product_references, model)
     isnothing(reactants) && isnothing(products) && return
     rstoichvals = stoich_convert_to_ints(rstoichvals)
     pstoichvals = stoich_convert_to_ints(pstoichvals)
@@ -67,28 +71,40 @@ function stoich_convert_to_ints(xs)
 end
 
 """ Get reagents """
-function get_reagents(rstoichdict::Dict{String, <:Real},
-                      pstoichdict::Dict{String, <:Real},
+function get_reagents(reactant_references::Vector{SBML.SpeciesReference},
+                      product_references::Vector{SBML.SpeciesReference},
                       model::SBML.Model)
     reactants = Num[]
     products = Num[]
     rstoich = Float64[]
     pstoich = Float64[]
 
-    for (k, v) in rstoichdict
-        iszero(v) && @error("Stoichiometry of $k must be non-zero")
-        push!(reactants, create_var(k, IV))
-        push!(rstoich, v)
-        if model.species[k].boundary_condition == true
-            push!(products, create_var(k, IV))
-            push!(pstoich, v)
+    for rr in reactant_references
+        sn = rr.species
+        stoich = rr.stoichiometry
+        if isnothing(stoich)
+            @warn "Stoichiometries of SpeciesReferences are not defined. Setting to 1." maxlog=1
+            stoich = 1.0
+        end
+        iszero(stoich) && @error("Stoichiometry of $sn must be non-zero")
+        push!(reactants, create_var(sn, IV))
+        push!(rstoich, stoich)
+        if model.species[sn].boundary_condition == true
+            push!(products, create_var(sn, IV))
+            push!(pstoich, stoich)
         end
     end
-    for (k, v) in pstoichdict
-        iszero(v) && @error("Stoichiometry of $k must be non-zero")
-        if model.species[k].boundary_condition != true
-            push!(products, create_var(k, IV))
-            push!(pstoich, v)
+    for pr in product_references
+        sn = pr.species
+        stoich = pr.stoichiometry
+        if isnothing(stoich)
+            @warn "Stoichiometries of SpeciesReferences are not defined. Setting to 1." maxlog=1
+            stoich = 1.0
+        end
+        iszero(stoich) && @error("Stoichiometry of $sn must be non-zero")
+        if model.species[sn].boundary_condition != true
+            push!(products, create_var(sn, IV))
+            push!(pstoich, stoich)
         end
     end
 

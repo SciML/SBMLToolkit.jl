@@ -26,6 +26,7 @@ SBML models can be simulated with the following steps (note that `sol` is in abs
       set_level_and_version(3, 2)(doc)
       convert_simplify_math(doc)
   end)
+
   rs = ReactionSystem(mdl)  # If you want to create a reaction system
   odesys = convert(ODESystem, rs)  # Alternatively: ODESystem(mdl)
 
@@ -33,7 +34,6 @@ SBML models can be simulated with the following steps (note that `sol` is in abs
   prob = ODEProblem(odesys, [], tspan, [])
   sol = solve(prob, Tsit5())
   ```
-
 
 ## License
 The package is released under the [MIT license](https://github.com/SciML/SBMLToolkit.jl/blob/main/LICENSE).

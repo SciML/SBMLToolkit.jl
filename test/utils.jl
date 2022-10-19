@@ -22,12 +22,12 @@ sym = SBMLToolkit.map_symbolics_ident(SBML.MathIdent("s1"))
 @test isequal(sym, s1)
 
 # Test interpret_as_num
-@variables A B C D Time
+@variables B C D Time
 
 test = SBML.MathApply("*",
                       SBML.Math[SBML.MathApply("+",
                                                SBML.Math[SBML.MathApply("*",
-                                                                        SBML.Math[SBML.MathIdent("A"),
+                                                                        SBML.Math[SBML.MathAvogadro("A"),
                                                                                   SBML.MathIdent("B")]),
                                                          SBML.MathApply("-",
                                                                         SBML.Math[SBML.MathApply("*",
@@ -35,7 +35,7 @@ test = SBML.MathApply("*",
                                                                                                            SBML.MathIdent("D")])])]),
                                 SBML.MathTime("Time")])
 
-@test isequal(SBMLToolkit.interpret_as_num(test), IV * (A * B - C * D))
+@test isequal(SBMLToolkit.interpret_as_num(test), IV * (6.02214076e23 * B - C * D))
 
 # Test get_substitutions
 sbml, _, _ = SBMLToolkitTestSuite.read_case("00001")
