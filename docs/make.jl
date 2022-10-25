@@ -10,7 +10,7 @@ makedocs(;
          format = Documenter.HTML(;
                                   prettyurls = get(ENV, "CI", "false") == "true",
                                   canonical = "https://docs.sciml.ai/SBMLToolkit/stable/",
-                                  assets = String[]),
+                                  assets = ["assets/favicon.ico"]),
          pages = [
              "Home" => "index.md",
              "API documentation" => "api.md",
