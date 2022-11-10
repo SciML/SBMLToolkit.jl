@@ -1,6 +1,9 @@
 using SBMLToolkit
 using Documenter
 
+cp("./docs/Manifest.toml", "./docs/src/assets/Manifest.toml", force = true)
+cp("./docs/Project.toml", "./docs/src/assets/Project.toml", force = true)
+
 DocMeta.setdocmeta!(SBMLToolkit, :DocTestSetup, :(using SBMLToolkit); recursive = true)
 
 makedocs(;
