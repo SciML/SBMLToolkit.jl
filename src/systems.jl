@@ -47,7 +47,7 @@ function Catalyst.ReactionSystem(model::SBML.Model; kwargs...)  # Todo: requires
     ReactionSystem(rxs, IV, first.(u0map), first.(parammap);
                    defaults = defs, name = gensym(:SBML),
                    constraints = constraints_sys,
-                   combinatoric_ratelaws = false)
+                   combinatoric_ratelaws = false, kwargs...)
 end
 
 """
