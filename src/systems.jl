@@ -37,6 +37,10 @@ function Catalyst.ReactionSystem(model::SBML.Model; kwargs...)  # Todo: requires
                                                         Dict(Catalyst.DEFAULT_IV.val => 0)))
         push!(raterules_subs, rhs ~ o.lhs)
     end
+    if haskey(kwargs, :defaults)
+        defs = ModelingToolkit._merge(defs, kwargs[:defaults])
+        kwargs = filter(x -> !isequal(first(x), :defaults), kwargs)
+    end
     constraints_sys = ODESystem(vcat(algrules, raterules_subs, obsrules_rearranged),
                                 IV; name = gensym(:CONSTRAINTS),
                                 continuous_events = get_events(model))
