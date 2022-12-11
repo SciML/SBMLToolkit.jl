@@ -5,10 +5,7 @@ version = "0.1.19"
 
 [deps]
 Catalyst = "479239e8-5488-4da2-87a7-35f2df7eef83"
-JuliaFormatter = "98e50ef6-434e-11e9-1051-2b60c6c9e899"
 MathML = "abcecc63-2b08-419c-80c4-c63dca6fa478"
-ModelingToolkit = "961ee093-0014-501f-94e3-6117800e7a78"
-OrdinaryDiffEq = "1dea7af3-3e70-54e6-95c3-0bf5283fa5ed"
 SBML = "e5567a89-2604-4b09-9718-f5f78e97c3bb"
 SymbolicUtils = "d1185830-fcd6-423d-90d6-eec64667417b"
 
