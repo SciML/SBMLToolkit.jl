@@ -831,7 +831,7 @@ version = "1.3.0"
 deps = ["Catalyst", "MathML", "SBML", "SymbolicUtils"]
 path = "/home/runner/work/SBMLToolkit.jl/SBMLToolkit.jl"
 uuid = "86080e66-c8ac-44c2-a1a0-9adaadfe4a4e"
-version = "0.1.19"
+version = "0.1.19-DEV"
 
 [[deps.SBML_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg", "XML2_jll", "Zlib_jll"]
