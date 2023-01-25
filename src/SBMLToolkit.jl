@@ -11,6 +11,6 @@ include("events.jl")
 include("utils.jl")
 
 export ReactionSystem, ODESystem
-export readSBML, readSBMLFromString, set_level_and_version, convert_simplify_math
+export readSBML, readSBMLFromString, set_level_and_version, convert_promotelocals_expandfuns
 
 end

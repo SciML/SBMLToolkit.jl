@@ -9,7 +9,7 @@ const IV = Catalyst.DEFAULT_IV
 function readmodel(sbml)
     SBMLToolkit.readSBMLFromString(sbml, doc -> begin
                                        set_level_and_version(3, 2)(doc)
-                                       convert_simplify_math(doc)
+                                       convert_promotelocals_expandfuns(doc)
                                    end)
 end
 

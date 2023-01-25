@@ -9,7 +9,7 @@ sbml_url = "https://www.ebi.ac.uk/biomodels/model/download/MODEL1112100000.2?fil
 sbml = String(take!(Downloads.download(sbml_url, IOBuffer())))
 m = readSBMLFromString(sbml, doc -> begin
                        # set_level_and_version(3, 2)(doc) # fails on wuschel
-                       convert_simplify_math(doc) end)
+                       convert_promotelocals_expandfuns(doc) end)
 sys = ODESystem(m)
 @test length(equations(sys)) == 1012
 @test length(states(sys)) == 1012
