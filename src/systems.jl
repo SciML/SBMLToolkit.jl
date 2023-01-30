@@ -82,13 +82,14 @@ function get_mappings(model::SBML.Model)
         end
     end
     for (k, v) in model.parameters
-        if v.constant == false && SBML.seemsdefined(k, model)
-            var = create_var(k, IV; isbcspecies = true)
-            push!(u0map, var => v.value)
-        else
+        # if v.constant == false # && (SBML.seemsdefined(k, model) || is_event_assignment(k, model))
+        #     @info v
+        #     var = create_var(k, IV; isbcspecies = true)
+        #     push!(u0map, var => v.value)
+        # else
             var = create_param(k)
             push!(parammap, var => v.value)
-        end
+        # end
     end
     for (k, v) in model.compartments
         if v.constant == false && SBML.seemsdefined(k, model)
