@@ -22,7 +22,7 @@ using SBMLToolkit, ModelingToolkit, OrdinaryDiffEq
 SBMLToolkit.checksupport_file("my_model.xml")
 mdl = readSBML("my_model.xml", doc -> begin
     set_level_and_version(3, 2)(doc)
-    convert_simplify_math(doc)
+    convert_promotelocals_expandfuns(doc)
 end)
 rs = ReactionSystem(mdl)  # If you want to create a reaction system
 odesys = convert(ODESystem, rs)  # Alternatively: ODESystem(mdl)
