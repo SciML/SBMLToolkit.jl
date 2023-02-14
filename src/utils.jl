@@ -23,7 +23,9 @@ function interpret_as_num(x::SBML.Math)
                         map_avogadro = (x::SBML.MathAvogadro) -> SBML.default_constants["avogadro"])
 end
 
-""" Get dictonary to change types in kineticLaw """
+"""
+Get dictonary to change types in kineticLaw
+"""
 function get_substitutions(model)
     u0map, parammap = get_mappings(model)
     subsdict = Dict()

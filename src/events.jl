@@ -1,4 +1,6 @@
-""" Creates ContinuousVectorCallbacks """
+"""
+Creates ContinuousVectorCallbacks
+"""
 function get_events(model)  # Todo: implement up or downpass and parameters
     subsdict = get_substitutions(model)  # Todo: use SUBSDICT
     evs = model.events
