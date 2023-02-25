@@ -1,4 +1,6 @@
-""" Convert SBML.Reaction to MTK.Reaction """
+"""
+Convert SBML.Reaction to MTK.Reaction
+"""
 function get_reactions(model::SBML.Model)
     subsdict = get_substitutions(model)  # Todo: replace with SUBSDICT
     rxs = Reaction[]
@@ -23,7 +25,9 @@ function get_reactions(model::SBML.Model)
     rxs
 end
 
-""" Infer forward and reverse components of bidirectional kineticLaw """
+"""
+Infer forward and reverse components of bidirectional kineticLaw
+"""
 function get_unidirectional_components(bidirectional_math)
     bm = Symbolics.tosymbol(bidirectional_math)
     bm = simplify(bm; expand = true)
@@ -70,7 +74,9 @@ function stoich_convert_to_ints(xs)
     (xs !== nothing && all(isinteger(x) for x in xs)) ? Int.(xs) : xs
 end
 
-""" Get reagents """
+"""
+Get reagents
+"""
 function get_reagents(reactant_references::Vector{SBML.SpeciesReference},
                       product_references::Vector{SBML.SpeciesReference},
                       model::SBML.Model)
@@ -119,7 +125,9 @@ function get_reagents(reactant_references::Vector{SBML.SpeciesReference},
     (reactants, products, rstoich, pstoich)
 end
 
-""" Get kineticLaw for use in MTK.Reaction """
+"""
+Get kineticLaw for use in MTK.Reaction
+"""
 function use_rate(kl::Num, react::Union{Vector{Num}, Nothing},
                   stoich::Union{Vector{<:Real}, Nothing})
     rate_const = get_massaction(kl, react, stoich)
@@ -132,7 +140,9 @@ function use_rate(kl::Num, react::Union{Vector{Num}, Nothing},
     return (kl, our)
 end
 
-""" Get rate constant of mass action kineticLaws """
+"""
+Get rate constant of mass action kineticLaws
+"""
 function get_massaction(kl::Num, reactants::Union{Vector{Num}, Nothing},
                         stoich::Union{Vector{<:Real}, Nothing})
     function check_args(x::SymbolicUtils.Symbolic{Real})
