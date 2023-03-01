@@ -145,7 +145,9 @@ Get rate constant of mass action kineticLaws
 """
 function get_massaction(kl::Num, reactants::Union{Vector{Num}, Nothing},
                         stoich::Union{Vector{<:Real}, Nothing})
-    check_args(x::SymbolicUtils.BasicSymbolic{Real}) = check_args(Val(SymbolicUtils.istree(x)), x)
+    function check_args(x::SymbolicUtils.BasicSymbolic{Real})
+        check_args(Val(SymbolicUtils.istree(x)), x)
+    end
     function check_args(::Val{true}, x::SymbolicUtils.BasicSymbolic{Real})
         for arg in SymbolicUtils.arguments(x)
             if isnan(check_args(arg)) || isequal(arg, Catalyst.DEFAULT_IV)
