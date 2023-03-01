@@ -6,7 +6,7 @@ cd(@__DIR__)
 sbmlfile = joinpath("data", "reactionsystem_01.xml")
 const IV = Catalyst.DEFAULT_IV
 @parameters k1, c1
-@variables s1(IV), s2(IV), s1s2(IV)
+@species s1(IV), s2(IV), s1s2(IV)
 
 COMP1 = SBML.Compartment("c1", true, 3, 2.0, "nl", nothing, nothing, nothing, nothing,
                          SBML.CVTerm[])
@@ -91,9 +91,9 @@ isequal(nameof(odesys), :odesys)
 
 odesys = ODESystem(readSBML(sbmlfile))
 m = readSBML(sbmlfile)
-trueeqs = Equation[Differential(IV)(s1) ~ -((k1 * s1 * s2) / c1),
+trueeqs = Equation[Differential(IV)(s1) ~ -(k1 * s1 * s2) / c1,
                    Differential(IV)(s1s2) ~ (k1 * s1 * s2) / c1,
-                   Differential(IV)(s2) ~ -((k1 * s1 * s2) / c1)]
+                   Differential(IV)(s2) ~ -(k1 * s1 * s2) / c1]
 @test isequal(Catalyst.get_eqs(odesys), trueeqs)
 @test isequal(Catalyst.get_iv(odesys), IV)
 @test isequal(Catalyst.get_states(odesys), [s1, s1s2, s2])

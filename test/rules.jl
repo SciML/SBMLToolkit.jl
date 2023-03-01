@@ -5,7 +5,7 @@ using Test
 
 const IV = Catalyst.DEFAULT_IV
 @parameters k1, compartment
-@variables S1(IV), S2(IV)
+@species S1(IV), S2(IV)
 
 function readmodel(sbml)
     SBMLToolkit.readSBMLFromString(sbml, doc -> begin
@@ -62,12 +62,12 @@ vc = SBMLToolkit.get_volume_correction(m, "S1")
 sbml, _, _ = SBMLToolkitTestSuite.read_case("00033")
 m = readmodel(sbml)
 @named sys = ODESystem(m)
-@variables k1(IV)
+@species k1(IV)
 @test isequal(k1, states(sys)[end])
 
 # tests that non-constant compartments become states
 sbml, _, _ = SBMLToolkitTestSuite.read_case("00051")  # hOSU="true" species
 m = readmodel(sbml)
 @named sys = ODESystem(m)
-@variables C(IV)
+@species C(IV)
 @test isequal(C, states(sys)[end])

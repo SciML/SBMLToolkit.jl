@@ -10,7 +10,7 @@ function readmodel(sbml)
 end
 
 const IV = Catalyst.DEFAULT_IV
-@variables s1(IV)
+@species s1(IV)
 # Test symbolicsRateOf
 rate = SBMLToolkit.symbolicsRateOf(s1)
 rate_true = SBMLToolkit.D(s1)
@@ -18,11 +18,11 @@ rate_true = SBMLToolkit.D(s1)
 
 # Test map_sumbolics_ident
 sym = SBMLToolkit.map_symbolics_ident(SBML.MathIdent("s1"))
-@variables s1
+@species s1
 @test isequal(sym, s1)
 
 # Test interpret_as_num
-@variables B C D Time
+@species B C D Time
 
 test = SBML.MathApply("*",
                       SBML.Math[SBML.MathApply("+",
@@ -42,7 +42,7 @@ sbml, _, _ = SBMLToolkitTestSuite.read_case("00001")
 m = readmodel(sbml)
 subsdict = SBMLToolkit.get_substitutions(m)
 @parameters k1, compartment
-@variables S1(IV), S2(IV)
+@species S1(IV), S2(IV)
 subsdict_true = Dict(Num(Symbolics.variable(:S1; T = Real)) => S1,
                      Num(Symbolics.variable(:S2; T = Real)) => S2,
                      Num(Symbolics.variable(:k1; T = Real)) => k1,
@@ -51,7 +51,7 @@ subsdict_true = Dict(Num(Symbolics.variable(:S1; T = Real)) => S1,
 
 # Test create_var
 var = SBMLToolkit.create_var("s2")
-@variables s2
+@species s2
 @test isequal(var, s2)
 
 var = SBMLToolkit.create_var("s2", IV, isbcspecies = true)
