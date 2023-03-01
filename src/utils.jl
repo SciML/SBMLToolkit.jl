@@ -9,7 +9,7 @@ const symbolics_mapping = Dict(SBML.default_function_mapping...,
 
 map_symbolics_ident(x) = begin
     sym = Symbol(x.id)
-    first(@variables $sym)
+    first(@species $sym)
 end
 
 function interpret_as_num(x::SBML.Math)
@@ -42,11 +42,11 @@ end
 
 function create_var(x; isbcspecies = false)
     sym = Symbol(x)
-    Symbolics.unwrap(first(@variables $sym [isbcspecies = isbcspecies]))
+    Symbolics.unwrap(first(@species $sym [isbcspecies = isbcspecies]))
 end
 function create_var(x, iv; isbcspecies = false, irreducible = false)
     sym = Symbol(x)
-    Symbolics.unwrap(first(@variables $sym(iv) [
+    Symbolics.unwrap(first(@species $sym(iv) [
                                isbcspecies = isbcspecies,
                                irreducible = irreducible,
                            ]))

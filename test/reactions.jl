@@ -6,7 +6,7 @@ cd(@__DIR__)
 sbmlfile = joinpath("data", "reactionsystem_01.xml")
 const IV = Catalyst.DEFAULT_IV
 @parameters k1, c1
-@variables s1(IV), s2(IV), s1s2(IV)
+@species s1(IV), s2(IV), s1s2(IV)
 
 COMP1 = SBML.Compartment("c1", true, 3, 2.0, "nl", nothing, nothing, nothing, nothing,
                          SBML.CVTerm[])
@@ -59,7 +59,7 @@ km = SBML.MathIdent("s1s2")
 sm1 = SBMLToolkit.interpret_as_num(km)
 sm2 = sm - sm1
 @test isequal(SBMLToolkit.get_unidirectional_components(sm2), (sm2, Num(0)))
-@test isequal(SBMLToolkit.get_unidirectional_components(:k1), (:k1, Num(0)))
+@test isequal(SBMLToolkit.get_unidirectional_components(k1), (k1, Num(0)))
 
 # Test add_reaction!
 rxs = Catalyst.Reaction[]
