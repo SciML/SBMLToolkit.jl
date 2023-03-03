@@ -149,22 +149,33 @@ function get_massaction(kl::Num, reactants::Union{Vector{Num}, Nothing},
         check_args(Val(SymbolicUtils.istree(x)), x)
     end
     function check_args(::Val{true}, x::SymbolicUtils.BasicSymbolic{Real})
+        println(3)
         for arg in SymbolicUtils.arguments(x)
+            println(arg)
             if isnan(check_args(arg)) || isequal(arg, Catalyst.DEFAULT_IV)
                 return NaN
             end
         end
         return 0
     end
-    check_args(::Val{false}, x::SymbolicUtils.BasicSymbolic{Real}) = isspecies(x) ? NaN : 0  # Species or Parameter leaf node
+    check_args(::Val{false}, x::SymbolicUtils.BasicSymbolic{Real}) = begin
+        println("4 two times")
+        println(x)
+        println(isspecies(x))
+        isspecies(x) ? NaN : 0  # Species or Parameter leaf node
+    end
     check_args(::Real) = 0  # Real leaf node
     check_args(x) = throw(ErrorException("Cannot handle $(typeof(x)) types."))  # Unknow leaf node
+    println(1)
     if isnothing(reactants) && isnothing(stoich)
+        println("should not be entered")
         rate_const = kl
     elseif isnothing(reactants) | isnothing(stoich)
         throw(ErrorException("`reactants` and `stoich` are incosistent: `reactants` are $(reactants) and `stoich` is $(stoich)."))
     else
+        println(2)
         rate_const = SymbolicUtils.simplify_fractions(kl / *((.^(reactants, stoich))...))
+        println(rate_const)
     end
     isnan(check_args(ModelingToolkit.value(rate_const))) ? NaN : rate_const
 end
