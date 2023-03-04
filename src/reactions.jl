@@ -29,24 +29,24 @@ end
 Infer forward and reverse components of bidirectional kineticLaw
 """
 function get_unidirectional_components(bidirectional_math)
-    bm = Symbolics.tosymbol(bidirectional_math)
+    bm = ModelingToolkit.value(bidirectional_math)  #  Symbolics.tosymbol(bidirectional_math)
     bm = simplify(bm; expand = true)
-    if (bm isa Union{Real, Symbol}) || (SymbolicUtils.operation(bm) != +)
-        @warn "Cannot separate bidirectional kineticLaw `$bidirectional_math` to forward and reverse part. Setting forward to `$bidirectional_math` and reverse to `0`."
+    if !SymbolicUtils.isadd(bm)
+        @warn "Cannot separate bidirectional kineticLaw `$bidirectional_math` to forward and reverse part. Setting forward to `$bidirectional_math` and reverse to `0`. Stochastic simulations will be inexact."
         return (bidirectional_math, Num(0))
     end
-    terms = SymbolicUtils.arguments(bm)
+    terms = SymbolicUtils.arguments(ModelingToolkit.value(bm))
     fw_terms = []
     rv_terms = []
     for term in terms
-        if (term isa SymbolicUtils.Mul) && (term.coeff < 0)
+        if SymbolicUtils.ismul(ModelingToolkit.value(term)) && (term.coeff < 0)
             push!(rv_terms, Num(-term))  # PL: @Anand: Perhaps we should to create_var(term) or so?
         else
             push!(fw_terms, Num(term))  # PL: @Anand: Perhaps we should to create_var(term) or so?
         end
     end
     if (length(fw_terms) != 1) || (length(rv_terms) != 1)
-        @warn "Cannot separate bidirectional kineticLaw `$bidirectional_math` to forward and reverse part. Setting forward to `$bidirectional_math` and reverse to `0`."
+        @warn "Cannot separate bidirectional kineticLaw `$bidirectional_math` to forward and reverse part. Setting forward to `$bidirectional_math` and reverse to `0`. Stochastic simulations will be inexact."
         return (bidirectional_math, Num(0))
     end
     return (fw_terms[1], rv_terms[1])
@@ -145,7 +145,10 @@ Get rate constant of mass action kineticLaws
 """
 function get_massaction(kl::Num, reactants::Union{Vector{Num}, Nothing},
                         stoich::Union{Vector{<:Real}, Nothing})
-    function check_args(x::SymbolicUtils.Symbolic{Real})
+    function check_args(x::SymbolicUtils.BasicSymbolic{Real})
+        check_args(Val(SymbolicUtils.istree(x)), x)
+    end
+    function check_args(::Val{true}, x::SymbolicUtils.BasicSymbolic{Real})
         for arg in SymbolicUtils.arguments(x)
             if isnan(check_args(arg)) || isequal(arg, Catalyst.DEFAULT_IV)
                 return NaN
@@ -153,9 +156,8 @@ function get_massaction(kl::Num, reactants::Union{Vector{Num}, Nothing},
         end
         return 0
     end
-    check_args(_::Term{Real, Nothing}) = NaN  # Variable leaf node
-    check_args(_::Sym{Real, Base.ImmutableDict{DataType, Any}}) = 0  # Parameter leaf node
-    check_args(_::Real) = 0  # Real leaf node
+    check_args(::Val{false}, x::SymbolicUtils.BasicSymbolic{Real}) = isspecies(x) ? NaN : 0  # Species vs Parameter leaf node
+    check_args(::Real) = 0  # Real leaf node
     check_args(x) = throw(ErrorException("Cannot handle $(typeof(x)) types."))  # Unknow leaf node
     if isnothing(reactants) && isnothing(stoich)
         rate_const = kl
@@ -164,5 +166,5 @@ function get_massaction(kl::Num, reactants::Union{Vector{Num}, Nothing},
     else
         rate_const = SymbolicUtils.simplify_fractions(kl / *((.^(reactants, stoich))...))
     end
-    isnan(check_args(rate_const.val)) ? NaN : rate_const
+    isnan(check_args(ModelingToolkit.value(rate_const))) ? NaN : rate_const
 end

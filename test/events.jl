@@ -4,7 +4,7 @@ using Test
 
 const IV = Catalyst.DEFAULT_IV
 @parameters compartment
-@variables S1(IV) S2(IV)
+@species S1(IV) S2(IV)
 
 function readmodel(sbml)
     SBMLToolkit.readSBMLFromString(sbml, doc -> begin
