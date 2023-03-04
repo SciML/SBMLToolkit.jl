@@ -1,5 +1,5 @@
 using SBMLToolkit
-using Catalyst, SBML
+using Catalyst, SBML, ModelingToolkit
 using Test
 
 cd(@__DIR__)
