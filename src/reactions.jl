@@ -156,7 +156,7 @@ function get_massaction(kl::Num, reactants::Union{Vector{Num}, Nothing},
         end
         return 0
     end
-    check_args(::Val{false}, x::SymbolicUtils.BasicSymbolic{Real}) = isspecies(x) ? NaN : 0  # Species or Parameter leaf node
+    check_args(::Val{false}, x::SymbolicUtils.BasicSymbolic{Real}) = isspecies(x) ? NaN : 0  # Species vs Parameter leaf node
     check_args(::Real) = 0  # Real leaf node
     check_args(x) = throw(ErrorException("Cannot handle $(typeof(x)) types."))  # Unknow leaf node
     if isnothing(reactants) && isnothing(stoich)

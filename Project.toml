@@ -13,7 +13,7 @@ SymbolicUtils = "d1185830-fcd6-423d-90d6-eec64667417b"
 Catalyst = "13"
 MathML = "0.1"
 SBML = "1.4"
-SymbolicUtils = "0.17, 0.18, 0.19, 1"
+SymbolicUtils = "1"
 julia = "1.6"
 
 [extras]
