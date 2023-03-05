@@ -1,5 +1,5 @@
 using SBMLToolkit
-using Catalyst, SBML, ModelingToolkit
+using Catalyst, SBML
 using Test
 
 cd(@__DIR__)
@@ -155,3 +155,8 @@ ns = SBMLToolkit.netstoich("s1", r)
 # Test checksupport_string
 @test_nowarn SBMLToolkit.checksupport_string("all good <reaction")
 @test_throws ErrorException SBMLToolkit.checksupport_string("contains </delay>")
+
+# Test convenience functions
+@test readSBML(sbmlfile, DefaultImporter()) isa SBML.Model
+@test readSBML(sbmlfile, ReactionSystemImporter()) isa ReactionSystem
+@test readSBML(sbmlfile, ODESystemImporter()) isa ODESystem

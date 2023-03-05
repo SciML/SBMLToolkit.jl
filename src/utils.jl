@@ -61,3 +61,8 @@ function has_rule_type(id::String, m::SBML.Model, T::Type{<:SBML.Rule})
         return any(SBML.isfreein(id, r.math) for r in m.rules if r isa SBML.AlgebraicRule)
     any(r.variable == id for r in m.rules if r isa T)
 end
+
+const importdefaults = doc -> begin
+                   set_level_and_version(3, 2)(doc)
+                   convert_promotelocals_expandfuns(doc)
+end

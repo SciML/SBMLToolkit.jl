@@ -1,3 +1,46 @@
+"DefaultImporter to use in conjuction with `readSBML`"
+struct DefaultImporter end
+
+"ReactionSystemImporter to use in conjuction with `readSBML`"
+struct ReactionSystemImporter end
+
+"ODESystemImporter to use in conjuction with `readSBML`"
+struct ODESystemImporter end
+
+"""
+    readSBML(sbmlfile::String, ::DefaultImporter)
+
+Create a `SBML.Model` from an SBML file, using default import settings for use as Catalyst and ModelingToolkit types.
+
+See also [`Model`](@ref) and [`DefaultImporter`](@ref).
+"""
+function SBML.readSBML(sbmlfile::String, ::DefaultImporter)  # Returns an SBML.Model
+    SBMLToolkit.checksupport_file(sbmlfile)
+    readSBML(sbmlfile, importdefaults)
+end
+
+"""
+    readSBML(sbmlfile::String, ::ReactionSystemImporter)
+
+Create a `Catalyst.ReactionSystem` from an SBML file, using default import settings.
+
+See also [`Model`](@ref) and [`ReactionSystemImporter`](@ref).
+"""
+function SBML.readSBML(sbmlfile::String, ::ReactionSystemImporter; kwargs...)  # Returns a Catalyst.ReactionSystem
+    ReactionSystem(readSBML(sbmlfile::String, DefaultImporter()), kwargs...)
+end
+
+"""
+    readSBML(sbmlfile::String, ::ODESystemImporter)
+
+Create a `ModelingToolkit.ODESystem` from an SBML file, using default import settings.
+
+See also [`Model`](@ref) and [`ODESystemImporter`](@ref).
+"""
+function SBML.readSBML(sbmlfile, ::ODESystemImporter; include_zero_odes::Bool=true, kwargs...)  # Returns an MTK.ODESystem
+    convert(ODESystem, readSBML(sbmlfile, ReactionSystemImporter(), kwargs...), include_zero_odes = include_zero_odes)
+end
+
 """
     ReactionSystem(model::SBML.Model; kwargs...)
 
@@ -55,7 +98,7 @@ Create an `ODESystem` from an `SBML.Model`.
 
 See also [`ReactionSystem`](@ref).
 """
-function ModelingToolkit.ODESystem(model::SBML.Model; include_zero_odes = true, kwargs...)
+function ModelingToolkit.ODESystem(model::SBML.Model; include_zero_odes::Bool = true, kwargs...)
     rs = ReactionSystem(model; kwargs...)
     convert(ODESystem, rs; include_zero_odes = include_zero_odes)
 end
