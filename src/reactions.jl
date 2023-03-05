@@ -145,9 +145,11 @@ Get rate constant of mass action kineticLaws
 """
 function get_massaction(kl::Num, reactants::Union{Vector{Num}, Nothing},
                         stoich::Union{Vector{<:Real}, Nothing})
+
     function check_args(x::SymbolicUtils.BasicSymbolic{Real})
         check_args(Val(SymbolicUtils.istree(x)), x)
     end
+
     function check_args(::Val{true}, x::SymbolicUtils.BasicSymbolic{Real})
         for arg in SymbolicUtils.arguments(x)
             if isnan(check_args(arg)) || isequal(arg, Catalyst.DEFAULT_IV)
@@ -156,9 +158,11 @@ function get_massaction(kl::Num, reactants::Union{Vector{Num}, Nothing},
         end
         return 0
     end
+
     check_args(::Val{false}, x::SymbolicUtils.BasicSymbolic{Real}) = isspecies(x) ? NaN : 0  # Species vs Parameter leaf node
     check_args(::Real) = 0  # Real leaf node
     check_args(x) = throw(ErrorException("Cannot handle $(typeof(x)) types."))  # Unknow leaf node
+
     if isnothing(reactants) && isnothing(stoich)
         rate_const = kl
     elseif isnothing(reactants) | isnothing(stoich)
@@ -166,5 +170,6 @@ function get_massaction(kl::Num, reactants::Union{Vector{Num}, Nothing},
     else
         rate_const = SymbolicUtils.simplify_fractions(kl / *((.^(reactants, stoich))...))
     end
+
     isnan(check_args(ModelingToolkit.value(rate_const))) ? NaN : rate_const
 end
