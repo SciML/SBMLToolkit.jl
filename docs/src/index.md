@@ -52,6 +52,13 @@ tspan = (0.0, 1.0)
 prob = ODEProblem(odesys, [], tspan, [])
 sol = solve(prob, Tsit5())
 ```
+SBMLToolkit also provides the following convenience functions to import `SBML.Models`, `Catalyst.ReactionSystems` and `ModelingToolkit.ODESystems`:
+
+```julia
+mdl = readSBML(sbmlfile, DefaultImporter())
+rs = readSBML(sbmlfile, ReactionSystemImporter())
+odesys = readSBML(sbmlfile, ODESystemImporter())
+```
 
 ## License
 
