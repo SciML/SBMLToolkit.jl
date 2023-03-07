@@ -63,6 +63,6 @@ function has_rule_type(id::String, m::SBML.Model, T::Type{<:SBML.Rule})
 end
 
 const importdefaults = doc -> begin
-                   set_level_and_version(3, 2)(doc)
-                   convert_promotelocals_expandfuns(doc)
+    set_level_and_version(3, 2)(doc)
+    convert_promotelocals_expandfuns(doc)
 end

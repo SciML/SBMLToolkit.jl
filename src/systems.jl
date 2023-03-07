@@ -37,8 +37,10 @@ Create a `ModelingToolkit.ODESystem` from an SBML file, using default import set
 
 See also [`Model`](@ref) and [`ODESystemImporter`](@ref).
 """
-function SBML.readSBML(sbmlfile::String, ::ODESystemImporter; include_zero_odes::Bool=true, kwargs...)  # Returns an MTK.ODESystem
-    convert(ODESystem, readSBML(sbmlfile, ReactionSystemImporter(), kwargs...), include_zero_odes = include_zero_odes)
+function SBML.readSBML(sbmlfile::String, ::ODESystemImporter;
+                       include_zero_odes::Bool = true, kwargs...)  # Returns an MTK.ODESystem
+    convert(ODESystem, readSBML(sbmlfile, ReactionSystemImporter(), kwargs...),
+            include_zero_odes = include_zero_odes)
 end
 
 """
@@ -98,7 +100,8 @@ Create an `ODESystem` from an `SBML.Model`.
 
 See also [`ReactionSystem`](@ref).
 """
-function ModelingToolkit.ODESystem(model::SBML.Model; include_zero_odes::Bool = true, kwargs...)
+function ModelingToolkit.ODESystem(model::SBML.Model; include_zero_odes::Bool = true,
+                                   kwargs...)
     rs = ReactionSystem(model; kwargs...)
     convert(ODESystem, rs; include_zero_odes = include_zero_odes)
 end
