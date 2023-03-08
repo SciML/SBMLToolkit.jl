@@ -53,6 +53,14 @@ prob = ODEProblem(odesys, [], tspan, [])
 sol = solve(prob, Tsit5())
 ```
 
+SBMLToolkit also provides the following convenience functions to import `SBML.Models`, `Catalyst.ReactionSystems` and `ModelingToolkit.ODESystems`:
+
+```julia
+mdl = readSBML(sbmlfile, DefaultImporter())
+rs = readSBML(sbmlfile, ReactionSystemImporter())
+odesys = readSBML(sbmlfile, ODESystemImporter())
+```
+
 ## License
 
 The package is released under the [MIT license](https://github.com/SciML/SBMLToolkit.jl/blob/main/LICENSE).
