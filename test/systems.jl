@@ -128,6 +128,14 @@ u0map_true = [SBMLToolkit.create_var("k2", IV; isbcspecies = true) => 1.0]
 @test isequal(u0map, u0map_true)
 @test Catalyst.isbc(first(u0map[1]))
 
+p = SBML.Parameter(name = "k2", value = nothing, constant = true)
+ia = Dict("k2" => KINETICMATH1)
+m = SBML.Model(parameters = Dict("k1" => PARAM1, "k2" => p),
+               initial_assignments = ia)
+u0map, parammap = SBMLToolkit.get_mappings(m)
+parammap_true = [k1 => 1.0, SBMLToolkit.create_var("k2") => k1]
+@test isequal(parammap, parammap_true)
+
 m = SBML.Model(species = Dict("s2" => SPECIES2),
                rules = SBML.Rule[SBML.AlgebraicRule(KINETICMATH2)])
 u0map, parammap = SBMLToolkit.get_mappings(m)

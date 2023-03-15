@@ -130,6 +130,10 @@ function get_mappings(model::SBML.Model)
            (SBML.seemsdefined(k, model) || is_event_assignment(k, model))
             var = create_var(k, IV; isbcspecies = true)
             push!(u0map, var => v.value)
+        elseif v.constant == true && isnothing(v.value)  # Todo: maybe add this branch also to model.compartments
+            var = create_param(k)
+            val = model.initial_assignments[k]
+            push!(parammap, var => interpret_as_num(val))
         else
             var = create_param(k)
             push!(parammap, var => v.value)
