@@ -1,5 +1,5 @@
 ---
-title: 'Gala: A Python package for galactic dynamics'
+title: 'SBMLToolkit.jl: A Julia package for generating ModelingToolkit models from SBML'
 tags:
   - Julia
   - systems biology
