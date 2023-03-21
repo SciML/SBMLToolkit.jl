@@ -1,5 +1,5 @@
 ---
-title: 'Gala: A Python package for galactic dynamics'
+title: 'SBMLToolkit.jl: A Julia package for generating ModelingToolkit models from SBML'
 tags:
   - Julia
   - systems biology
@@ -12,8 +12,7 @@ authors:
     affiliation: "1, 2" # (Multiple affiliations must be quoted)
   - name: Anand Jain
     affiliation: 1
-  - name: Author with no affiliation
-    corresponding: true # (This is how to denote the corresponding author)
+  - name: Chris Rackauckas
     affiliation: "1, 3"
 affiliations:
  - name: JuliaHub, USA
