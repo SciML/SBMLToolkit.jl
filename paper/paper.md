@@ -13,6 +13,7 @@ authors:
   - name: Anand Jain
     affiliation: 1
   - name: Chris Rackauckas
+    orcid: 0000-0001-5850-0663
     affiliation: "1, 3"
 affiliations:
  - name: JuliaHub, USA
