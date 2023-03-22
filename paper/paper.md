@@ -9,7 +9,7 @@ authors:
   - name: Paul F. Lang
     orcid: 0000-0002-6388-2405
     corresponding: true
-    affiliation: "1, 2" # (Multiple affiliations must be quoted)
+    affiliation: "1, 2"
   - name: Anand Jain
     affiliation: 1
   - name: Chris Rackauckas
@@ -54,13 +54,9 @@ CellML models [@cuellar_overview_2003], Catalyst.jl [@2022Catalyst] for de-novo 
 ModelingToolkit models, and COBREXA.jl [@COBREXA_jl] for constraint-based modelling,
 we hope that SBMLtoolkit.jl will help to catalyse the development of further Julia
 tools in the bioscience domain to ultimately accellerate research on biological
-systems \autoref{fig:summary}.
+systems (\autoref{fig:summary}).
 
-![The Julia ecosystem for systems biology.\label{fig:summary}](figure.svg)
-SBMLToolkit.jl links SBML and BioNetGen [@blinov_bionetgen_2004, @harris_bionetgen_2016] models to the SciML ecosystem \autoref{fig:summary}.
-
-Figure sizes can be customized by adding an optional second parameter:
-![Caption for example figure.](figure.svg){ width=20% }
+![The Julia ecosystem for systems biology. SBMLToolkit.jl links SBML and BioNetGen [@blinov_bionetgen_2004, @harris_bionetgen_2016] models to the SciML ecosystem.\label{fig:summary}](figure.svg)
 
 # Acknowledgements
 
