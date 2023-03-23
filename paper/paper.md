@@ -57,7 +57,7 @@ we hope that SBMLtoolkit.jl will help to catalyse the development of further Jul
 tools in the bioscience domain to ultimately accellerate research on biological
 systems (\autoref{fig:summary}).
 
-![The Julia ecosystem for systems biology. SBMLToolkit.jl links SBML and BioNetGen [@blinov_bionetgen_2004; @harris_bionetgen_2016] models to the SciML ecosystem.\label{fig:summary}](figure.svg)
+![The Julia ecosystem for systems biology. SBMLToolkit.jl links SBML and BioNetGen [@blinov_bionetgen_2004; @harris_bionetgen_2016] models to the SciML ecosystem.\label{fig:summary}](figure.png)
 
 # Acknowledgements
 
