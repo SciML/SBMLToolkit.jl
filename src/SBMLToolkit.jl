@@ -3,6 +3,7 @@ module SBMLToolkit
 using Catalyst
 using SBML
 using SymbolicUtils
+using Setfield
 
 include("drafts.jl")
 include("systems.jl")
@@ -10,6 +11,7 @@ include("reactions.jl")
 include("rules.jl")
 include("events.jl")
 include("utils.jl")
+include("nameswap.jl")
 
 @deprecate convert_simplify_math convert_promotelocals_expandfuns
 

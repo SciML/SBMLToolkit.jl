@@ -8,4 +8,5 @@ using SafeTestsets, Test
     @safetestset "Utils" begin include("utils.jl") end
     @safetestset "Simulation results" begin include("simresults.jl") end
     @safetestset "Wuschel" begin include("wuschel.jl") end
+    @safetestset "Nameswap" begin include("nameswap.jl") end
 end

@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sbml xmlns="http://www.sbml.org/sbml/level2/version4" level="2" version="4">
+  <annotation>
+    <SimBiology xmlns="http://www.mathworks.com">
+      <Version Major="6" Minor="4" Point="0"/>
+    </SimBiology>
+  </annotation>
+  <model id="mw97c68eca_aecf_484b_b128_48c812a0c25c" name="simpleModel">
+    <listOfCompartments>
+      <compartment id="mwfb3bbd58_15e9_4f26_9be2_0c1221191847" name="unnamed" size="1" constant="true"/>
+    </listOfCompartments>
+    <listOfSpecies>
+      <species id="mw31016a43_49a9_41bf_8a3f_346484470a6e" name="A" compartment="mwfb3bbd58_15e9_4f26_9be2_0c1221191847" initialConcentration="10" boundaryCondition="false" constant="false"/>
+      <species id="mw6966d9de_9719_43d5_8fbe_40a117eee9c7" name="B" compartment="mwfb3bbd58_15e9_4f26_9be2_0c1221191847" initialConcentration="0" boundaryCondition="false" constant="false"/>
+    </listOfSpecies>
+    <listOfReactions>
+      <reaction id="mw8998ca1f_76ee_4090_948e_b455153beda5" name="Reaction_1" reversible="false">
+        <listOfReactants>
+          <speciesReference species="mw31016a43_49a9_41bf_8a3f_346484470a6e" stoichiometry="1"/>
+        </listOfReactants>
+        <listOfProducts>
+          <speciesReference species="mw6966d9de_9719_43d5_8fbe_40a117eee9c7" stoichiometry="1"/>
+        </listOfProducts>
+        <kineticLaw>
+          <math xmlns="http://www.w3.org/1998/Math/MathML">
+            <apply>
+              <times/>
+              <ci> mwbb21d5b0_5b44_4d2f_8d51_1aaff3f8bf6d </ci>
+              <ci> mw31016a43_49a9_41bf_8a3f_346484470a6e </ci>
+            </apply>
+          </math>
+          <listOfParameters>
+            <parameter id="mwbb21d5b0_5b44_4d2f_8d51_1aaff3f8bf6d" name="k" value="0.5" constant="true"/>
+          </listOfParameters>
+        </kineticLaw>
+      </reaction>
+    </listOfReactions>
+  </model>
+</sbml>
