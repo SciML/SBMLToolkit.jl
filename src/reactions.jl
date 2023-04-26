@@ -80,8 +80,8 @@ Get reagents
 function get_reagents(reactant_references::Vector{SBML.SpeciesReference},
                       product_references::Vector{SBML.SpeciesReference},
                       model::SBML.Model)
-    reactants = Num[]
-    products = Num[]
+    reactants = String[]
+    products = String[]
     rstoich = Float64[]
     pstoich = Float64[]
 
@@ -93,11 +93,21 @@ function get_reagents(reactant_references::Vector{SBML.SpeciesReference},
             stoich = 1.0
         end
         iszero(stoich) && @error("Stoichiometry of $sn must be non-zero")
-        push!(reactants, create_var(sn, IV))
-        push!(rstoich, stoich)
+        if sn in reactants
+            idx = findfirst(isequal(sn), reactants)
+            rstoich[idx] += stoich
+        else
+            push!(reactants, sn)
+            push!(rstoich, stoich)
+        end
         if model.species[sn].boundary_condition == true
-            push!(products, create_var(sn, IV))
-            push!(pstoich, stoich)
+            if sn in products
+                idx = findfirst(isequal(sn), products)
+                pstoich[idx] += stoich
+            else
+                push!(products, sn)
+                push!(pstoich, stoich)
+            end
         end
     end
     for pr in product_references
@@ -109,10 +119,17 @@ function get_reagents(reactant_references::Vector{SBML.SpeciesReference},
         end
         iszero(stoich) && @error("Stoichiometry of $sn must be non-zero")
         if model.species[sn].boundary_condition != true
-            push!(products, create_var(sn, IV))
-            push!(pstoich, stoich)
+            if sn in products
+                idx = findfirst(isequal(sn), products)
+                pstoich[idx] += stoich
+            else
+                push!(products, sn)
+                push!(pstoich, stoich)
+            end
         end
     end
+    reactants = map(x -> create_var(x, IV), reactants)
+    products = map(x -> create_var(x, IV), products)
 
     if (length(reactants) == 0)
         reactants = nothing

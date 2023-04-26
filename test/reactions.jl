@@ -105,6 +105,13 @@ m = SBML.Model(species = Dict("s" => s), reactions = Dict("r1" => r))
               SBMLToolkit.get_reagents(r.reactants, r.products, m))
 @test isequal((nothing, nothing, nothing, nothing),
               SBMLToolkit.get_reagents(r.products, r.reactants, m))
+              
+r = SBML.Reaction(reactants = [SBML.SpeciesReference(species = "s", stoichiometry = 1.0),
+                               SBML.SpeciesReference(species = "s", stoichiometry = 1.0)],
+                  reversible = false)
+m = SBML.Model(species = Dict("s" => s), reactions = Dict("r1" => r))
+@test isequal(([var], [var], [2.0], [2.0]),
+              SBMLToolkit.get_reagents(r.reactants, r.products, m))
 
 # Test use_rate
 @test isequal(SBMLToolkit.use_rate(k1 * s1, [s1], [1]), (k1, false))  # Case hOSU=true
