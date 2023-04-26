@@ -128,8 +128,8 @@ function get_reagents(reactant_references::Vector{SBML.SpeciesReference},
             end
         end
     end
-    reactants = map(x -> create_var(x, IV), reactants)
-    products = map(x -> create_var(x, IV), products)
+    reactants = map(x -> Num(create_var(x, IV)), reactants)
+    products = map(x -> Num(create_var(x, IV)), products)
 
     if (length(reactants) == 0)
         reactants = nothing
