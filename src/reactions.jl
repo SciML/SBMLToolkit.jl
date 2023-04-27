@@ -162,7 +162,6 @@ Get rate constant of mass action kineticLaws
 """
 function get_massaction(kl::Num, reactants::Union{Vector{Num}, Nothing},
                         stoich::Union{Vector{<:Real}, Nothing})
-
     function check_args(x::SymbolicUtils.BasicSymbolic{Real})
         check_args(Val(SymbolicUtils.istree(x)), x)
     end
