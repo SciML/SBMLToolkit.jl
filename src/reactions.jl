@@ -6,7 +6,7 @@ function get_reactions(model::SBML.Model)
     rxs = Reaction[]
     for reaction in values(model.reactions)
         extensive_math = SBML.extensive_kinetic_math(model, reaction.kinetic_math)
-        symbolic_math = interpret_as_num(extensive_math)
+        symbolic_math = interpret_as_num(extensive_math, model)
         reactant_references = reaction.reactants
         product_references = reaction.products
         if reaction.reversible

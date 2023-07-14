@@ -7,16 +7,16 @@ const symbolics_mapping = Dict(SBML.default_function_mapping...,
 
 # const SUBSDICT = get_substitutions(model)
 
-map_symbolics_ident(x) = begin
-    sym = Symbol(x.id)
-    first(@species $sym)
-end
+# map_symbolics_ident(x) = begin
+#     sym = Symbol(x.id)
+#     first(@species $sym)
+# end
 
-function interpret_as_num(x::SBML.Math)
+function interpret_as_num(x::SBML.Math, model::SBML.Model)
     SBML.interpret_math(x;
                         map_apply = (x::SBML.MathApply, interpret::Function) -> Num(symbolics_mapping[x.fn](interpret.(x.args)...)),
                         map_const = (x::SBML.MathConst) -> Num(SBML.default_constants[x.id]),
-                        map_ident = map_symbolics_ident,
+                        map_ident = x -> map_symbolics_ident(x, model),
                         map_lambda = (_, _) -> throw(ErrorException("Symbolics.jl does not support lambda functions")),
                         map_time = (x::SBML.MathTime) -> IV,
                         map_value = (x::SBML.MathVal) -> x.val,
@@ -38,6 +38,21 @@ function get_substitutions(model)
         subsdict[k] = item
     end
     subsdict
+end
+
+
+function map_symbolics_ident(x::SBML.Math, model::SBML.Model)
+    k = x.id
+    isspecies = k in keys(model.species) ? true : false
+    v = merge(model.species, model.parameters, model.compartments)[k]
+    v.constant && return create_param(k, isconstantspecies=isspecies)
+    isbcspecies = !isspecies &&
+                      has_rule_type(k, model, SBML.RateRule) ||
+                      has_rule_type(k, model, SBML.AssignmentRule) ||
+                      (has_rule_type(k, model, SBML.AlgebraicRule) &&
+                          (all([netstoich(k, r) == 0 for r in values(model.reactions)]) ||
+                           v.boundary_condition == true))  # To remove species that are otherwise defined
+    return create_var(k, IV; isbcspecies = isbcspecies)
 end
 
 function create_var(x; isbcspecies = false)

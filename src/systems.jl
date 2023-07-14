@@ -133,7 +133,7 @@ function get_mappings(model::SBML.Model)
         elseif v.constant == true && isnothing(v.value)  # Todo: maybe add this branch also to model.compartments
             var = create_param(k)
             val = model.initial_assignments[k]
-            push!(parammap, var => interpret_as_num(val))
+            push!(parammap, var => interpret_as_num(val, model))
         else
             var = create_param(k)
             push!(parammap, var => v.value)

@@ -5,7 +5,7 @@ function get_rules(model)
     raterules = Equation[]
     for r in model.rules
         if r isa SBML.AlgebraicRule
-            push!(algeqs, 0 ~ interpret_as_num(r.math))
+            push!(algeqs, 0 ~ interpret_as_num(r.math, model))
         elseif r isa SBML.AssignmentRule
             var, ass = get_var_and_assignment(model, r)
             push!(obseqs, var ~ ass)
@@ -31,7 +31,7 @@ function get_var_and_assignment(model, rule)
     if !isnothing(vc)
         math = SBML.MathApply("*", [SBML.MathIdent(vc), math])
     end
-    assignment = interpret_as_num(math)
+    assignment = interpret_as_num(math, model)
     if rule isa SBML.RateRule && haskey(model.species, rule.variable)
         sp = model.species[rule.variable]
         comp = model.compartments[sp.compartment]
