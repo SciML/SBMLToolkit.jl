@@ -22,7 +22,9 @@ sym = SBMLToolkit.map_symbolics_ident(SBML.MathIdent("s1"))
 @test isequal(sym, s1)
 
 # Test interpret_as_num
-@species B C D Time
+@species B(IV)
+@variables Dv(IV)
+@parameters C D Bc
 
 test = SBML.MathApply("*",
                       SBML.Math[SBML.MathApply("+",
@@ -32,10 +34,25 @@ test = SBML.MathApply("*",
                                                          SBML.MathApply("-",
                                                                         SBML.Math[SBML.MathApply("*",
                                                                                                  SBML.Math[SBML.MathIdent("C"),
-                                                                                                           SBML.MathIdent("D")])])]),
+                                                                                                           SBML.MathIdent("D"),
+                                                                                                           SBML.MathIdent("Dv"),
+                                                                                                           SBML.MathIdent("Bc")])])]),
                                 SBML.MathTime("Time")])
 
-@test isequal(SBMLToolkit.interpret_as_num(test), IV * (6.02214076e23 * B - C * D))
+COMP1 = SBML.Compartment("C", true, 3, 2.0, "nl", nothing, nothing, nothing, nothing,
+                         SBML.CVTerm[])
+SPECIES1 = SBML.Species(name = "B", compartment = "C", initial_amount = 1.0,
+                        substance_units = "substance", only_substance_units = true,
+                        boundary_condition = false, constant = false)  # Todo: Maybe not support units in initial_concentration?
+PARAM1 = SBML.Parameter(name = "D", value = 1.0, constant = true)
+SPECIES2 = SBML.Species(name = "Bc", compartment = "C", initial_amount = 1.0,
+                        substance_units = "substance", only_substance_units = true,
+                        boundary_condition = false, constant = true)  # Todo: Maybe not support units in initial_concentration?
+PARAM2 = SBML.Parameter(name = "Dv", value = 1.0, constant = false)
+MODEL1 = SBML.Model(parameters = Dict("D" => PARAM1, "Dv" => PARAM2),
+                    compartments = Dict("C" => COMP1),
+                    species = Dict("B" => SPECIES1, "Bc" => SPECIES2)) 
+@test isequal(SBMLToolkit.interpret_as_num(test, MODEL1), IV * (6.02214076e23 * B - C * D * Dv * Bc))
 
 # Test get_substitutions
 sbml, _, _ = SBMLToolkitTestSuite.read_case("00001")
