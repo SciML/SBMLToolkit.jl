@@ -9,6 +9,20 @@ function readmodel(sbml)
                                    end)
 end
 
+COMP1 = SBML.Compartment("C", true, 3, 2.0, "nl", nothing, nothing, nothing, nothing,
+                         SBML.CVTerm[])
+SPECIES1 = SBML.Species(name = "B", compartment = "C", initial_amount = 1.0,
+                        substance_units = "substance", only_substance_units = true,
+                        boundary_condition = false, constant = false)  # Todo: Maybe not support units in initial_concentration?
+PARAM1 = SBML.Parameter(name = "D", value = 1.0, constant = true)
+SPECIES2 = SBML.Species(name = "Bc", compartment = "C", initial_amount = 1.0,
+                        substance_units = "substance", only_substance_units = true,
+                        boundary_condition = false, constant = true)  # Todo: Maybe not support units in initial_concentration?
+PARAM2 = SBML.Parameter(name = "Dv", value = 1.0, constant = false)
+MODEL1 = SBML.Model(parameters = Dict("D" => PARAM1, "Dv" => PARAM2),
+                    compartments = Dict("C" => COMP1),
+                    species = Dict("B" => SPECIES1, "Bc" => SPECIES2)) 
+
 const IV = Catalyst.DEFAULT_IV
 @species s1(IV)
 # Test symbolicsRateOf
@@ -16,10 +30,10 @@ rate = SBMLToolkit.symbolicsRateOf(s1)
 rate_true = SBMLToolkit.D(s1)
 @test isequal(rate, rate_true)
 
-# Test map_sumbolics_ident
-sym = SBMLToolkit.map_symbolics_ident(SBML.MathIdent("s1"))
-@species s1
-@test isequal(sym, s1)
+# Test map_symbolics_ident
+sym = SBMLToolkit.map_symbolics_ident(SBML.MathIdent("B"), MODEL1)
+@species B(IV) [irreducible = false; isbcspecies = false]
+@test isequal(sym, B)
 
 # Test interpret_as_num
 @species B(IV)
@@ -39,19 +53,6 @@ test = SBML.MathApply("*",
                                                                                                            SBML.MathIdent("Bc")])])]),
                                 SBML.MathTime("Time")])
 
-COMP1 = SBML.Compartment("C", true, 3, 2.0, "nl", nothing, nothing, nothing, nothing,
-                         SBML.CVTerm[])
-SPECIES1 = SBML.Species(name = "B", compartment = "C", initial_amount = 1.0,
-                        substance_units = "substance", only_substance_units = true,
-                        boundary_condition = false, constant = false)  # Todo: Maybe not support units in initial_concentration?
-PARAM1 = SBML.Parameter(name = "D", value = 1.0, constant = true)
-SPECIES2 = SBML.Species(name = "Bc", compartment = "C", initial_amount = 1.0,
-                        substance_units = "substance", only_substance_units = true,
-                        boundary_condition = false, constant = true)  # Todo: Maybe not support units in initial_concentration?
-PARAM2 = SBML.Parameter(name = "Dv", value = 1.0, constant = false)
-MODEL1 = SBML.Model(parameters = Dict("D" => PARAM1, "Dv" => PARAM2),
-                    compartments = Dict("C" => COMP1),
-                    species = Dict("B" => SPECIES1, "Bc" => SPECIES2)) 
 @test isequal(SBMLToolkit.interpret_as_num(test, MODEL1), IV * (6.02214076e23 * B - C * D * Dv * Bc))
 
 # Test get_substitutions
