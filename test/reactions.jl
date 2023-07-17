@@ -64,7 +64,7 @@ rv = substitute(rv, Dict(SBMLToolkit.create_var("s2") => SBMLToolkit.create_var(
 @test isequal((fw, rv), (k1, k1 * s2))
 
 km = SBML.MathIdent("s1s2")
-sm1 = SBMLToolkit.interpret_as_num(km)
+sm1 = SBMLToolkit.interpret_as_num(km, MODEL1)
 sm2 = sm - sm1
 @test isequal(SBMLToolkit.get_unidirectional_components(sm2), (sm2, Num(0)))
 @test isequal(SBMLToolkit.get_unidirectional_components(k1), (k1, Num(0)))
