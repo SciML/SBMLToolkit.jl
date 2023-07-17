@@ -45,14 +45,14 @@ function map_symbolics_ident(x::SBML.Math, model::SBML.Model)
     k = x.id
     isspecies = k in keys(model.species) ? true : false
     v = merge(model.species, model.parameters, model.compartments)[k]
-    v.constant && return create_param(k, isconstantspecies=isspecies)
+    v.constant && return Num(create_param(k, isconstantspecies=isspecies))
     isbcspecies = !isspecies &&
                       has_rule_type(k, model, SBML.RateRule) ||
                       has_rule_type(k, model, SBML.AssignmentRule) ||
                       (has_rule_type(k, model, SBML.AlgebraicRule) &&
                           (all([netstoich(k, r) == 0 for r in values(model.reactions)]) ||
                            v.boundary_condition == true))  # To remove species that are otherwise defined
-    return create_var(k, IV; isbcspecies = isbcspecies)
+    return Num(create_var(k, IV; isbcspecies = isbcspecies))
 end
 
 function create_var(x; isbcspecies = false)
