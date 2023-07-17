@@ -12,7 +12,13 @@ COMP1 = SBML.Compartment("c1", true, 3, 2.0, "nl", nothing, nothing, nothing, no
                          SBML.CVTerm[])
 SPECIES1 = SBML.Species(name = "s1", compartment = "c1", initial_amount = 1.0,
                         substance_units = "substance", only_substance_units = true,
-                        boundary_condition = false, constant = false)  # Todo: Maybe not support units in initial_concentration?
+                        boundary_condition = false, constant = false)
+SPECIES2 = SBML.Species(name = "s2", compartment = "c1", initial_amount = 1.0,
+                        substance_units = "substance", only_substance_units = true,
+                        boundary_condition = false, constant = false)
+SPECIES3 = SBML.Species(name = "s1s2", compartment = "c1", initial_amount = 1.0,
+                        substance_units = "substance", only_substance_units = true,
+                        boundary_condition = false, constant = false)
 KINETICMATH1 = SBML.MathIdent("k1")
 KINETICMATH2 = SBML.MathApply("*", SBML.Math[SBML.MathIdent("k1"), SBML.MathIdent("s2")])
 REACTION1 = SBML.Reaction(products = [
@@ -23,7 +29,9 @@ REACTION1 = SBML.Reaction(products = [
 PARAM1 = SBML.Parameter(name = "k1", value = 1.0, constant = true)
 MODEL1 = SBML.Model(parameters = Dict("k1" => PARAM1),
                     compartments = Dict("c1" => COMP1),
-                    species = Dict("s1" => SPECIES1),
+                    species = Dict("s1" => SPECIES1,
+                                   "s2" => SPECIES2,
+                                   "s1s2" => SPECIES3),
                     reactions = Dict("r1" => REACTION1))  # PL: For instance in the compartments dict, we may want to enforce that key and compartment.name are identical
 
 # Test get_reactions
@@ -45,12 +53,12 @@ model = SBML.Model(parameters = Dict("k1" => PARAM1),
 
 # Test get_unidirectional_components
 km = SBML.MathApply("-", SBML.Math[KINETICMATH1, SBML.MathIdent("c1")])
-sm = SBMLToolkit.interpret_as_num(km)
+sm = SBMLToolkit.interpret_as_num(km, MODEL1)
 kl = SBMLToolkit.get_unidirectional_components(sm)
 @test isequal(kl, (k1, c1))
 
 km = SBML.MathApply("-", SBML.Math[KINETICMATH1, KINETICMATH2])
-sm = SBMLToolkit.interpret_as_num(km)
+sm = SBMLToolkit.interpret_as_num(km, MODEL1)
 fw, rv = SBMLToolkit.get_unidirectional_components(sm)
 rv = substitute(rv, Dict(SBMLToolkit.create_var("s2") => SBMLToolkit.create_var("s2", IV)))
 @test isequal((fw, rv), (k1, k1 * s2))
