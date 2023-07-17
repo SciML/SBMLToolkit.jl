@@ -54,7 +54,11 @@ function Catalyst.ReactionSystem(model::SBML.Model; kwargs...)  # Todo: requires
     # length(model.events) > 0 ? error("Model contains events. Please import with `ODESystem(model)`") : nothing  @Anand: how to suppress this when called from ODESystem
     rxs = get_reactions(model)
     u0map, parammap = get_mappings(model)
-    defs = ModelingToolkit._merge(Dict(u0map), Dict(parammap))
+    defs = Dict{Num, Any}()
+    for (k, v) in vcat(u0map, parammap)
+        defs[k] = v
+    end
+    # defs = ModelingToolkit._merge(Dict(u0map), Dict(parammap))
     algrules, obsrules, raterules = get_rules(model)
     obsrules_rearranged = Equation[]
     for o in obsrules
@@ -64,9 +68,9 @@ function Catalyst.ReactionSystem(model::SBML.Model; kwargs...)  # Todo: requires
                 rhs = r.rhs
             end
         end
-        defs[o.lhs] = substitute(rhs,
-                                 ModelingToolkit._merge(defs,
-                                                        Dict(Catalyst.DEFAULT_IV.val => 0)))
+        defs[o.lhs] = ModelingToolkit.fixpoint_sub(rhs, defs)
+                                #  ModelingToolkit._merge(defs,
+                                #                         Dict(Catalyst.DEFAULT_IV.val => 0)))
         push!(obsrules_rearranged, 0 ~ rhs - o.lhs)
     end
     raterules_subs = []
@@ -77,9 +81,9 @@ function Catalyst.ReactionSystem(model::SBML.Model; kwargs...)  # Todo: requires
                 rhs = r.rhs
             end
         end
-        defs[o.lhs] = substitute(rhs,
-                                 ModelingToolkit._merge(defs,
-                                                        Dict(Catalyst.DEFAULT_IV.val => 0)))
+        defs[o.lhs] = ModelingToolkit.fixpoint_sub(rhs, defs)
+                                #  ModelingToolkit._merge(defs,
+                                #                         Dict(Catalyst.DEFAULT_IV.val => 0)))
         push!(raterules_subs, rhs ~ o.lhs)
     end
     if haskey(kwargs, :defaults)
