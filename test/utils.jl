@@ -19,9 +19,11 @@ SPECIES2 = SBML.Species(name = "Bc", compartment = "C", initial_amount = 1.0,
                         substance_units = "substance", only_substance_units = true,
                         boundary_condition = false, constant = true)  # Todo: Maybe not support units in initial_concentration?
 PARAM2 = SBML.Parameter(name = "Dv", value = 1.0, constant = false)
+RULE1 = SBML.AssignmentRule("Dv", SBML.MathIdent("B"))
 MODEL1 = SBML.Model(parameters = Dict("D" => PARAM1, "Dv" => PARAM2),
                     compartments = Dict("C" => COMP1),
-                    species = Dict("B" => SPECIES1, "Bc" => SPECIES2)) 
+                    species = Dict("B" => SPECIES1, "Bc" => SPECIES2),
+                    rules = [RULE1]) 
 
 const IV = Catalyst.DEFAULT_IV
 @species s1(IV)
@@ -36,8 +38,7 @@ sym = SBMLToolkit.map_symbolics_ident(SBML.MathIdent("B"), MODEL1)
 @test isequal(sym, B)
 
 # Test interpret_as_num
-@species B(IV)
-@variables Dv(IV)
+@species B(IV) Dv(IV)
 @parameters C D Bc
 
 test = SBML.MathApply("*",
