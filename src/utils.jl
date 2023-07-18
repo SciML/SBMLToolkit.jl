@@ -5,13 +5,6 @@ symbolicsRateOf(x) = D(x)
 const symbolics_mapping = Dict(SBML.default_function_mapping...,
                                "rateOf" => symbolicsRateOf)
 
-# const SUBSDICT = get_substitutions(model)
-
-# map_symbolics_ident(x) = begin
-#     sym = Symbol(x.id)
-#     first(@species $sym)
-# end
-
 function interpret_as_num(x::SBML.Math, model::SBML.Model)
     SBML.interpret_math(x;
                         map_apply = (x::SBML.MathApply, interpret::Function) -> Num(symbolics_mapping[x.fn](interpret.(x.args)...)),
@@ -39,20 +32,6 @@ function get_substitutions(model)
     end
     subsdict
 end
-
-# function map_symbolics_ident(x::SBML.Math, model::SBML.Model)
-#     k = x.id
-#     isspecies = k in keys(model.species) ? true : false
-#     v = merge(model.species, model.parameters, model.compartments)[k]
-#     v.constant && return Num(create_param(k, isconstantspecies=isspecies))
-#     isbcspecies = !isspecies &&
-#                       (has_rule_type(k, model, SBML.RateRule) ||
-#                       has_rule_type(k, model, SBML.AssignmentRule) ||
-#                       (has_rule_type(k, model, SBML.AlgebraicRule) &&
-#                           (all([netstoich(k, r) == 0 for r in values(model.reactions)]) ||
-#                            v.boundary_condition == true)))  # To remove species that are otherwise defined
-#     return Num(create_var(k, IV; isbcspecies = isbcspecies))
-# end
 
 function map_symbolics_ident(x::SBML.Math, model::SBML.Model)
     k = x.id
