@@ -40,19 +40,57 @@ function get_substitutions(model)
     subsdict
 end
 
+# function map_symbolics_ident(x::SBML.Math, model::SBML.Model)
+#     k = x.id
+#     isspecies = k in keys(model.species) ? true : false
+#     v = merge(model.species, model.parameters, model.compartments)[k]
+#     v.constant && return Num(create_param(k, isconstantspecies=isspecies))
+#     isbcspecies = !isspecies &&
+#                       (has_rule_type(k, model, SBML.RateRule) ||
+#                       has_rule_type(k, model, SBML.AssignmentRule) ||
+#                       (has_rule_type(k, model, SBML.AlgebraicRule) &&
+#                           (all([netstoich(k, r) == 0 for r in values(model.reactions)]) ||
+#                            v.boundary_condition == true)))  # To remove species that are otherwise defined
+#     return Num(create_var(k, IV; isbcspecies = isbcspecies))
+# end
 
 function map_symbolics_ident(x::SBML.Math, model::SBML.Model)
     k = x.id
-    isspecies = k in keys(model.species) ? true : false
-    v = merge(model.species, model.parameters, model.compartments)[k]
-    v.constant && return Num(create_param(k, isconstantspecies=isspecies))
-    isbcspecies = !isspecies &&
-                      has_rule_type(k, model, SBML.RateRule) ||
-                      has_rule_type(k, model, SBML.AssignmentRule) ||
-                      (has_rule_type(k, model, SBML.AlgebraicRule) &&
-                          (all([netstoich(k, r) == 0 for r in values(model.reactions)]) ||
-                           v.boundary_condition == true))  # To remove species that are otherwise defined
-    return Num(create_var(k, IV; isbcspecies = isbcspecies))
+    category = k in keys(model.species) ? :species : k in keys(model.parameters) ? :parameter : k in keys(model.compartments) ? :compartment : error("Unknown category for $k")
+    if k in keys(model.species)
+        v = model.species[k]
+        if v.constant == true
+            var = create_param(k; isconstantspecies = true)
+        else
+            var = create_var(k, IV;
+                             isbcspecies = has_rule_type(k, model, SBML.RateRule) ||
+                                           has_rule_type(k, model, SBML.AssignmentRule) ||
+                                           (has_rule_type(k, model, SBML.AlgebraicRule) &&
+                                            (all([netstoich(k, r) == 0
+                                                  for r in values(model.reactions)]) ||
+                                             v.boundary_condition == true)))  # To remove species that are otherwise defined
+        end
+    elseif k in keys(model.parameters)
+        v = model.parameters[k]
+        if v.constant == false &&
+           (SBML.seemsdefined(k, model) || is_event_assignment(k, model))
+            var = create_var(k, IV; isbcspecies = true)
+        elseif v.constant == true && isnothing(v.value)  # Todo: maybe add this branch also to model.compartments
+            var = create_param(k)
+        else
+            var = create_param(k)
+        end
+    elseif k in keys(model.compartments)
+        v = model.compartments[k]
+        if v.constant == false && SBML.seemsdefined(k, model)
+            var = create_var(k, IV; isbcspecies = true)
+        else
+            var = create_param(k)
+        end
+    else
+        error("$k must be in the model species, parameters, or compartments.")
+    end
+    Num(var)
 end
 
 function create_var(x; isbcspecies = false)
