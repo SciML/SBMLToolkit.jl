@@ -38,9 +38,9 @@ Create a `ModelingToolkit.ODESystem` from an SBML file, using default import set
 See also [`Model`](@ref) and [`ODESystemImporter`](@ref).
 """
 function SBML.readSBML(sbmlfile::String, ::ODESystemImporter;
-                       include_zero_odes::Bool = true, kwargs...)  # Returns an MTK.ODESystem
+    include_zero_odes::Bool = true, kwargs...)  # Returns an MTK.ODESystem
     convert(ODESystem, readSBML(sbmlfile, ReactionSystemImporter(), kwargs...),
-            include_zero_odes = include_zero_odes)
+        include_zero_odes = include_zero_odes)
 end
 
 """
@@ -54,7 +54,11 @@ function Catalyst.ReactionSystem(model::SBML.Model; kwargs...)  # Todo: requires
     # length(model.events) > 0 ? error("Model contains events. Please import with `ODESystem(model)`") : nothing  @Anand: how to suppress this when called from ODESystem
     rxs = get_reactions(model)
     u0map, parammap = get_mappings(model)
-    defs = ModelingToolkit._merge(Dict(u0map), Dict(parammap))
+    defs = Dict{Num, Any}()
+    for (k, v) in vcat(u0map, parammap)
+        defs[k] = v
+    end
+    # defs = ModelingToolkit._merge(Dict(u0map), Dict(parammap))
     algrules, obsrules, raterules = get_rules(model)
     obsrules_rearranged = Equation[]
     for o in obsrules
@@ -64,9 +68,9 @@ function Catalyst.ReactionSystem(model::SBML.Model; kwargs...)  # Todo: requires
                 rhs = r.rhs
             end
         end
-        defs[o.lhs] = substitute(rhs,
-                                 ModelingToolkit._merge(defs,
-                                                        Dict(Catalyst.DEFAULT_IV.val => 0)))
+        defs[o.lhs] = ModelingToolkit.fixpoint_sub(rhs, defs)
+        #  ModelingToolkit._merge(defs,
+        #                         Dict(Catalyst.DEFAULT_IV.val => 0)))
         push!(obsrules_rearranged, 0 ~ rhs - o.lhs)
     end
     raterules_subs = []
@@ -77,9 +81,9 @@ function Catalyst.ReactionSystem(model::SBML.Model; kwargs...)  # Todo: requires
                 rhs = r.rhs
             end
         end
-        defs[o.lhs] = substitute(rhs,
-                                 ModelingToolkit._merge(defs,
-                                                        Dict(Catalyst.DEFAULT_IV.val => 0)))
+        defs[o.lhs] = ModelingToolkit.fixpoint_sub(rhs, defs)
+        #  ModelingToolkit._merge(defs,
+        #                         Dict(Catalyst.DEFAULT_IV.val => 0)))
         push!(raterules_subs, rhs ~ o.lhs)
     end
     if haskey(kwargs, :defaults)
@@ -87,10 +91,10 @@ function Catalyst.ReactionSystem(model::SBML.Model; kwargs...)  # Todo: requires
         kwargs = filter(x -> !isequal(first(x), :defaults), kwargs)
     end
     ReactionSystem([rxs..., algrules..., raterules_subs..., obsrules_rearranged...],
-                   IV, first.(u0map), first.(parammap);
-                   defaults = defs, name = gensym(:SBML),
-                   continuous_events = get_events(model),
-                   combinatoric_ratelaws = false, kwargs...)
+        IV, first.(u0map), first.(parammap);
+        defaults = defs, name = gensym(:SBML),
+        continuous_events = get_events(model),
+        combinatoric_ratelaws = false, kwargs...)
 end
 
 """
@@ -101,7 +105,7 @@ Create an `ODESystem` from an `SBML.Model`.
 See also [`ReactionSystem`](@ref).
 """
 function ModelingToolkit.ODESystem(model::SBML.Model; include_zero_odes::Bool = true,
-                                   kwargs...)
+    kwargs...)
     rs = ReactionSystem(model; kwargs...)
     convert(ODESystem, rs; include_zero_odes = include_zero_odes)
 end
@@ -116,12 +120,12 @@ function get_mappings(model::SBML.Model)
             push!(parammap, var => inits[k])
         else
             var = create_var(k, IV;
-                             isbcspecies = has_rule_type(k, model, SBML.RateRule) ||
-                                           has_rule_type(k, model, SBML.AssignmentRule) ||
-                                           (has_rule_type(k, model, SBML.AlgebraicRule) &&
-                                            (all([netstoich(k, r) == 0
-                                                  for r in values(model.reactions)]) ||
-                                             v.boundary_condition == true)))  # To remove species that are otherwise defined
+                isbcspecies = has_rule_type(k, model, SBML.RateRule) ||
+                              has_rule_type(k, model, SBML.AssignmentRule) ||
+                              (has_rule_type(k, model, SBML.AlgebraicRule) &&
+                               (all([netstoich(k, r) == 0
+                                     for r in values(model.reactions)]) ||
+                                v.boundary_condition == true)))  # To remove species that are otherwise defined
             push!(u0map, var => inits[k])
         end
     end
@@ -133,7 +137,7 @@ function get_mappings(model::SBML.Model)
         elseif v.constant == true && isnothing(v.value)  # Todo: maybe add this branch also to model.compartments
             var = create_param(k)
             val = model.initial_assignments[k]
-            push!(parammap, var => interpret_as_num(val))
+            push!(parammap, var => interpret_as_num(val, model))
         else
             var = create_param(k)
             push!(parammap, var => v.value)
@@ -154,9 +158,9 @@ end
 function netstoich(id, reaction)
     netstoich = 0
     rdict = Dict(getproperty.(reaction.reactants, :species) .=>
-                     getproperty.(reaction.reactants, :stoichiometry))
+        getproperty.(reaction.reactants, :stoichiometry))
     pdict = Dict(getproperty.(reaction.products, :species) .=>
-                     getproperty.(reaction.products, :stoichiometry))
+        getproperty.(reaction.products, :stoichiometry))
     netstoich -= get(rdict, id, 0)
     netstoich += get(pdict, id, 0)
 end
