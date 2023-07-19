@@ -17,7 +17,7 @@ function get_rules(model)
         end
     end
     algeqs, obseqs, raterules = map(x -> substitute(x, subsdict),
-                                    (algeqs, obseqs, raterules))
+        (algeqs, obseqs, raterules))
     algeqs, obseqs, raterules
 end
 
@@ -52,6 +52,6 @@ function get_volume_correction(model, s_id)
     isnothing(comp.size) && !SBML.seemsdefined(sp.compartment, model) &&
         comp.spatial_dimensions != 0 &&  # remove this line when SBML test suite is fixed
         throw(DomainError(sp.compartment,
-                          "compartment size is insufficiently defined"))
+            "compartment size is insufficiently defined"))
     sp.compartment
 end

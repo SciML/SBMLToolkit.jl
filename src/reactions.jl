@@ -14,9 +14,9 @@ function get_reactions(model::SBML.Model)
             kl_fw, kl_rv = [substitute(x, subsdict) for x in symbolic_math]
             enforce_rate = isequal(kl_rv, 0)
             add_reaction!(rxs, kl_fw, reactant_references, product_references, model;
-                          enforce_rate = enforce_rate)
+                enforce_rate = enforce_rate)
             add_reaction!(rxs, kl_rv, product_references, reactant_references, model;
-                          enforce_rate = enforce_rate)
+                enforce_rate = enforce_rate)
         else
             kl = substitute(symbolic_math, subsdict)  # Todo: use SUBSDICT
             add_reaction!(rxs, kl, reactant_references, product_references, model)
@@ -53,21 +53,21 @@ function get_unidirectional_components(bidirectional_math)
 end
 
 function add_reaction!(rxs::Vector{Reaction},
-                       kl::Num,
-                       reactant_references::Vector{SBML.SpeciesReference},
-                       product_references::Vector{SBML.SpeciesReference},
-                       model::SBML.Model;
-                       enforce_rate = false)
+    kl::Num,
+    reactant_references::Vector{SBML.SpeciesReference},
+    product_references::Vector{SBML.SpeciesReference},
+    model::SBML.Model;
+    enforce_rate = false)
     reactants, products, rstoichvals, pstoichvals = get_reagents(reactant_references,
-                                                                 product_references, model)
+        product_references, model)
     isnothing(reactants) && isnothing(products) && return
     rstoichvals = stoich_convert_to_ints(rstoichvals)
     pstoichvals = stoich_convert_to_ints(pstoichvals)
     kl, our = use_rate(kl, reactants, rstoichvals)
     our = enforce_rate ? true : our
     push!(rxs,
-          Catalyst.Reaction(kl, reactants, products, rstoichvals, pstoichvals;
-                            only_use_rate = our))
+        Catalyst.Reaction(kl, reactants, products, rstoichvals, pstoichvals;
+            only_use_rate = our))
 end
 
 function stoich_convert_to_ints(xs)
@@ -78,8 +78,8 @@ end
 Get reagents
 """
 function get_reagents(reactant_references::Vector{SBML.SpeciesReference},
-                      product_references::Vector{SBML.SpeciesReference},
-                      model::SBML.Model)
+    product_references::Vector{SBML.SpeciesReference},
+    model::SBML.Model)
     reactants = String[]
     products = String[]
     rstoich = Float64[]
@@ -146,7 +146,7 @@ end
 Get kineticLaw for use in MTK.Reaction
 """
 function use_rate(kl::Num, react::Union{Vector{Num}, Nothing},
-                  stoich::Union{Vector{<:Real}, Nothing})
+    stoich::Union{Vector{<:Real}, Nothing})
     rate_const = get_massaction(kl, react, stoich)
     if !isnan(rate_const)
         kl = rate_const
@@ -161,7 +161,7 @@ end
 Get rate constant of mass action kineticLaws
 """
 function get_massaction(kl::Num, reactants::Union{Vector{Num}, Nothing},
-                        stoich::Union{Vector{<:Real}, Nothing})
+    stoich::Union{Vector{<:Real}, Nothing})
     function check_args(x::SymbolicUtils.BasicSymbolic{Real})
         check_args(Val(SymbolicUtils.istree(x)), x)
     end
