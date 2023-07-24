@@ -51,6 +51,17 @@ model = SBML.Model(parameters = Dict("k1" => PARAM1),
     reactions = Dict("r1" => reac))
 @test isequal(IV, SBMLToolkit.get_reactions(model)[1].rate)
 
+km = SBML.MathVal(1.0)
+reac = SBML.Reaction(products = [
+        SBML.SpeciesReference(species = "s1", stoichiometry = 1),
+    ],
+    kinetic_math = km,
+    reversible = false)
+model = SBML.Model(compartments = Dict("c1" => COMP1),
+    species = Dict("s1" => SPECIES1),
+    reactions = Dict("r2" => reac))
+@test isequal(1, SBMLToolkit.get_reactions(model)[1].rate)
+
 # Test get_unidirectional_components
 km = SBML.MathApply("-", SBML.Math[KINETICMATH1, SBML.MathIdent("c1")])
 sm = SBMLToolkit.interpret_as_num(km, MODEL1)
