@@ -53,9 +53,9 @@ See also [`ODESystem`](@ref).
 function Catalyst.ReactionSystem(model::SBML.Model; kwargs...)  # Todo: requires unique parameters (i.e. SBML must have been imported with localParameter promotion in libSBML)
     # length(model.events) > 0 ? error("Model contains events. Please import with `ODESystem(model)`") : nothing  @Anand: how to suppress this when called from ODESystem
     rxs = get_reactions(model)
-    u0map, parammap = get_mappings(model)
+    u0map, parammap, initial_assignment_map = get_mappings(model)
     defs = Dict{Num, Any}()
-    for (k, v) in vcat(u0map, parammap)
+    for (k, v) in vcat(u0map, parammap, initial_assignment_map)  # initial_assignments override u0map and parammap
         defs[k] = v
     end
     # defs = ModelingToolkit._merge(Dict(u0map), Dict(parammap))
@@ -110,49 +110,82 @@ function ModelingToolkit.ODESystem(model::SBML.Model; include_zero_odes::Bool = 
     convert(ODESystem, rs; include_zero_odes = include_zero_odes)
 end
 
-function get_mappings(model::SBML.Model)
-    inits = Dict(SBML.initial_amounts(model, convert_concentrations = true))
-    u0map = Pair[]
-    parammap = Pair[]
-    for (k, v) in model.species
+function create_symbol(k::String, model::SBML.Model)
+    if k in keys(model.species)
+        v = model.species[k]
         if v.constant == true
-            var = create_param(k; isconstantspecies = true)
-            push!(parammap, var => inits[k])
+            sym = create_param(k; isconstantspecies = true)
         else
-            var = create_var(k, IV;
+            sym = create_var(k, IV;
                 isbcspecies = has_rule_type(k, model, SBML.RateRule) ||
                               has_rule_type(k, model, SBML.AssignmentRule) ||
                               (has_rule_type(k, model, SBML.AlgebraicRule) &&
                                (all([netstoich(k, r) == 0
                                      for r in values(model.reactions)]) ||
                                 v.boundary_condition == true)))  # To remove species that are otherwise defined
+        end
+    elseif k in keys(model.parameters)
+        v = model.parameters[k]
+        if v.constant == false &&
+           (SBML.seemsdefined(k, model) || is_event_assignment(k, model))
+            sym = create_var(k, IV; isbcspecies = true)
+        else
+            sym = create_param(k)
+        end
+    elseif k in keys(model.compartments)
+        v = model.compartments[k]
+        if v.constant == false && SBML.seemsdefined(k, model)
+            sym = create_var(k, IV; isbcspecies = true)
+        else
+            sym = create_param(k)
+        end
+    end
+    sym
+end
+
+function get_mappings(model::SBML.Model)
+    inits = Dict(SBML.initial_amounts(model, convert_concentrations = true))
+    u0map = Pair[]
+    parammap = Pair[]
+    initial_assignment_map = Pair[]
+
+    for (k, v) in model.species
+        var = create_symbol(k, model)
+        if v.constant == true
+            push!(parammap, var => inits[k])
+        else
             push!(u0map, var => inits[k])
         end
     end
+
     for (k, v) in model.parameters
+        var = create_symbol(k, model)
         if v.constant == false &&
            (SBML.seemsdefined(k, model) || is_event_assignment(k, model))
-            var = create_var(k, IV; isbcspecies = true)
             push!(u0map, var => v.value)
         elseif v.constant == true && isnothing(v.value)  # Todo: maybe add this branch also to model.compartments
-            var = create_param(k)
             val = model.initial_assignments[k]
             push!(parammap, var => interpret_as_num(val, model))
         else
-            var = create_param(k)
             push!(parammap, var => v.value)
         end
     end
+
     for (k, v) in model.compartments
+        var = create_symbol(k, model)
         if v.constant == false && SBML.seemsdefined(k, model)
-            var = create_var(k, IV; isbcspecies = true)
             push!(u0map, var => v.size)
         else
-            var = create_param(k)
             push!(parammap, var => v.size)
         end
     end
-    u0map, parammap
+
+    for (k, v) in model.initial_assignments
+        var = create_symbol(k, model)
+        val = model.initial_assignments[k]
+        push!(initial_assignment_map, var => interpret_as_num(val, model))  # Todo
+    end
+    u0map, parammap, initial_assignment_map
 end
 
 function netstoich(id, reaction)
