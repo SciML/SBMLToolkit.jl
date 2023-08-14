@@ -114,16 +114,18 @@ isequal(nameof(odesys), :odesys)
 # @test_nowarn ODEProblem(ODESystem(readSBML(sbmlfile)), [], [0.0, 1.0], [])
 
 # Test get_mappings
-u0map, parammap = SBMLToolkit.get_mappings(MODEL1)
+u0map, parammap, initial_assignment_map = SBMLToolkit.get_mappings(MODEL1)
 u0map_true = [s1 => 1.0]
 parammap_true = [k1 => 1.0, c1 => 2.0]
+initial_assignment_map_true = Vector{Pair{Num, Any}}
 @test isequal(u0map, u0map_true)
 @test isequal(parammap, parammap_true)
+@test isequal(initial_assignment_map, initial_assignment_map_true)
 
 p = SBML.Parameter(name = "k2", value = 1.0, constant = false)
 m = SBML.Model(parameters = Dict("k2" => p),
     rules = SBML.Rule[SBML.RateRule("k2", KINETICMATH2)])
-u0map, parammap = SBMLToolkit.get_mappings(m)
+u0map, parammap, initial_assignment_map = SBMLToolkit.get_mappings(m)
 u0map_true = [SBMLToolkit.create_var("k2", IV; isbcspecies = true) => 1.0]
 @test isequal(u0map, u0map_true)
 @test Catalyst.isbc(first(u0map[1]))
@@ -132,13 +134,15 @@ p = SBML.Parameter(name = "k2", value = nothing, constant = true)
 ia = Dict("k2" => KINETICMATH1)
 m = SBML.Model(parameters = Dict("k1" => PARAM1, "k2" => p),
     initial_assignments = ia)
-u0map, parammap = SBMLToolkit.get_mappings(m)
+u0map, parammap, initial_assignment_map = SBMLToolkit.get_mappings(m)
 parammap_true = [k1 => 1.0, SBMLToolkit.create_var("k2") => k1]
+initial_assignment_map_true = [SBMLToolkit.create_var("k2") => k1]
 @test isequal(parammap, parammap_true)
+@test isequal(initial_assignment_map, initial_assignment_map_true)
 
 m = SBML.Model(species = Dict("s2" => SPECIES2),
     rules = SBML.Rule[SBML.AlgebraicRule(KINETICMATH2)])
-u0map, parammap = SBMLToolkit.get_mappings(m)
+u0map, parammap, initial_assignment_map = SBMLToolkit.get_mappings(m)
 Catalyst.isbc(first(u0map[1]))
 
 # Test get_netstoich
