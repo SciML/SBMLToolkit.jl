@@ -101,3 +101,36 @@ const importdefaults = doc -> begin
     set_level_and_version(3, 2)(doc)
     convert_promotelocals_expandfuns(doc)
 end
+
+function create_symbol(k::String, model::SBML.Model)
+    if k in keys(model.species)
+        v = model.species[k]
+        if v.constant == true
+            sym = create_param(k; isconstantspecies = true)
+        else
+            sym = create_var(k, IV;
+                isbcspecies = has_rule_type(k, model, SBML.RateRule) ||
+                              has_rule_type(k, model, SBML.AssignmentRule) ||
+                              (has_rule_type(k, model, SBML.AlgebraicRule) &&
+                               (all([netstoich(k, r) == 0
+                                     for r in values(model.reactions)]) ||
+                                v.boundary_condition == true)))  # To remove species that are otherwise defined
+        end
+    elseif k in keys(model.parameters)
+        v = model.parameters[k]
+        if v.constant == false &&
+           (SBML.seemsdefined(k, model) || is_event_assignment(k, model))
+            sym = create_var(k, IV; isbcspecies = true)
+        else
+            sym = create_param(k)
+        end
+    elseif k in keys(model.compartments)
+        v = model.compartments[k]
+        if v.constant == false && SBML.seemsdefined(k, model)
+            sym = create_var(k, IV; isbcspecies = true)
+        else
+            sym = create_param(k)
+        end
+    end
+    sym
+end
