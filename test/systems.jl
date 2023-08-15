@@ -117,7 +117,7 @@ isequal(nameof(odesys), :odesys)
 u0map, parammap, initial_assignment_map = SBMLToolkit.get_mappings(MODEL1)
 u0map_true = [s1 => 1.0]
 parammap_true = [k1 => 1.0, c1 => 2.0]
-initial_assignment_map_true = Vector{Pair{Num, Any}}
+initial_assignment_map_true = Pair[]
 @test isequal(u0map, u0map_true)
 @test isequal(parammap, parammap_true)
 @test isequal(initial_assignment_map, initial_assignment_map_true)
