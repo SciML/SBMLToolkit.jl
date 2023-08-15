@@ -85,6 +85,21 @@ par = SBMLToolkit.create_param("k")
 par = SBMLToolkit.create_param("k", isconstantspecies = true)
 @test Catalyst.isconstant(par)
 
+# Test create_symbol
+# Comment in when https://github.com/SciML/ModelingToolkit.jl/issues/2228 is fixed
+# @species B(IV) Dv(IV)
+# @parameters C D Bc
+# sym = SBMLToolkit.create_symbol("B", MODEL1)
+# @test isequal(B, sym)
+# sym = SBMLToolkit.create_symbol("Dv", MODEL1)
+# @test isequal(Dv, sym)
+# sym = SBMLToolkit.create_symbol("C", MODEL1)
+# @test isequal(C, sym)
+# sym = SBMLToolkit.create_symbol("D", MODEL1)
+# @test isequal(D, sym)
+# sym = SBMLToolkit.create_symbol("Bc", MODEL1)
+# @test isequal(Bc, sym)
+
 # Test has_rule_type
 sbml, _, _ = SBMLToolkitTestSuite.read_case("00031")  # rateRule
 m = readmodel(sbml)
