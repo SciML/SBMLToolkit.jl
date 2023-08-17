@@ -149,8 +149,7 @@ function get_mappings(model::SBML.Model)
 
     for (k, v) in model.initial_assignments
         var = create_symbol(k, model)
-        val = model.initial_assignments[k]
-        push!(initial_assignment_map, var => interpret_as_num(val, model))  # Todo
+        push!(initial_assignment_map, var => interpret_as_num(v, model))
     end
     u0map, parammap, initial_assignment_map
 end
