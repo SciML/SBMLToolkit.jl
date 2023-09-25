@@ -14,9 +14,9 @@ makedocs(;
     warnonly = [:missing_docs, :cross_references],
     linkcheck_ignore = ["https://www.linkedin.com/in/paul-lang-7b54a81a3/"],
     format = Documenter.HTML(;
-    prettyurls = get(ENV, "CI", "false") == "true",
-    canonical = "https://docs.sciml.ai/SBMLToolkit/stable/",
-    assets = ["assets/favicon.ico"]),
+        prettyurls = get(ENV, "CI", "false") == "true",
+        canonical = "https://docs.sciml.ai/SBMLToolkit/stable/",
+        assets = ["assets/favicon.ico"]),
     pages = [
         "Home" => "index.md",
         "API documentation" => "api.md",
