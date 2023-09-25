@@ -52,7 +52,7 @@ automated model discovery [@rackauckas_universal_2020]. To give the systems biol
 to SciML, we developed SBMLToolkit.jl, an importer for SBML models. Together with
 the developement of other tools such as CellMLToolkit.jl [@cellmltoolkitjl] for import of
 CellML models [@cuellar_overview_2003], Catalyst.jl [@2022Catalyst] for de-novo specification of
-ModelingToolkit models, and COBREXA.jl [@COBREXA_jl] for constraint-based modelling,
+ModelingToolkit models, and COBREXA.jl [@COBREXA_jl] for constraint-based modeling,
 we hope that SBMLtoolkit.jl will help to catalyse the development of further Julia
 tools in the bioscience domain to ultimately accellerate research on biological
 systems (\autoref{fig:summary}).
