@@ -61,4 +61,4 @@ This package was developed by [Paul F. Lang](https://www.linkedin.com/in/paul-la
 
 ## Questions and comments
 
-Please use GitHub issues, the #sciml-sysbio channel in the [Julia Slack workspace](https://julialang.org/slack/) or email [Paul F. Lang](mailto:paul.lang@juliacomputing.com) or [Anand Jain](mailto:anandj@uchicago.edu) with any questions or comments.
+Please use GitHub issues, the #sciml-sysbio channel in the [Julia Slack workspace](https://julialang.org/slack/) or email [Paul F. Lang](mailto:plang@biosim.ai) with any questions or comments.
