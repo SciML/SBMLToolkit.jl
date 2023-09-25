@@ -1,6 +1,6 @@
 # API documentation
 
 ```@autodocs
-Modules = [SBMLToolkit]
+Modules = [SBMLToolkit, SBMLTookit.SBML]
 Pages = ["systems.jl"]
 ```
