@@ -1,16 +1,16 @@
-"DefaultImporter to use in conjuction with `readSBML`"
+"DefaultImporter to use in conjunction with `readSBML`"
 struct DefaultImporter end
 
-"ReactionSystemImporter to use in conjuction with `readSBML`"
+"ReactionSystemImporter to use in conjunction with `readSBML`"
 struct ReactionSystemImporter end
 
-"ODESystemImporter to use in conjuction with `readSBML`"
+"ODESystemImporter to use in conjunction with `readSBML`"
 struct ODESystemImporter end
 
 """
     readSBML(sbmlfile::String, ::DefaultImporter)
 
-Create a `SBML.Model` from an SBML file, using default import settings for use as Catalyst and ModelingToolkit types.
+Create a `SBML.Model` from an SBML file, using the default import settings for use as Catalyst and ModelingToolkit types.
 
 See also [`Model`](@ref) and [`DefaultImporter`](@ref).
 """
@@ -22,7 +22,7 @@ end
 """
     readSBML(sbmlfile::String, ::ReactionSystemImporter)
 
-Create a `Catalyst.ReactionSystem` from an SBML file, using default import settings.
+Create a `Catalyst.ReactionSystem` from an SBML file, using the default import settings.
 
 See also [`Model`](@ref) and [`ReactionSystemImporter`](@ref).
 """
@@ -33,7 +33,7 @@ end
 """
     readSBML(sbmlfile::String, ::ODESystemImporter)
 
-Create a `ModelingToolkit.ODESystem` from an SBML file, using default import settings.
+Create a `ModelingToolkit.ODESystem` from an SBML file, using the default import settings.
 
 See also [`Model`](@ref) and [`ODESystemImporter`](@ref).
 """
