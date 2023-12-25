@@ -5,18 +5,28 @@ version = "0.1.25"
 
 [deps]
 Catalyst = "479239e8-5488-4da2-87a7-35f2df7eef83"
-MathML = "abcecc63-2b08-419c-80c4-c63dca6fa478"
 SBML = "e5567a89-2604-4b09-9718-f5f78e97c3bb"
 SymbolicUtils = "d1185830-fcd6-423d-90d6-eec64667417b"
 
 [compat]
+Aqua = "0.8"
+CSV = "0.10"
 Catalyst = "13"
-MathML = "0.1"
+DataFrames = "1"
+ModelingToolkit = "8"
+OrdinaryDiffEq = "6"
+Plots = "1"
 SBML = "1.4.4"
+SBMLToolkitTestSuite = "0.0.3"
+SafeTestsets = "0.1"
+Sundials = "4"
 SymbolicUtils = "1"
-julia = "1.6"
+Downloads = "1"
+Test = "1"
+julia = "1.9"
 
 [extras]
+Aqua = "4c88cf16-eb10-579e-8560-4a9242c79595"
 CSV = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
 DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
 Downloads = "f43a241f-c20a-4ad4-852c-f6b1247861c6"
@@ -29,4 +39,4 @@ Sundials = "c3572dad-4567-51f8-b174-8c6c989267f4"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [targets]
-test = ["CSV", "DataFrames", "Downloads", "ModelingToolkit", "OrdinaryDiffEq", "Plots", "SafeTestsets", "SBMLToolkitTestSuite", "Sundials", "Test"]
+test = ["Aqua", "CSV", "DataFrames", "Downloads", "ModelingToolkit", "OrdinaryDiffEq", "Plots", "SafeTestsets", "SBMLToolkitTestSuite", "Sundials", "Test"]

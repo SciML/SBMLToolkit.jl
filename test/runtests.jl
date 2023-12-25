@@ -1,6 +1,9 @@
 using SafeTestsets, Test
 
 @safetestset "SBMLToolkit.jl" begin
+    @safetestset "Quality Assurance" begin
+        include("qa.jl")
+    end
     @safetestset "Systems" begin
         include("systems.jl")
     end

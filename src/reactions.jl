@@ -182,7 +182,7 @@ function get_massaction(kl::Num, reactants::Union{Vector{Num}, Nothing},
     if isnothing(reactants) && isnothing(stoich)
         rate_const = kl
     elseif isnothing(reactants) | isnothing(stoich)
-        throw(ErrorException("`reactants` and `stoich` are incosistent: `reactants` are $(reactants) and `stoich` is $(stoich)."))
+        throw(ErrorException("`reactants` and `stoich` are inconsistent: `reactants` are $(reactants) and `stoich` is $(stoich)."))
     else
         rate_const = SymbolicUtils.simplify_fractions(kl / *((.^(reactants, stoich))...))
     end

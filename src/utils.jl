@@ -17,7 +17,7 @@ function interpret_as_num(x::SBML.Math, model::SBML.Model)
 end
 
 """
-Get dictonary to change types in kineticLaw
+Get dictionary to change types in kineticLaw
 """
 function get_substitutions(model)
     u0map, parammap = get_mappings(model)
