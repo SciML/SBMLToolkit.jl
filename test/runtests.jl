@@ -1,28 +1,10 @@
 using SafeTestsets, Test
 
-@safetestset "SBMLToolkit.jl" begin
-    @safetestset "Quality Assurance" begin
-        include("qa.jl")
-    end
-    @safetestset "Systems" begin
-        include("systems.jl")
-    end
-    @safetestset "Reactions" begin
-        include("reactions.jl")
-    end
-    @safetestset "Rules" begin
-        include("rules.jl")
-    end
-    @safetestset "Events" begin
-        include("events.jl")
-    end
-    @safetestset "Utils" begin
-        include("utils.jl")
-    end
-    @safetestset "Simulation results" begin
-        include("simresults.jl")
-    end
-    @safetestset "Wuschel" begin
-        include("wuschel.jl")
-    end
-end
+@safetestset "Quality Assurance" include("qa.jl")
+@safetestset "Systems" include("systems.jl")
+@safetestset "Reactions" include("reactions.jl")
+@safetestset "Rules" include("rules.jl")
+@safetestset "Events" include("events.jl")
+@safetestset "Utils" include("utils.jl")
+@safetestset "Simulation results" include("simresults.jl")
+@safetestset "Wuschel" include("wuschel.jl")
