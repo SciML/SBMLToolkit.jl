@@ -46,9 +46,9 @@ sol = solve(prob, Tsit5())
 Alternatively, SBMLToolkit also provides more concise methods to import `SBML.Models`, `Catalyst.ReactionSystems`, and `ModelingToolkit.ODESystems`.
 
 ```julia
-mdl = readSBML(sbmlfile, DefaultImporter())
-rs = readSBML(sbmlfile, ReactionSystemImporter())
-odesys = readSBML(sbmlfile, ODESystemImporter())
+mdl = readSBML("my_model.xml", DefaultImporter())
+rs = readSBML("my_model.xml", ReactionSystemImporter())
+odesys = readSBML("my_model.xml", ODESystemImporter())
 ```
 
 ## License
