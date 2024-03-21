@@ -53,7 +53,7 @@ function get_unidirectional_components(bidirectional_math)
 end
 
 function add_reaction!(rxs::Vector{Reaction},
-    kl::Num,
+    kl::Union{Num, Float64},
     reactant_references::Vector{SBML.SpeciesReference},
     product_references::Vector{SBML.SpeciesReference},
     model::SBML.Model;
@@ -155,6 +155,11 @@ function use_rate(kl::Num, react::Union{Vector{Num}, Nothing},
         our = true
     end
     return (kl, our)
+end
+
+function use_rate(kl::Float64, ::Union{Vector{Num}, Nothing},
+    ::Union{Vector{<:Real}, Nothing})
+    (kl, true)
 end
 
 """
