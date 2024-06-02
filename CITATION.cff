@@ -1,0 +1,76 @@
+# This CITATION.cff file was generated with cffinit.
+# Visit https://bit.ly/cffinit to generate yours today!
+
+cff-version: 1.2.0
+title: SBMLToolkit.jl
+message: >-
+  If you use this software, please cite the preferred-citation in this file.
+preferred-citation:
+  type: article
+  authors:
+  - given-names: Paul
+    name-particle: F
+    family-names: Lang
+    email: plang@deeporigin.com
+    affiliation: Deep Origin
+    orcid: 'https://orcid.org/0000-0002-6388-2405'
+  - given-names: Anand
+    family-names: Jain
+  - given-names: Christopher
+    family-names: Rackauckas
+    orcid: 'https://orcid.org/0000-0001-5850-0663'
+    affiliation: JuliaHub
+  doi: "10.1515/jib-2024-0003"
+  journal: "Journal of Integrative Bioinformatics"
+  month: 5
+  title: "SBMLToolkit.jl: a Julia package for importing SBML into the SciML ecosystem"
+  year: 2024
+  keywords:
+    - systems biology markup language
+    - SBML
+    - Julia
+    - scientific machine learning
+  license: CC-BY-4.0
+  repository-code: >-
+    https://github.com/JuliaSmoothOptimizers/CaNNOLeS.jl
+  abstract: >-
+    Julia is a general purpose programming language that was
+    designed for simplifying and accelerating numerical
+    analysis and computational science. In particular the
+    Scientific Machine Learning (SciML) ecosystem of Julia
+    packages includes frameworks for high-performance
+    symbolic-numeric computations. It allows users to
+    automatically enhance high-level descriptions of their
+    models with symbolic preprocessing and automatic
+    sparsification and parallelization of computations. This
+    enables performant solution of differential equations,
+    efficient parameter estimation and methodologies for
+    automated model discovery with neural differential
+    equations and sparse identification of nonlinear dynamics.
+    To give the systems biology community easy access to
+    SciML, we developed SBMLToolkit.jl. SBMLToolkit.jl imports
+    dynamic SBML models into the SciML ecosystem to accelerate
+    model simulation and fitting of kinetic parameters. By
+    providing computational systems biologists with easy
+    access to the open-source Julia ecosystevnm, we hope to
+    catalyze the development of further Julia tools in this
+    domain and the growth of the Julia bioscience community.
+    SBMLToolkit.jl is freely available under the MIT license.
+    The source code is available at
+    https://github.com/SciML/SBMLToolkit.jl.
+type: software
+authors:
+  - given-names: Paul
+    name-particle: F
+    family-names: Lang
+    affiliation: Deep Origin
+    orcid: 'https://orcid.org/0000-0002-6388-2405'
+  - given-names: Anand
+    family-names: Jain
+  - given-names: Christopher
+    family-names: Rackauckas
+    orcid: 'https://orcid.org/0000-0001-5850-0663'
+    affiliation: JuliaHub
+  - given-names: contributors
+repository-code: 'https://github.com/SciML/SBMLToolkit.jl'
+license: MIT
