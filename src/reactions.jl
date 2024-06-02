@@ -53,11 +53,11 @@ function get_unidirectional_components(bidirectional_math)
 end
 
 function add_reaction!(rxs::Vector{Reaction},
-    kl::Num,
-    reactant_references::Vector{SBML.SpeciesReference},
-    product_references::Vector{SBML.SpeciesReference},
-    model::SBML.Model;
-    enforce_rate = false)
+        kl::Num,
+        reactant_references::Vector{SBML.SpeciesReference},
+        product_references::Vector{SBML.SpeciesReference},
+        model::SBML.Model;
+        enforce_rate = false)
     reactants, products, rstoichvals, pstoichvals = get_reagents(reactant_references,
         product_references, model)
     isnothing(reactants) && isnothing(products) && return
@@ -78,8 +78,8 @@ end
 Get reagents
 """
 function get_reagents(reactant_references::Vector{SBML.SpeciesReference},
-    product_references::Vector{SBML.SpeciesReference},
-    model::SBML.Model)
+        product_references::Vector{SBML.SpeciesReference},
+        model::SBML.Model)
     reactants = String[]
     products = String[]
     rstoich = Float64[]
@@ -146,7 +146,7 @@ end
 Get kineticLaw for use in MTK.Reaction
 """
 function use_rate(kl::Num, react::Union{Vector{Num}, Nothing},
-    stoich::Union{Vector{<:Real}, Nothing})
+        stoich::Union{Vector{<:Real}, Nothing})
     rate_const = get_massaction(kl, react, stoich)
     if !isnan(rate_const)
         kl = rate_const
@@ -161,7 +161,7 @@ end
 Get rate constant of mass action kineticLaws
 """
 function get_massaction(kl::Num, reactants::Union{Vector{Num}, Nothing},
-    stoich::Union{Vector{<:Real}, Nothing})
+        stoich::Union{Vector{<:Real}, Nothing})
     function check_args(x::SymbolicUtils.BasicSymbolic{Real})
         check_args(Val(SymbolicUtils.istree(x)), x)
     end

@@ -83,7 +83,7 @@ function create_var(x, iv; isbcspecies = false, irreducible = false)
     sym = Symbol(x)
     Symbolics.unwrap(first(@species $sym(iv) [
         isbcspecies = isbcspecies,
-        irreducible = irreducible,
+        irreducible = irreducible
     ]))
 end
 function create_param(x; isconstantspecies = false)
