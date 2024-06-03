@@ -22,13 +22,15 @@ KINETICMATH3 = SBML.MathApply("-",
             SBML.Math[SBML.MathIdent("k1"),
                 SBML.MathIdent("s1")]),
         KINETICMATH1])
-REACTION1 = SBML.Reaction(products = [
-        SBML.SpeciesReference(species = "s1", stoichiometry = 1.0),
+REACTION1 = SBML.Reaction(
+    products = [
+        SBML.SpeciesReference(species = "s1", stoichiometry = 1.0)
     ],
     kinetic_math = KINETICMATH1,
     reversible = false)
-REACTION2 = SBML.Reaction(reactants = [
-        SBML.SpeciesReference(species = "s1", stoichiometry = 1.0),
+REACTION2 = SBML.Reaction(
+    reactants = [
+        SBML.SpeciesReference(species = "s1", stoichiometry = 1.0)
     ],
     kinetic_math = KINETICMATH3,
     reversible = true)

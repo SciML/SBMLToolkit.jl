@@ -19,7 +19,7 @@ makedocs(;
         assets = ["assets/favicon.ico"]),
     pages = [
         "Home" => "index.md",
-        "API documentation" => "api.md",
+        "API documentation" => "api.md"
     ])
 
 deploydocs(;

@@ -21,8 +21,9 @@ SPECIES3 = SBML.Species(name = "s1s2", compartment = "c1", initial_amount = 1.0,
     boundary_condition = false, constant = false)
 KINETICMATH1 = SBML.MathIdent("k1")
 KINETICMATH2 = SBML.MathApply("*", SBML.Math[SBML.MathIdent("k1"), SBML.MathIdent("s2")])
-REACTION1 = SBML.Reaction(products = [
-        SBML.SpeciesReference(species = "s1", stoichiometry = 1),
+REACTION1 = SBML.Reaction(
+    products = [
+        SBML.SpeciesReference(species = "s1", stoichiometry = 1)
     ],
     kinetic_math = KINETICMATH1,
     reversible = false)
@@ -40,8 +41,9 @@ truereaction = Catalyst.Reaction(k1, nothing, [s1], nothing, [1])  # Todo: imple
 @test isequal(reaction, truereaction)
 
 km = SBML.MathTime("x")
-reac = SBML.Reaction(reactants = [
-        SBML.SpeciesReference(species = "s1", stoichiometry = 1.0),
+reac = SBML.Reaction(
+    reactants = [
+        SBML.SpeciesReference(species = "s1", stoichiometry = 1.0)
     ],
     kinetic_math = km,
     reversible = false)
@@ -114,7 +116,8 @@ m = SBML.Model(species = Dict("s" => s), reactions = Dict("r1" => r))
 @test isequal((nothing, nothing, nothing, nothing),
     SBMLToolkit.get_reagents(r.products, r.reactants, m))
 
-r = SBML.Reaction(reactants = [SBML.SpeciesReference(species = "s", stoichiometry = 1.0),
+r = SBML.Reaction(
+    reactants = [SBML.SpeciesReference(species = "s", stoichiometry = 1.0),
         SBML.SpeciesReference(species = "s", stoichiometry = 1.0)],
     reversible = false)
 m = SBML.Model(species = Dict("s" => s), reactions = Dict("r1" => r))

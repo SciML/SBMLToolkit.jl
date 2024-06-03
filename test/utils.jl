@@ -42,8 +42,10 @@ sym = SBMLToolkit.map_symbolics_ident(SBML.MathIdent("B"), MODEL1)
 @parameters C D Bc
 
 test = SBML.MathApply("*",
-    SBML.Math[SBML.MathApply("+",
-            SBML.Math[SBML.MathApply("*",
+    SBML.Math[
+        SBML.MathApply("+",
+            SBML.Math[
+                SBML.MathApply("*",
                     SBML.Math[SBML.MathAvogadro("A"),
                         SBML.MathIdent("B")]),
                 SBML.MathApply("-",

@@ -43,7 +43,8 @@ assignment_true = 7 * compartment
 @test isequal(assignment, assignment_true)
 
 r = SBML.AssignmentRule("S2", SBML.MathVal(1))
-@test_throws ErrorException("Cannot find target for rule with ID `S2`") SBMLToolkit.get_var_and_assignment(m,
+@test_throws ErrorException("Cannot find target for rule with ID `S2`") SBMLToolkit.get_var_and_assignment(
+    m,
     r)
 
 # Test get_volume_correction
