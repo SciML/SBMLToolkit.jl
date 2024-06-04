@@ -4,3 +4,4 @@ SBMLToolkit = "86080e66-c8ac-44c2-a1a0-9adaadfe4a4e"
 
 [compat]
 Documenter = "1"
+SBMLToolkit = "0.1"
