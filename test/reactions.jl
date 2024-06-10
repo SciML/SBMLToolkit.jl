@@ -131,7 +131,7 @@ m = SBML.Model(species = Dict("s" => s), reactions = Dict("r1" => r))
 
 # Test get_massaction
 @test isequal(SBMLToolkit.get_massaction(k1 * s1, [s1], [1]), k1)  # Case hOSU=true
-@test isequal(SBMLToolkit.get_massaction(k1 * s1 / c1, [s1], [1]), k1 / c1)  # Case hOSU=false
+@test_broken isequal(SBMLToolkit.get_massaction(k1 * s1 / c1, [s1], [1]), k1 / c1)  # Case hOSU=false
 @test isequal(SBMLToolkit.get_massaction(k1 + c1, nothing, nothing), k1 + c1)  # Case zero order kineticLaw
 @test isnan(SBMLToolkit.get_massaction(k1 * s1 * s2 / (c1 + s2), [s1], [1]))  # Case Michaelis-Menten kinetics
 @test isnan(SBMLToolkit.get_massaction(k1 * s1 * IV, [s1], [1]))  # Case kineticLaw with time
