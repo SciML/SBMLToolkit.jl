@@ -55,10 +55,20 @@ odesys = readSBML("my_model.xml", ODESystemImporter())
 
 The package is released under the [MIT license](https://github.com/SciML/SBMLToolkit.jl/blob/main/LICENSE).
 
-## Development team
-
-This package was developed by [Paul F. Lang](https://www.linkedin.com/in/paul-lang-7b54a81a3/) at the University of Oxford, UK and [Anand Jain](https://github.com/anandijain) at the University of Chicago, USA.
-
 ## Questions and comments
 
-Please use GitHub issues, the #sciml-sysbio channel in the [Julia Slack workspace](https://julialang.org/slack/) or email [Paul F. Lang](mailto:plang@biosim.ai) with any questions or comments.
+Please use GitHub issues and the #sciml-sysbio channel in the [Julia Slack workspace](https://julialang.org/slack/) with any questions or comments.
+
+# Citation
+
+If you use SBMLToolkit.jl in your research, please cite [this paper](https://www.degruyter.com/document/doi/10.1515/jib-2024-0003/html):
+
+```
+@article{lang_sbmltoolkitjl_2024,
+	title = {{SBMLToolkit}.jl: a {Julia} package for importing {SBML} into the {SciML} ecosystem},
+	doi = {10.1515/jib-2024-0003},
+	journal = {Journal of Integrative Bioinformatics},
+	author = {Lang, Paul F. and Jain, Anand and Rackauckas, Christopher},
+	year = {2024},
+}
+```

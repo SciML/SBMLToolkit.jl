@@ -74,8 +74,8 @@ rs = ReactionSystem(MODEL2)  # Contains reversible reaction
 @test isequal(Catalyst.get_states(rs), [s1])
 @test isequal(Catalyst.get_ps(rs), [k1, c1])
 
-@test_nowarn convert(ModelingToolkit.ODESystem, rs)
-@test_nowarn structural_simplify(convert(ModelingToolkit.ODESystem, rs))
+@test convert(ModelingToolkit.ODESystem, rs) isa ODESystem
+@test structural_simplify(convert(ModelingToolkit.ODESystem, rs)) isa ODESystem
 
 # Test ODESystem constructor
 odesys = ODESystem(MODEL1)
@@ -89,7 +89,7 @@ par = [k1 => 1.0, c1 => 2.0]
 @test isequal(ModelingToolkit.defaults(odesys), ModelingToolkit._merge(u0, par))  # PL: @Anand: for some reason this does not work with `Catalyst.get_default()`
 @named odesys = ODESystem(MODEL1)
 isequal(nameof(odesys), :odesys)
-@test_nowarn structural_simplify(odesys)
+@test structural_simplify(odesys) isa ODESystem
 
 odesys = ODESystem(readSBML(sbmlfile))
 m = readSBML(sbmlfile)
@@ -106,7 +106,7 @@ par = [k1 => 1.0, c1 => 2.0]
 @named odesys = ODESystem(MODEL1)
 isequal(nameof(odesys), :odesys)
 
-@test_nowarn ODEProblem(odesys, [], [0.0, 1.0], [])
+@test ODEProblem(odesys, [], [0.0, 1.0], []) isa ODEProblem
 
 # # Test ODEProblem
 # oprob = ODEProblem(ODESystem(MODEL1), [], [0.0, 1.0], [])
