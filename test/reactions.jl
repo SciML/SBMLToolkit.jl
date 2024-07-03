@@ -135,7 +135,7 @@ m = SBML.Model(species = Dict("s" => s), reactions = Dict("r1" => r))
 @test isequal(SBMLToolkit.get_massaction(k1 + c1, nothing, nothing), k1 + c1)  # Case zero order kineticLaw
 @test isnan(SBMLToolkit.get_massaction(k1 * s1 * s2 / (c1 + s2), [s1], [1]))  # Case Michaelis-Menten kinetics
 @test isnan(SBMLToolkit.get_massaction(k1 * s1 * IV, [s1], [1]))  # Case kineticLaw with time
-@test isequal(SBMLToolkit.get_massaction(k1 * (s1 + s1), [s1], [101]), k1 * (s1 + s1))  # Case no simplification performed due to large rstoich
+@test isnan(SBMLToolkit.get_massaction(k1 * s1, [s1], [101]))  # Case no simplification performed due to large rstoich
 
 @test isnan(SBMLToolkit.get_massaction(k1 * s1 * s2, [s1], [1]))
 @test isnan(SBMLToolkit.get_massaction(k1 + c1, [s1], [1]))
