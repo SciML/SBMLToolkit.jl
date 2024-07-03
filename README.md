@@ -27,28 +27,43 @@ Pkg.add("SBMLToolkit")
 SBML models can be simulated with the following steps (note that `sol` is in absolute quantities rather than concentrations):
 
 ```julia
-using SBMLToolkit, ModelingToolkit, OrdinaryDiffEq
+using SBMLToolkit, OrdinaryDiffEq
 
-SBMLToolkit.checksupport_file("my_model.xml")
-mdl = readSBML("my_model.xml", doc -> begin
-    set_level_and_version(3, 2)(doc)
-    convert_promotelocals_expandfuns(doc)
-end)
-
-rs = ReactionSystem(mdl)  # If you want to create a reaction system
-odesys = convert(ODESystem, rs)  # Alternatively: ODESystem(mdl)
+odesys = readSBML("my_model.xml", ODESystemImporter())
 
 tspan = (0.0, 1.0)
 prob = ODEProblem(odesys, [], tspan, [])
 sol = solve(prob, Tsit5())
 ```
 
-Alternatively, SBMLToolkit also provides more concise methods to import `SBML.Models`, `Catalyst.ReactionSystems`, and `ModelingToolkit.ODESystems`.
+While this imports an `ODESystem` directly, you can also import a Catalyst.jl `ReactionSystem`:
 
 ```julia
-mdl = readSBML("my_model.xml", DefaultImporter())
+using SBMLToolkit
+
 rs = readSBML("my_model.xml", ReactionSystemImporter())
-odesys = readSBML("my_model.xml", ODESystemImporter())
+```
+
+One common case where this is useful is if you want to run stochastic instead of ODE simulations.
+
+In the very unlikely case that you need fine-grained control over the SBML import, you can create an SBML.jl `Model` (we strongly recommend manually running `SBMLToolkit.checksupport_file("my_model.xml")` before)
+
+```julia
+using SBML
+
+mdl = readSBML("my_model.xml", doc -> begin
+    set_level_and_version(3, 2)(doc)
+    convert_promotelocals_expandfuns(doc)
+end)
+```
+
+The conversion to SBML level 3 version 2 is necessary, because older versions are not well supported in SBMLToolkit. `convert_promotelocals_expandfuns` basically flattens the SBML before the import. Once you have obtained the `Model`, you can convert it to a `ReactionSystem` and `ODESystem`.
+
+```julia
+using SBMLToolkit
+
+rs = ReactionSystem(mdl)
+odesys = convert(ODESystem, rs)
 ```
 
 ## License

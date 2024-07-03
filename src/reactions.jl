@@ -19,6 +19,7 @@ function get_reactions(model::SBML.Model)
                 enforce_rate = enforce_rate)
         else
             kl = substitute(symbolic_math, subsdict)  # Todo: use SUBSDICT
+            println(reaction)
             add_reaction!(rxs, kl, reactant_references, product_references, model)
         end
     end
@@ -61,7 +62,9 @@ function add_reaction!(rxs::Vector{Reaction},
     reactants, products, rstoichvals, pstoichvals = get_reagents(reactant_references,
         product_references, model)
     isnothing(reactants) && isnothing(products) && return
+    println("rstoichvals: $rstoichvals")
     rstoichvals = stoich_convert_to_ints(rstoichvals)
+    println("rstoichvals: $rstoichvals")
     pstoichvals = stoich_convert_to_ints(pstoichvals)
     kl, our = use_rate(kl, reactants, rstoichvals)
     our = enforce_rate ? true : our
@@ -183,7 +186,17 @@ function get_massaction(kl::Num, reactants::Union{Vector{Num}, Nothing},
         rate_const = kl
     elseif isnothing(reactants) | isnothing(stoich)
         throw(ErrorException("`reactants` and `stoich` are inconsistent: `reactants` are $(reactants) and `stoich` is $(stoich)."))
+    elseif max(stoich...) > 100  # simplify_fractions might StackOverflow
+        rate_const = kl
     else
+        println("kl")
+        println(kl)
+        println("reactants")
+        println(reactants)
+        println(stoich)
+        println(*((.^(reactants, stoich))...))
+        println("fraction")
+        println(kl / *((.^(reactants, stoich))...))
         rate_const = SymbolicUtils.simplify_fractions(kl / *((.^(reactants, stoich))...))
     end
 
