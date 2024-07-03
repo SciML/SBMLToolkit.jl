@@ -92,7 +92,7 @@ function get_reagents(reactant_references::Vector{SBML.SpeciesReference},
         sn = rr.species
         stoich = rr.stoichiometry
         if isnothing(stoich)
-            @warn "Stoichiometries of SpeciesReferences are not defined. Setting to 1." maxlog=1
+            @warn "SBML SpeciesReferences does not contain stoichiometries. Assuming stoichiometry of 1." maxlog=1
             stoich = 1.0
         end
         iszero(stoich) && @error("Stoichiometry of $sn must be non-zero")
