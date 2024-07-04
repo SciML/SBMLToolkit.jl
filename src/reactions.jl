@@ -89,7 +89,7 @@ function get_reagents(reactant_references::Vector{SBML.SpeciesReference},
         sn = rr.species
         stoich = rr.stoichiometry
         if isnothing(stoich)
-            @warn "Stoichiometries of SpeciesReferences are not defined. Setting to 1." maxlog=1
+            @warn "SBML SpeciesReferences does not contain stoichiometries. Assuming stoichiometry of 1." maxlog=1
             stoich = 1.0
         end
         iszero(stoich) && @error("Stoichiometry of $sn must be non-zero")
@@ -183,6 +183,8 @@ function get_massaction(kl::Num, reactants::Union{Vector{Num}, Nothing},
         rate_const = kl
     elseif isnothing(reactants) | isnothing(stoich)
         throw(ErrorException("`reactants` and `stoich` are inconsistent: `reactants` are $(reactants) and `stoich` is $(stoich)."))
+    elseif max(stoich...) > 100  # simplify_fractions might StackOverflow
+        rate_const = kl
     else
         rate_const = SymbolicUtils.simplify_fractions(kl / *((.^(reactants, stoich))...))
     end
