@@ -90,11 +90,12 @@ function Catalyst.ReactionSystem(model::SBML.Model; kwargs...)  # Todo: requires
         defs = ModelingToolkit._merge(defs, kwargs[:defaults])
         kwargs = filter(x -> !isequal(first(x), :defaults), kwargs)
     end
-    ReactionSystem([rxs..., algrules..., raterules_subs..., obsrules_rearranged...],
+    rs = ReactionSystem([rxs..., algrules..., raterules_subs..., obsrules_rearranged...],
         IV, first.(u0map), first.(parammap);
         defaults = defs, name = gensym(:SBML),
         continuous_events = get_events(model),
         combinatoric_ratelaws = false, kwargs...)
+    return complete(rs)  # Todo: maybe add a `complete=True` kwarg
 end
 
 """
