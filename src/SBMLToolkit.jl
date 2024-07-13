@@ -15,7 +15,7 @@ include("utils.jl")
 
 export ReactionSystem, ODESystem
 export readSBML, readSBMLFromString, set_level_and_version, convert_simplify_math,
-       convert_promotelocals_expandfuns
+       convert_promotelocals_expandfuns, checksupport_file
 export DefaultImporter, ReactionSystemImporter, ODESystemImporter
 
 end
