@@ -59,16 +59,16 @@ m = readmodel(sbml)
 vc = SBMLToolkit.get_volume_correction(m, "S1")
 @test isnothing(vc)
 
-# tests that non-constant parameters become nonspecies unknowns
+# tests that non-constant parameters become variables
 sbml, _, _ = SBMLToolkitTestSuite.read_case("00033")
 m = readmodel(sbml)
 @named sys = ODESystem(m)
 @species k1(IV)
-@test isequal(k1, nonspecies(sys)[end])
+@test isequal(k1, get_variables(sys)[end])
 
-# tests that non-constant compartments become nonspecies unknowns
+# tests that non-constant compartments become variables
 sbml, _, _ = SBMLToolkitTestSuite.read_case("00051")  # hOSU="true" species
 m = readmodel(sbml)
 @named sys = ODESystem(m)
 @species C(IV)
-@test isequal(C, nonspecies(sys)[end])
+@test isequal(C, get_variables(sys)[end])

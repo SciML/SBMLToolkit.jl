@@ -82,7 +82,7 @@ odesys = ODESystem(MODEL1)
 trueeqs = Equation[Differential(IV)(s1) ~ k1]
 @test isequal(Catalyst.get_eqs(odesys), trueeqs)
 @test isequal(Catalyst.get_iv(odesys), IV)
-@test isequal(Catalyst.get_species(odesys), [s1])
+@test isequal(Catalyst.get_unknowns(odesys), [s1])
 @test isequal(Catalyst.get_ps(odesys), [k1, c1])
 u0 = [s1 => 1.0]
 par = [k1 => 1.0, c1 => 2.0]
@@ -98,7 +98,7 @@ trueeqs = Equation[Differential(IV)(s1) ~ -(k1 * s1 * s2) / c1,
     Differential(IV)(s2) ~ -(k1 * s1 * s2) / c1]
 @test isequal(Catalyst.get_eqs(odesys), trueeqs)
 @test isequal(Catalyst.get_iv(odesys), IV)
-@test isequal(Catalyst.get_species(odesys), [s1, s1s2, s2])
+@test isequal(Catalyst.get_unknowns(odesys), [s1, s1s2, s2])
 @test isequal(Catalyst.get_ps(odesys), [k1, c1])
 u0 = [s1 => 2 * 1.0, s2 => 2 * 1.0, s1s2 => 2 * 1.0]
 par = [k1 => 1.0, c1 => 2.0]
