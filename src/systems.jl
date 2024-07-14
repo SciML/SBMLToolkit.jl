@@ -39,8 +39,9 @@ See also [`Model`](@ref) and [`ODESystemImporter`](@ref).
 """
 function SBML.readSBML(sbmlfile::String, ::ODESystemImporter;
         include_zero_odes::Bool = true, kwargs...)  # Returns an MTK.ODESystem
-    convert(ODESystem, readSBML(sbmlfile, ReactionSystemImporter(), kwargs...),
+    odesys = convert(ODESystem, readSBML(sbmlfile, ReactionSystemImporter(), kwargs...),
         include_zero_odes = include_zero_odes)
+    complete(odesys)
 end
 
 """
@@ -108,7 +109,8 @@ See also [`ReactionSystem`](@ref).
 function ModelingToolkit.ODESystem(model::SBML.Model; include_zero_odes::Bool = true,
         kwargs...)
     rs = ReactionSystem(model; kwargs...)
-    convert(ODESystem, rs; include_zero_odes = include_zero_odes)
+    odesys = convert(ODESystem, rs; include_zero_odes = include_zero_odes)
+    complete(odesys)
 end
 
 function get_mappings(model::SBML.Model)

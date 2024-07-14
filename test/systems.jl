@@ -93,9 +93,9 @@ isequal(nameof(odesys), :odesys)
 
 odesys = ODESystem(readSBML(sbmlfile))
 m = readSBML(sbmlfile)
-trueeqs = Equation[Differential(IV)(s1) ~ -(k1 * s1 * s2) / c1,
+trueeqs = Equation[Differential(IV)(s1) ~ -((k1 * s1 * s2) / c1),
     Differential(IV)(s1s2) ~ (k1 * s1 * s2) / c1,
-    Differential(IV)(s2) ~ -(k1 * s1 * s2) / c1]
+    Differential(IV)(s2) ~ -((k1 * s1 * s2) / c1)]
 @test isequal(Catalyst.get_eqs(odesys), trueeqs)
 @test isequal(Catalyst.get_iv(odesys), IV)
 @test isequal(Catalyst.get_unknowns(odesys), [s1, s1s2, s2])

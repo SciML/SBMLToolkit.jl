@@ -30,7 +30,7 @@ Infer forward and reverse components of bidirectional kineticLaw
 """
 function get_unidirectional_components(bidirectional_math)
     bm = ModelingToolkit.value(bidirectional_math)  #  Symbolics.tosymbol(bidirectional_math)
-    bm = simplify(bm; expand = true)
+    bm = expand(simplify(bm))
     if !SymbolicUtils.isadd(bm)
         @warn "Cannot separate bidirectional kineticLaw `$bidirectional_math` to forward and reverse part. Setting forward to `$bidirectional_math` and reverse to `0`. Stochastic simulations will be inexact."
         return (bidirectional_math, Num(0))
