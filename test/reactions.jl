@@ -4,7 +4,7 @@ using Test
 
 cd(@__DIR__)
 sbmlfile = joinpath("data", "reactionsystem_01.xml")
-const IV = Catalyst.DEFAULT_IV
+const IV = default_t()
 @parameters k1, c1
 @species s1(IV), s2(IV), s1s2(IV)
 

@@ -3,7 +3,7 @@ using SBML, SBMLToolkitTestSuite
 using Catalyst, ModelingToolkit, OrdinaryDiffEq
 using Test
 
-const IV = Catalyst.DEFAULT_IV
+const IV = default_t()
 @parameters k1, compartment
 @species S1(IV), S2(IV)
 
@@ -24,7 +24,7 @@ o_true = [S1 ~ 7 * compartment]
 sbml, _, _ = SBMLToolkitTestSuite.read_case("00031")  # rateRule
 m = readmodel(sbml)
 a, o, r = SBMLToolkit.get_rules(m)
-r_true = [Differential(IV)(S1) ~ 7 * compartment]
+r_true = [default_time_deriv()(S1) ~ 7 * compartment]
 @test isequal(r, r_true)
 
 sbml, _, _ = SBMLToolkitTestSuite.read_case("00039")  # algebraicRule

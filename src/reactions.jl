@@ -168,7 +168,7 @@ function get_massaction(kl::Num, reactants::Union{Vector{Num}, Nothing},
 
     function check_args(::Val{true}, x::SymbolicUtils.BasicSymbolic{Real})
         for arg in SymbolicUtils.arguments(x)
-            if isnan(check_args(arg)) || isequal(arg, Catalyst.DEFAULT_IV)
+            if isnan(check_args(arg)) || isequal(arg, default_t())
                 return NaN
             end
         end

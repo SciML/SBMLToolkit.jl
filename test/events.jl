@@ -2,7 +2,7 @@ using SBMLToolkit
 using Catalyst, SBMLToolkitTestSuite
 using Test
 
-const IV = Catalyst.DEFAULT_IV
+const IV = default_t()
 @parameters compartment
 @species S1(IV) S2(IV)
 

@@ -4,7 +4,7 @@ using Test
 
 cd(@__DIR__)
 sbmlfile = joinpath("data", "reactionsystem_01.xml")
-const IV = Catalyst.DEFAULT_IV
+const IV = default_t()
 @parameters k1, c1
 @species s1(IV), s2(IV), s1s2(IV)
 
@@ -79,7 +79,7 @@ rs = ReactionSystem(MODEL2)  # Contains reversible reaction
 
 # Test ODESystem constructor
 odesys = ODESystem(MODEL1)
-trueeqs = Equation[Differential(IV)(s1) ~ k1]
+trueeqs = Equation[default_time_deriv()(s1) ~ k1]
 @test isequal(Catalyst.get_eqs(odesys), trueeqs)
 @test isequal(Catalyst.get_iv(odesys), IV)
 @test isequal(Catalyst.get_unknowns(odesys), [s1])
@@ -93,9 +93,9 @@ isequal(nameof(odesys), :odesys)
 
 odesys = ODESystem(readSBML(sbmlfile))
 m = readSBML(sbmlfile)
-trueeqs = Equation[Differential(IV)(s1) ~ -((k1 * s1 * s2) / c1),
-    Differential(IV)(s1s2) ~ (k1 * s1 * s2) / c1,
-    Differential(IV)(s2) ~ -((k1 * s1 * s2) / c1)]
+trueeqs = Equation[default_time_deriv()(s1) ~ -((k1 * s1 * s2) / c1),
+    default_time_deriv()(s1s2) ~ (k1 * s1 * s2) / c1,
+    default_time_deriv()(s2) ~ -((k1 * s1 * s2) / c1)]
 @test isequal(Catalyst.get_eqs(odesys), trueeqs)
 @test isequal(Catalyst.get_iv(odesys), IV)
 @test isequal(Catalyst.get_unknowns(odesys), [s1, s1s2, s2])
