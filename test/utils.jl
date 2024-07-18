@@ -25,7 +25,7 @@ MODEL1 = SBML.Model(parameters = Dict("D" => PARAM1, "Dv" => PARAM2),
     species = Dict("B" => SPECIES1, "Bc" => SPECIES2),
     rules = [RULE1])
 
-const IV = Catalyst.DEFAULT_IV
+const IV = default_t()
 @species s1(IV)
 # Test symbolicsRateOf
 rate = SBMLToolkit.symbolicsRateOf(s1)

@@ -1,6 +1,6 @@
 # Conversion to symbolics
-const IV = Catalyst.DEFAULT_IV
-const D = Differential(IV)
+const IV = default_t()
+const D = default_time_deriv()
 symbolicsRateOf(x) = D(x)
 const symbolics_mapping = Dict(SBML.default_function_mapping...,
     "rateOf" => symbolicsRateOf)

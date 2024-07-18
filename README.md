@@ -11,7 +11,7 @@
 
 SBMLToolkit.jl is a lightweight tool to import models specified in the Systems Biology Markup Language (SBML) into the Julia SciML ecosystem. There are multiple ways to specify the same model in SBML. Please help us improving SBMLToolkit.jl by creating a GitHub issue if you experience errors when converting your SBML model.
 
-SBMLToolkit uses the [SBML.jl](https://github.com/LCSB-BioCore/SBML.jl) wrapper of the [libSBML](https://model.caltech.edu/software/libsbml/) library to lower dynamical SBML models into dynamical systems. If you would like to import BioNetGen models use the `writeSBML()` export function or import the `.net` file with [ReactionNetworkImporters.jl](https://github.com/SciML/ReactionNetworkImporters.jl). For constrained-based modeling, please have a look at [COBREXA.jl](https://github.com/LCSB-BioCore/COBREXA.jl). We also recommend trying [SBMLImporter.jl](https://github.com/sebapersson/SBMLImporter.jl) (Pros: respects directionality of events, outputs concentrations instead of amounts. Cons: imports ODESystems, i.e. does not interface with Catalyst).
+SBMLToolkit uses the [SBML.jl](https://github.com/LCSB-BioCore/SBML.jl) wrapper of the [libSBML](https://model.caltech.edu/software/libsbml/) library to lower dynamical SBML models into completed dynamical systems. If you would like to import BioNetGen models use the `writeSBML()` export function or import the `.net` file with [ReactionNetworkImporters.jl](https://github.com/SciML/ReactionNetworkImporters.jl). For constrained-based modeling, please have a look at [COBREXA.jl](https://github.com/LCSB-BioCore/COBREXA.jl). We also recommend trying [SBMLImporter.jl](https://github.com/sebapersson/SBMLImporter.jl). While SBMLToolkit.jl has a slightly cleaner interface, SBMLImporter.jl respects directionality of events, can output concentrations or amounts, and provides better simulation performance for models including time-triggered events and SBML `piecewise` expressions.
 
 ## Installation
 
@@ -46,7 +46,7 @@ rs = readSBML("my_model.xml", ReactionSystemImporter())
 
 One common case where this is useful is if you want to run stochastic instead of ODE simulations.
 
-In the very unlikely case that you need fine-grained control over the SBML import, you can create an SBML.jl `Model` (we strongly recommend manually running `SBMLToolkit.checksupport_file("my_model.xml")` before)
+In the very unlikely case that you need fine-grained control over the SBML import, you can create an SBML.jl `Model` (we strongly recommend manually running `checksupport_file("my_model.xml")` before)
 
 ```julia
 using SBML
