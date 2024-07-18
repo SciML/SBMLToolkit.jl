@@ -64,11 +64,11 @@ sbml, _, _ = SBMLToolkitTestSuite.read_case("00033")
 m = readmodel(sbml)
 @named sys = ODESystem(m)
 @species k1(IV)
-@test isequal(k1, get_variables(sys)[end])
+@test isequal(k1, unknowns(sys)[end])
 
 # tests that non-constant compartments become variables
 sbml, _, _ = SBMLToolkitTestSuite.read_case("00051")  # hOSU="true" species
 m = readmodel(sbml)
 @named sys = ODESystem(m)
 @species C(IV)
-@test isequal(C, get_variables(sys)[end])
+@test isequal(C, unknowns(sys)[end])
