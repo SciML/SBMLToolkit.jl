@@ -21,7 +21,7 @@ SBML = "1.4.4"
 SBMLToolkitTestSuite = "0.0.4"
 SafeTestsets = "0.1"
 Sundials = "4.14"
-SymbolicUtils = "1, 2"
+SymbolicUtils = "1, 2, 3"
 Test = "1"
 julia = "1.10"
 
