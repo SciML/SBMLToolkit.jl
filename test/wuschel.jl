@@ -11,7 +11,7 @@ m = readSBMLFromString(sbml, doc -> begin
     # set_level_and_version(3, 2)(doc) # fails on wuschel
     convert_promotelocals_expandfuns(doc)
 end)
-sys = ODESystem(m)
+sys = ODESystem(complete(m))
 @test length(equations(sys)) == 1012
 @test length(unknowns(sys)) == 1012
 ssys = structural_simplify(sys)  # Todo: Figure out why this complains about ExtraVariablesSystemException
