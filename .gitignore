@@ -4,3 +4,9 @@
 /docs/build/
 /test/logs/
 *Manifest.toml
+
+# vscode stuff
+.vscode
+.vscode/*
+
+LocalPreferences.toml

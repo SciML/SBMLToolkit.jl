@@ -50,7 +50,7 @@ rs = ReactionSystem(MODEL1)
     Catalyst.Reaction[Catalyst.Reaction(k1, nothing, [s1], nothing, [1.0])])
 @test isequal(Catalyst.get_iv(rs), IV)
 @test isequal(Catalyst.get_species(rs), [s1])
-@test isequal(Catalyst.get_ps(rs), [k1, c1])
+@test issetequal(Catalyst.get_ps(rs), [k1, c1])
 @named rs = ReactionSystem(MODEL1)
 isequal(nameof(rs), :rs)
 
@@ -60,7 +60,7 @@ rs = ReactionSystem(readSBML(sbmlfile))
         [1.0])])
 @test isequal(Catalyst.get_iv(rs), IV)
 @test isequal(Catalyst.get_species(rs), [s1, s1s2, s2])
-@test isequal(Catalyst.get_ps(rs), [k1, c1])
+@test issetequal(Catalyst.get_ps(rs), [k1, c1])
 @named rs = ReactionSystem(MODEL1)
 isequal(nameof(rs), :rs)
 
@@ -72,7 +72,7 @@ rs = ReactionSystem(MODEL2)  # Contains reversible reaction
             nothing, [1])])
 @test isequal(Catalyst.get_iv(rs), IV)
 @test isequal(Catalyst.get_species(rs), [s1])
-@test isequal(Catalyst.get_ps(rs), [k1, c1])
+@test issetequal(Catalyst.get_ps(rs), [k1, c1])
 
 @test convert(ModelingToolkit.ODESystem, rs) isa ODESystem
 @test structural_simplify(convert(ModelingToolkit.ODESystem, rs)) isa ODESystem
@@ -83,7 +83,7 @@ trueeqs = Equation[default_time_deriv()(s1) ~ k1]
 @test isequal(Catalyst.get_eqs(odesys), trueeqs)
 @test isequal(Catalyst.get_iv(odesys), IV)
 @test isequal(Catalyst.get_unknowns(odesys), [s1])
-@test isequal(Catalyst.get_ps(odesys), [k1, c1])
+@test issetequal(Catalyst.get_ps(odesys), [k1, c1])
 u0 = [s1 => 1.0]
 par = [k1 => 1.0, c1 => 2.0]
 @test isequal(ModelingToolkit.defaults(odesys), ModelingToolkit._merge(u0, par))  # PL: @Anand: for some reason this does not work with `Catalyst.get_default()`
@@ -99,7 +99,7 @@ trueeqs = Equation[default_time_deriv()(s1) ~ -((k1 * s1 * s2) / c1),
 @test isequal(Catalyst.get_eqs(odesys), trueeqs)
 @test isequal(Catalyst.get_iv(odesys), IV)
 @test isequal(Catalyst.get_unknowns(odesys), [s1, s1s2, s2])
-@test isequal(Catalyst.get_ps(odesys), [k1, c1])
+@test issetequal(Catalyst.get_ps(odesys), [k1, c1])
 u0 = [s1 => 2 * 1.0, s2 => 2 * 1.0, s1s2 => 2 * 1.0]
 par = [k1 => 1.0, c1 => 2.0]
 @test isequal(ModelingToolkit.defaults(odesys), ModelingToolkit._merge(u0, par))
