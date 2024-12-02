@@ -87,11 +87,20 @@ function Catalyst.ReactionSystem(model::SBML.Model; kwargs...)  # Todo: requires
         #                         Dict(Catalyst.DEFAULT_IV.val => 0)))
         push!(raterules_subs, rhs ~ o.lhs)
     end
+    zero_rates = []
+    for (k, v) in merge(model.parameters, model.compartments)
+        if is_event_assignment(k, model)
+            if v.constant
+                ErrorException("$k appears in event assignment but should be constant.")
+            end
+            push!(zero_rates, D(create_var(k, IV; isbcspecies = true)) ~ 0)
+        end
+    end
     if haskey(kwargs, :defaults)
         defs = ModelingToolkit._merge(defs, kwargs[:defaults])
         kwargs = filter(x -> !isequal(first(x), :defaults), kwargs)
     end
-    rs = ReactionSystem([rxs..., algrules..., raterules_subs..., obsrules_rearranged...],
+    rs = ReactionSystem([rxs..., algrules..., raterules_subs..., obsrules_rearranged..., zero_rates...],
         IV, first.(u0map), first.(parammap);
         defaults = defs, name = gensym(:SBML),
         continuous_events = get_events(model),
