@@ -8,7 +8,8 @@ const case_ids = [7,  # boundary_condition
     140,  # compartment size overridden with assignmentRule
     170,  # Model using parameters and rules only
     325,  # One reactions and two rate rules with four species in a 2D compartment
-    679  # Initial value calculated by assignmentRule in compartment of non-unit size    # 1208, # Non-hOSU species with rateRule in variable compartment -> require MTK fix.
+    679,  # Initial value calculated by assignmentRule in compartment of non-unit size    # 1208, # Non-hOSU species with rateRule in variable compartment -> require MTK fix.
+    944  # Non-constant parameter as target of event_assignment
 ]
 
 const logdir = joinpath(@__DIR__, "logs")
