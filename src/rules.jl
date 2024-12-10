@@ -34,7 +34,7 @@ extensive_kinetic_math(m::SBML.Model, formula::SBML.Math) = SBML.interpret_math(
         if isnothing(m.compartments[sp.compartment].size) &&
            !seemsdefined(sp.compartment, m)
             if m.compartments[sp.compartment].spatial_dimensions == 0
-                # If the comparment ID doesn't seem directly defined anywhere
+                # If the compartment ID doesn't seem directly defined anywhere
                 # and it is a zero-dimensional unsized compartment, just avoid
                 # any sizing questions.
                 return x
