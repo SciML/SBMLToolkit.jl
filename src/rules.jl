@@ -21,12 +21,56 @@ function get_rules(model)
     algeqs, obseqs, raterules
 end
 
+
+extensive_kinetic_math(m::SBML.Model, formula::SBML.Math) = SBML.interpret_math(  # TODO: move this to SBML.jl
+    formula,
+    map_apply = (x, rec) -> SBML.MathApply(x.fn, rec.(x.args)),
+    map_const = identity,
+    map_ident = (x::SBML.MathIdent) -> begin
+        haskey(m.reactions, x.id)  && return m.reactions[x.id].kinetic_math
+        haskey(m.species, x.id) || return x
+        sp = m.species[x.id]
+        sp.only_substance_units && return x
+        if isnothing(m.compartments[sp.compartment].size) &&
+           !seemsdefined(sp.compartment, m)
+            if m.compartments[sp.compartment].spatial_dimensions == 0
+                # If the comparment ID doesn't seem directly defined anywhere
+                # and it is a zero-dimensional unsized compartment, just avoid
+                # any sizing questions.
+                return x
+            else
+                # In case the compartment is expected to be defined, complain.
+                throw(
+                    DomainError(
+                        sp.compartment,
+                        "compartment size is insufficiently defined",
+                    ),
+                )
+            end
+        else
+            # Now we are sure that the model either has the compartment with
+            # constant size, or the definition is easily reachable. So just use
+            # the compartment ID as a variable to compute the concentration (or
+            # area-centration etc, with different dimensionalities) by dividing
+            # it.
+            return SBML.MathApply("/", [x, SBML.MathIdent(sp.compartment)])
+        end
+    end,
+    map_lambda = (x, _) -> error(
+        ErrorException("converting lambdas to extensive kinetic math is not supported"),
+    ),
+    map_time = identity,
+    map_avogadro = identity,
+    map_value = identity,
+)
+
+
 function get_var_and_assignment(model, rule)
     if !haskey(merge(model.species, model.compartments, model.parameters), rule.variable)
         error("Cannot find target for rule with ID `$(rule.variable)`")
     end
     var = create_var(rule.variable, IV)
-    math = SBML.extensive_kinetic_math(model, rule.math)
+    math = extensive_kinetic_math(model, rule.math)
     vc = get_volume_correction(model, rule.variable)
     if !isnothing(vc)
         math = SBML.MathApply("*", [SBML.MathIdent(vc), math])
