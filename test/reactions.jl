@@ -139,4 +139,5 @@ m = SBML.Model(species = Dict("s" => s), reactions = Dict("r1" => r))
 
 @test isnan(SBMLToolkit.get_massaction(k1 * s1 * s2, [s1], [1]))
 @test isnan(SBMLToolkit.get_massaction(k1 + c1, [s1], [1]))
+@test isnan(SBMLToolkit.get_massaction(s1 + ifelse(s1 < k1, s1, k1), [s1], [1]))
 @test_throws ErrorException SBMLToolkit.get_massaction(k1, nothing, [1])
