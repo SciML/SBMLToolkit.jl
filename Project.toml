@@ -11,7 +11,7 @@ SymbolicUtils = "d1185830-fcd6-423d-90d6-eec64667417b"
 [compat]
 Aqua = "0.8"
 CSV = "0.10.5"
-Catalyst = "14"
+Catalyst = "14, 15"
 DataFrames = "1"
 Downloads = "1"
 ModelingToolkit = "9"
