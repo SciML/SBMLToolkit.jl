@@ -41,7 +41,6 @@ function SBML.readSBML(sbmlfile::String, ::ODESystemImporter;
         include_zero_odes::Bool = true, kwargs...)  # Returns an MTK.ODESystem
     odesys = convert(ODESystem, readSBML(sbmlfile, ReactionSystemImporter(), kwargs...),
         include_zero_odes = include_zero_odes)
-    complete(odesys)
 end
 
 """
@@ -106,7 +105,7 @@ function Catalyst.ReactionSystem(model::SBML.Model; kwargs...)  # Todo: requires
         defaults = defs, name = gensym(:SBML),
         continuous_events = get_events(model),
         combinatoric_ratelaws = false, kwargs...)
-    return complete(rs)  # Todo: maybe add a `complete=True` kwarg
+    return rs
 end
 
 """
@@ -120,7 +119,6 @@ function ModelingToolkit.ODESystem(model::SBML.Model; include_zero_odes::Bool = 
         kwargs...)
     rs = ReactionSystem(model; kwargs...)
     odesys = convert(ODESystem, rs; include_zero_odes = include_zero_odes)
-    complete(odesys)
 end
 
 function get_mappings(model::SBML.Model)
