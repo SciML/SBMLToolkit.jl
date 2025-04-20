@@ -1430,7 +1430,7 @@ version = "1.6.0"
 deps = ["Catalyst", "SBML", "SymbolicUtils"]
 path = "/home/runner/work/SBMLToolkit.jl/SBMLToolkit.jl"
 uuid = "86080e66-c8ac-44c2-a1a0-9adaadfe4a4e"
-version = "0.1.30"
+version = "0.1.31"
 
 [[deps.SBML_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "XML2_jll", "Zlib_jll"]
