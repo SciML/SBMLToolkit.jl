@@ -58,7 +58,8 @@ function add_reaction!(rxs::Vector{Reaction},
         product_references::Vector{SBML.SpeciesReference},
         model::SBML.Model;
         enforce_rate = false)
-    reactants, products, rstoichvals, pstoichvals = get_reagents(reactant_references,
+    reactants, products,
+    rstoichvals, pstoichvals = get_reagents(reactant_references,
         product_references, model)
     isnothing(reactants) && isnothing(products) && return
     rstoichvals = stoich_convert_to_ints(rstoichvals)
