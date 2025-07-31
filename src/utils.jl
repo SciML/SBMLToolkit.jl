@@ -7,10 +7,12 @@ const symbolics_mapping = Dict(SBML.default_function_mapping...,
 
 function interpret_as_num(x::SBML.Math, model::SBML.Model)
     SBML.interpret_math(x;
-        map_apply = (x::SBML.MathApply, interpret::Function) -> Num(symbolics_mapping[x.fn](interpret.(x.args)...)),
+        map_apply = (x::SBML.MathApply,
+            interpret::Function) -> Num(symbolics_mapping[x.fn](interpret.(x.args)...)),
         map_const = (x::SBML.MathConst) -> Num(SBML.default_constants[x.id]),
         map_ident = x -> map_symbolics_ident(x, model),
-        map_lambda = (_, _) -> throw(ErrorException("Symbolics.jl does not support lambda functions")),
+        map_lambda = (_,
+            _) -> throw(ErrorException("Symbolics.jl does not support lambda functions")),
         map_time = (x::SBML.MathTime) -> IV,
         map_value = (x::SBML.MathVal) -> x.val,
         map_avogadro = (x::SBML.MathAvogadro) -> SBML.default_constants["avogadro"])

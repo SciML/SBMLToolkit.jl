@@ -16,7 +16,8 @@ function get_rules(model)
             error("Rule must be of type SBML.AlgebraicRule, SBML.AssignmentRule, or SBML.RateRule.")
         end
     end
-    algeqs, obseqs, raterules = map(x -> substitute(x, subsdict),
+    algeqs, obseqs,
+    raterules = map(x -> substitute(x, subsdict),
         (algeqs, obseqs, raterules))
     algeqs, obseqs, raterules
 end
@@ -56,7 +57,8 @@ function extensive_kinetic_math(m::SBML.Model, formula::SBML.Math)
                 return SBML.MathApply("/", [x, SBML.MathIdent(sp.compartment)])
             end
         end,
-        map_lambda = (x, _) -> error(
+        map_lambda = (x,
+            _) -> error(
             ErrorException("converting lambdas to extensive kinetic math is not supported"),
         ),
         map_time = identity,
