@@ -43,18 +43,19 @@ sym = SBMLToolkit.map_symbolics_ident(SBML.MathIdent("B"), MODEL1)
 
 test = SBML.MathApply("*",
     SBML.Math[
-        SBML.MathApply("+",
-            SBML.Math[
-                SBML.MathApply("*",
-                    SBML.Math[SBML.MathAvogadro("A"),
-                        SBML.MathIdent("B")]),
-                SBML.MathApply("-",
-                    SBML.Math[SBML.MathApply("*",
-                        SBML.Math[SBML.MathIdent("C"),
-                            SBML.MathIdent("D"),
-                            SBML.MathIdent("Dv"),
-                            SBML.MathIdent("Bc")])])]),
-        SBML.MathTime("Time")])
+    SBML.MathApply("+",
+        SBML.Math[
+        SBML.MathApply("*",
+            SBML.Math[SBML.MathAvogadro("A"),
+            SBML.MathIdent("B")]),
+        SBML.MathApply(
+            "-",
+            SBML.Math[SBML.MathApply("*",
+                SBML.Math[SBML.MathIdent("C"),
+                SBML.MathIdent("D"),
+                SBML.MathIdent("Dv"),
+                SBML.MathIdent("Bc")])])]),
+    SBML.MathTime("Time")])
 
 @test isequal(SBMLToolkit.interpret_as_num(test, MODEL1),
     IV * (6.02214076e23 * B - C * D * Dv * Bc))

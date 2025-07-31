@@ -19,9 +19,9 @@ KINETICMATH1 = SBML.MathIdent("k1")
 KINETICMATH2 = SBML.MathApply("*", SBML.Math[SBML.MathIdent("k1"), SBML.MathIdent("s2")])
 KINETICMATH3 = SBML.MathApply("-",
     SBML.Math[SBML.MathApply("*",
-            SBML.Math[SBML.MathIdent("k1"),
-                SBML.MathIdent("s1")]),
-        KINETICMATH1])
+        SBML.Math[SBML.MathIdent("k1"),
+        SBML.MathIdent("s1")]),
+    KINETICMATH1])
 REACTION1 = SBML.Reaction(
     products = [
         SBML.SpeciesReference(species = "s1", stoichiometry = 1.0)
@@ -95,8 +95,8 @@ isequal(nameof(odesys), :odesys)
 odesys = ODESystem(readSBML(sbmlfile))
 m = readSBML(sbmlfile)
 trueeqs = Equation[default_time_deriv()(s1) ~ -((k1 * s1 * s2) / c1),
-    default_time_deriv()(s1s2) ~ (k1 * s1 * s2) / c1,
-    default_time_deriv()(s2) ~ -((k1 * s1 * s2) / c1)]
+default_time_deriv()(s1s2) ~ (k1 * s1 * s2) / c1,
+default_time_deriv()(s2) ~ -((k1 * s1 * s2) / c1)]
 @test isequal(Catalyst.get_eqs(odesys), trueeqs)
 @test isequal(Catalyst.get_iv(odesys), IV)
 @test isequal(Catalyst.get_unknowns(odesys), [s1, s1s2, s2])
