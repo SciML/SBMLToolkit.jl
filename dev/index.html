@@ -14,226 +14,228 @@ tspan = (0.0, 1.0)
 prob = ODEProblem(odesys, [], tspan, [])
 sol = solve(prob, Tsit5())</code></pre><p>SBMLToolkit also provides the following convenience functions to import <code>SBML.Models</code>, <code>Catalyst.ReactionSystems</code> and <code>ModelingToolkit.ODESystems</code>:</p><pre><code class="language-julia hljs">mdl = readSBML(sbmlfile, DefaultImporter())
 rs = readSBML(sbmlfile, ReactionSystemImporter())
-odesys = readSBML(sbmlfile, ODESystemImporter())</code></pre><h2 id="License"><a class="docs-heading-anchor" href="#License">License</a><a id="License-1"></a><a class="docs-heading-anchor-permalink" href="#License" title="Permalink"></a></h2><p>The package is released under the <a href="https://github.com/SciML/SBMLToolkit.jl/blob/main/LICENSE">MIT license</a>.</p><h2 id="Development-team"><a class="docs-heading-anchor" href="#Development-team">Development team</a><a id="Development-team-1"></a><a class="docs-heading-anchor-permalink" href="#Development-team" title="Permalink"></a></h2><p>This package was developed by <a href="https://www.linkedin.com/in/paul-lang-7b54a81a3/">Paul F. Lang</a> at the University of Oxford, UK and <a href="https://github.com/anandijain">Anand Jain</a> at the University of Chicago, USA.</p><h2 id="Questions-and-comments"><a class="docs-heading-anchor" href="#Questions-and-comments">Questions and comments</a><a id="Questions-and-comments-1"></a><a class="docs-heading-anchor-permalink" href="#Questions-and-comments" title="Permalink"></a></h2><p>Please use GitHub issues, the #sciml-sysbio channel in the <a href="https://julialang.org/slack/">Julia Slack workspace</a> or email <a href="mailto:paul.lang@juliacomputing.com">Paul F. Lang</a> or <a href="mailto:anandj@uchicago.edu">Anand Jain</a> with any questions or comments.</p><h2 id="Reproducibility"><a class="docs-heading-anchor" href="#Reproducibility">Reproducibility</a><a id="Reproducibility-1"></a><a class="docs-heading-anchor-permalink" href="#Reproducibility" title="Permalink"></a></h2><details><summary>The documentation of this SciML package was built using these direct dependencies,</summary><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Status `~/work/SBMLToolkit.jl/SBMLToolkit.jl/docs/Project.toml`
-  [e30172f5] Documenter v1.14.1
-  [86080e66] SBMLToolkit v0.1.31 `~/work/SBMLToolkit.jl/SBMLToolkit.jl`</code></pre></details><details><summary>and using this machine and Julia version.</summary><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Julia Version 1.11.6
-Commit 9615af0f269 (2025-07-09 12:58 UTC)
+odesys = readSBML(sbmlfile, ODESystemImporter())</code></pre><h2 id="License"><a class="docs-heading-anchor" href="#License">License</a><a id="License-1"></a><a class="docs-heading-anchor-permalink" href="#License" title="Permalink"></a></h2><p>The package is released under the <a href="https://github.com/SciML/SBMLToolkit.jl/blob/main/LICENSE">MIT license</a>.</p><h2 id="Development-team"><a class="docs-heading-anchor" href="#Development-team">Development team</a><a id="Development-team-1"></a><a class="docs-heading-anchor-permalink" href="#Development-team" title="Permalink"></a></h2><p>This package was developed by <a href="https://www.linkedin.com/in/paul-lang-7b54a81a3/">Paul F. Lang</a> at the University of Oxford, UK and <a href="https://github.com/anandijain">Anand Jain</a> at the University of Chicago, USA.</p><h2 id="Questions-and-comments"><a class="docs-heading-anchor" href="#Questions-and-comments">Questions and comments</a><a id="Questions-and-comments-1"></a><a class="docs-heading-anchor-permalink" href="#Questions-and-comments" title="Permalink"></a></h2><p>Please use GitHub issues, the #sciml-sysbio channel in the <a href="https://julialang.org/slack/">Julia Slack workspace</a> or email <a href="mailto:paul.lang@juliacomputing.com">Paul F. Lang</a> or <a href="mailto:anandj@uchicago.edu">Anand Jain</a> with any questions or comments.</p><h2 id="Reproducibility"><a class="docs-heading-anchor" href="#Reproducibility">Reproducibility</a><a id="Reproducibility-1"></a><a class="docs-heading-anchor-permalink" href="#Reproducibility" title="Permalink"></a></h2><details><summary>The documentation of this SciML package was built using these direct dependencies,</summary><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Status `~/github-runners/deepsea4-22/_work/SBMLToolkit.jl/SBMLToolkit.jl/docs/Project.toml`
+  [e30172f5] Documenter v1.16.1
+  [86080e66] SBMLToolkit v0.1.31 `~/github-runners/deepsea4-22/_work/SBMLToolkit.jl/SBMLToolkit.jl`</code></pre></details><details><summary>and using this machine and Julia version.</summary><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Julia Version 1.12.3
+Commit 966d0af0fdf (2025-12-15 11:20 UTC)
 Build Info:
-  Official https://julialang.org/ release
+  Official https://julialang.org release
 Platform Info:
   OS: Linux (x86_64-linux-gnu)
-  CPU: 4 × AMD EPYC 7763 64-Core Processor
+  CPU: 128 × AMD EPYC 7513 32-Core Processor
   WORD_SIZE: 64
-  LLVM: libLLVM-16.0.6 (ORCJIT, znver3)
-Threads: 1 default, 0 interactive, 1 GC (on 4 virtual cores)</code></pre></details><details><summary>A more complete overview of all dependencies and their versions is also provided.</summary><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Status `~/work/SBMLToolkit.jl/SBMLToolkit.jl/docs/Manifest.toml`
-  [47edcb42] ADTypes v1.16.0
+  LLVM: libLLVM-18.1.7 (ORCJIT, znver3)
+  GC: Built with stock GC
+Threads: 1 default, 1 interactive, 1 GC (on 128 virtual cores)
+Environment:
+  JULIA_DEPOT_PATH = /home/chrisrackauckas/github-runners/deepsea4-22/.julia</code></pre></details><details><summary>A more complete overview of all dependencies and their versions is also provided.</summary><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Status `~/github-runners/deepsea4-22/_work/SBMLToolkit.jl/SBMLToolkit.jl/docs/Manifest.toml`
+  [47edcb42] ADTypes v1.20.0
   [a4c015fc] ANSIColoredPrinters v0.0.1
   [1520ce14] AbstractTrees v0.4.5
-  [7d9f7c33] Accessors v0.1.42
-  [79e6a3ab] Adapt v4.3.0
+  [7d9f7c33] Accessors v0.1.43
+  [79e6a3ab] Adapt v4.4.0
   [66dad0bd] AliasTables v1.1.3
   [ec485272] ArnoldiMethod v0.4.0
-  [4fba245c] ArrayInterface v7.19.0
-  [4c555306] ArrayLayouts v1.11.2
+  [4fba245c] ArrayInterface v7.22.0
+  [4c555306] ArrayLayouts v1.12.2
   [e2ed5e7c] Bijections v0.2.2
   [62783981] BitTwiddlingConvenienceFunctions v0.1.6
-  [8e7c35d0] BlockArrays v1.7.0
-  [70df07ce] BracketingNonlinearSolve v1.3.0
-  [2a0fbf3d] CPUSummary v0.2.6
-  [479239e8] Catalyst v15.0.8
-  [d360d2e6] ChainRulesCore v1.25.2
+  [8e7c35d0] BlockArrays v1.9.3
+  [70df07ce] BracketingNonlinearSolve v1.6.1
+  [2a0fbf3d] CPUSummary v0.2.7
+  [479239e8] Catalyst v15.0.11
+  [d360d2e6] ChainRulesCore v1.26.0
   [fb6a15b2] CloseOpenIntervals v0.1.13
   [944b1d66] CodecZlib v0.7.8
-  [861a8166] Combinatorics v1.0.3
+⌅ [861a8166] Combinatorics v1.0.2
   [a80b9123] CommonMark v0.9.1
-  [38540f10] CommonSolve v0.2.4
+  [38540f10] CommonSolve v0.2.6
   [bbf7d656] CommonSubexpressions v0.3.1
   [f70d9fcc] CommonWorldInvalidations v1.0.0
-  [34da2185] Compat v4.18.0
+  [34da2185] Compat v4.18.1
   [b152e2b5] CompositeTypes v0.1.4
   [a33af91c] CompositionsBase v0.1.2
   [2569d6c7] ConcreteStructs v0.2.3
   [187b0558] ConstructionBase v1.6.0
   [adafc99b] CpuId v0.3.1
-  [a8cc5b0e] Crayons v4.1.1
   [9a962f9c] DataAPI v1.16.0
 ⌅ [864edb3b] DataStructures v0.18.22
-  [e2d170a0] DataValueInterfaces v1.0.0
-  [2b5f629d] DiffEqBase v6.180.0
-  [459566f4] DiffEqCallbacks v4.8.0
+  [2b5f629d] DiffEqBase v6.194.0
+  [459566f4] DiffEqCallbacks v4.11.0
   [77a26b50] DiffEqNoiseProcess v5.24.1
   [163ba53b] DiffResults v1.1.0
   [b552c78f] DiffRules v1.15.1
-⌅ [a0c0ee7d] DifferentiationInterface v0.6.54
+  [a0c0ee7d] DifferentiationInterface v0.7.13
   [8d63f2c5] DispatchDoctor v0.4.26
-  [31c24e10] Distributions v0.25.120
+  [31c24e10] Distributions v0.25.122
   [ffbed154] DocStringExtensions v0.9.5
-  [e30172f5] Documenter v1.14.1
+  [e30172f5] Documenter v1.16.1
   [5b8099bc] DomainSets v0.7.16
-  [7c1d4256] DynamicPolynomials v0.6.2
-  [06fc5a27] DynamicQuantities v1.8.0
+⌃ [7c1d4256] DynamicPolynomials v0.6.3
+  [06fc5a27] DynamicQuantities v1.10.0
   [4e289a0a] EnumX v1.0.5
-  [f151be2c] EnzymeCore v0.8.12
+  [f151be2c] EnzymeCore v0.8.17
   [e2ba6199] ExprTools v0.1.10
   [55351af7] ExproniconLite v0.10.14
   [7034ab61] FastBroadcast v0.3.5
   [9aa1b823] FastClosures v0.3.2
-  [a4df4552] FastPower v1.1.3
-  [1a297f60] FillArrays v1.13.0
-  [64ca27bc] FindFirstFunctions v1.4.1
-  [6a86dc24] FiniteDiff v2.27.0
+  [a4df4552] FastPower v1.3.0
+  [1a297f60] FillArrays v1.15.0
+  [64ca27bc] FindFirstFunctions v1.4.2
+  [6a86dc24] FiniteDiff v2.29.0
   [1fa38f19] Format v1.3.7
-⌅ [f6369f11] ForwardDiff v0.10.38
+⌃ [f6369f11] ForwardDiff v0.10.39
   [069b7b12] FunctionWrappers v1.1.3
   [77dc65aa] FunctionWrappersWrappers v0.1.3
-  [d9f16b24] Functors v0.5.2
   [46192b85] GPUArraysCore v0.2.0
-  [d7ba0133] Git v1.4.0
-  [c27321d9] Glob v1.3.1
-  [86223c79] Graphs v1.13.0
+  [d7ba0133] Git v1.5.0
+  [c27321d9] Glob v1.4.0
+⌃ [86223c79] Graphs v1.13.1
   [34004b35] HypergeometricFunctions v0.3.28
-  [b5f81e59] IOCapture v0.2.5
+  [b5f81e59] IOCapture v1.0.0
   [615f187c] IfElse v0.1.1
   [d25df0c9] Inflate v0.1.5
   [18e54dd8] IntegerMathUtils v0.1.3
-  [8197267c] IntervalSets v0.7.11
+  [8197267c] IntervalSets v0.7.13
   [3587e190] InverseFunctions v0.1.17
-  [92d709cd] IrrationalConstants v0.2.4
+  [92d709cd] IrrationalConstants v0.2.6
   [82899510] IteratorInterfaceExtensions v1.0.0
   [692b3bcd] JLLWrappers v1.7.1
-  [682c06a0] JSON v0.21.4
+  [682c06a0] JSON v1.3.0
   [ae98c720] Jieko v0.2.1
-  [98e50ef6] JuliaFormatter v2.1.5
+  [98e50ef6] JuliaFormatter v2.2.0
 ⌅ [70703baa] JuliaSyntax v0.4.10
-  [ccbc3e58] JumpProcesses v9.16.1
-  [ba0b0d4f] Krylov v0.10.1
+  [ccbc3e58] JumpProcesses v9.19.3
+  [ba0b0d4f] Krylov v0.10.3
   [b964fa9f] LaTeXStrings v1.4.0
-  [23fbe1c1] Latexify v0.16.8
+  [23fbe1c1] Latexify v0.16.10
   [10f19ff3] LayoutPointers v0.1.17
   [0e77f7df] LazilyInitializedFields v1.3.0
-  [5078a376] LazyArrays v2.6.2
+  [5078a376] LazyArrays v2.9.4
   [87fe0de2] LineSearch v0.1.4
-  [d3d80556] LineSearches v7.4.0
-  [7ed4a6bd] LinearSolve v3.24.0
+  [d3d80556] LineSearches v7.5.1
+  [7ed4a6bd] LinearSolve v3.55.0
   [2ab3a3ac] LogExpFunctions v0.3.29
+  [e6f89c97] LoggingExtras v1.2.0
   [d8e11817] MLStyle v0.4.17
   [1914dd2f] MacroTools v0.5.16
   [d125e4d3] ManualMemory v0.1.8
   [d0879d2d] MarkdownAST v0.1.2
   [bb5d69b7] MaybeInplace v0.1.4
   [e1d29d7a] Missings v1.2.0
-⌅ [961ee093] ModelingToolkit v9.82.0
+⌅ [961ee093] ModelingToolkit v9.84.0
   [2e0e35c7] Moshi v0.3.7
   [46d2c3a1] MuladdMacro v0.2.4
-  [102ac46a] MultivariatePolynomials v0.5.9
-  [d8a4904e] MutableArithmetics v1.6.4
+⌃ [102ac46a] MultivariatePolynomials v0.5.9
+  [d8a4904e] MutableArithmetics v1.6.7
   [d41bc354] NLSolversBase v7.10.0
   [77ba4419] NaNMath v1.1.3
-  [8913a72c] NonlinearSolve v4.10.0
-  [be0214bd] NonlinearSolveBase v1.13.0
-  [5959db7a] NonlinearSolveFirstOrder v1.6.0
-  [9a2c21bd] NonlinearSolveQuasiNewton v1.7.0
-  [26075421] NonlinearSolveSpectralMethods v1.2.0
+  [8913a72c] NonlinearSolve v4.12.0
+  [be0214bd] NonlinearSolveBase v2.9.0
+  [5959db7a] NonlinearSolveFirstOrder v1.11.0
+  [9a2c21bd] NonlinearSolveQuasiNewton v1.12.0
+  [26075421] NonlinearSolveSpectralMethods v1.6.0
   [6fe1bfb0] OffsetArrays v1.17.0
-  [429524aa] Optim v1.13.2
+  [429524aa] Optim v1.13.3
   [bac558e1] OrderedCollections v1.8.1
-  [90014a1f] PDMats v0.11.35
+  [90014a1f] PDMats v0.11.37
   [d96e819e] Parameters v0.12.3
   [69de0a69] Parsers v2.8.3
-  [e409e4f3] PoissonRandom v0.4.5
+  [e409e4f3] PoissonRandom v0.4.7
   [f517fe37] Polyester v0.7.18
   [1d0040c9] PolyesterWeave v0.2.2
   [85a6dd25] PositiveFactorizations v0.2.4
-⌅ [aea7be01] PrecompileTools v1.2.1
-  [21216c6a] Preferences v1.4.3
-  [08abe8d2] PrettyTables v2.4.0
+  [d236fae5] PreallocationTools v0.4.34
+  [aea7be01] PrecompileTools v1.3.3
+  [21216c6a] Preferences v1.5.1
   [27ebfcd6] Primes v0.5.7
   [43287f4e] PtrArrays v1.3.0
   [1fd47b50] QuadGK v2.11.2
   [74087812] Random123 v1.7.1
   [e6cf234a] RandomNumbers v1.6.0
   [3cdcf5f2] RecipesBase v1.3.4
-  [731186ca] RecursiveArrayTools v3.36.0
+  [731186ca] RecursiveArrayTools v3.42.1
   [189a3867] Reexport v1.2.2
   [2792f1a3] RegistryInstances v0.1.0
   [ae029012] Requires v1.3.1
   [ae5879a3] ResettableStacks v1.1.1
-  [79098fc4] Rmath v0.8.0
-  [7e49a35a] RuntimeGeneratedFunctions v0.5.15
+  [79098fc4] Rmath v0.9.0
+  [7e49a35a] RuntimeGeneratedFunctions v0.5.16
   [e5567a89] SBML v1.6.0
-  [86080e66] SBMLToolkit v0.1.31 `~/work/SBMLToolkit.jl/SBMLToolkit.jl`
-  [9dfe8606] SCCNonlinearSolve v1.4.0
+  [86080e66] SBMLToolkit v0.1.31 `~/github-runners/deepsea4-22/_work/SBMLToolkit.jl/SBMLToolkit.jl`
+  [9dfe8606] SCCNonlinearSolve v1.8.0
   [94e857df] SIMDTypes v0.1.0
-  [0bca4576] SciMLBase v2.107.0
-  [19f34311] SciMLJacobianOperators v0.1.8
-  [c0aeaf25] SciMLOperators v1.4.0
+  [0bca4576] SciMLBase v2.130.0
+  [19f34311] SciMLJacobianOperators v0.1.12
+  [a6db7da4] SciMLLogging v1.7.1
+  [c0aeaf25] SciMLOperators v1.14.1
+  [431bcebd] SciMLPublic v1.0.0
   [53ae85a6] SciMLStructures v1.7.0
   [efcf1570] Setfield v1.1.2
-  [727e6d20] SimpleNonlinearSolve v2.7.0
-  [699a6c99] SimpleTraits v0.9.4
-  [a2af1166] SortingAlgorithms v1.2.1
-  [0a514795] SparseMatrixColorings v0.4.21
-  [276daf66] SpecialFunctions v2.5.1
-  [aedffcd0] Static v1.2.0
+  [727e6d20] SimpleNonlinearSolve v2.10.0
+  [699a6c99] SimpleTraits v0.9.5
+  [a2af1166] SortingAlgorithms v1.2.2
+  [276daf66] SpecialFunctions v2.6.1
+  [aedffcd0] Static v1.3.1
   [0d7ed370] StaticArrayInterface v1.8.0
-  [90137ffa] StaticArrays v1.9.14
-  [1e83bf80] StaticArraysCore v1.4.3
+  [90137ffa] StaticArrays v1.9.15
+  [1e83bf80] StaticArraysCore v1.4.4
   [10745b16] Statistics v1.11.1
-  [82ae8749] StatsAPI v1.7.1
-  [2913bbd2] StatsBase v0.34.5
-  [4c63d2b9] StatsFuns v1.5.0
-  [7792a7ef] StrideArraysCore v0.5.7
-  [892a3eda] StringManipulation v0.4.1
-  [2efcf032] SymbolicIndexingInterface v0.3.42
-  [19f23fe9] SymbolicLimits v0.2.2
-  [d1185830] SymbolicUtils v3.29.0
-  [0c5d862f] Symbolics v6.48.1
-  [3783bdb8] TableTraits v1.0.1
-  [bd369af6] Tables v1.12.1
+  [82ae8749] StatsAPI v1.8.0
+  [2913bbd2] StatsBase v0.34.9
+  [4c63d2b9] StatsFuns v1.5.2
+  [7792a7ef] StrideArraysCore v0.5.8
+  [ec057cc2] StructUtils v2.6.0
+  [2efcf032] SymbolicIndexingInterface v0.3.46
+⌃ [19f23fe9] SymbolicLimits v0.2.3
+⌅ [d1185830] SymbolicUtils v3.32.0
+⌅ [0c5d862f] Symbolics v6.58.0
   [ed4db957] TaskLocalValues v0.1.3
   [8ea1fca8] TermInterface v2.0.0
   [1c621080] TestItems v1.0.0
   [8290d209] ThreadingUtilities v0.5.5
   [a759f4b9] TimerOutputs v0.5.29
   [3bb67fe8] TranscodingStreams v0.11.3
-  [410a4b4d] Tricks v0.1.11
+  [410a4b4d] Tricks v0.1.13
   [781d530d] TruncatedStacktraces v1.4.0
   [5c2747f8] URIs v1.6.1
   [3a884ed6] UnPack v1.0.2
-  [1986cc42] Unitful v1.24.0
+  [1986cc42] Unitful v1.27.0
   [a7c27f48] Unityper v0.1.6
-  [897b6980] WeakValueDicts v0.1.0
-  [2e619515] Expat_jll v2.6.5+0
-  [f8c6e375] Git_jll v2.50.1+0
+  [2e619515] Expat_jll v2.7.3+0
+  [61579ee1] Ghostscript_jll v9.55.1+0
+  [020c3dae] Git_LFS_jll v3.7.0+0
+  [f8c6e375] Git_jll v2.52.0+0
   [1d5cc7b8] IntelOpenMP_jll v2025.2.0+0
+  [aacddb02] JpegTurbo_jll v3.1.4+0
   [94ce4f54] Libiconv_jll v1.18.0+0
   [856f044c] MKL_jll v2025.2.0+0
-  [9bd350c2] OpenSSH_jll v10.0.1+0
-  [458c3c95] OpenSSL_jll v3.5.1+0
+  [9bd350c2] OpenSSH_jll v10.2.1+0
   [efe28fd5] OpenSpecFun_jll v0.5.6+0
   [f50d1b31] Rmath_jll v0.5.1+0
   [bb12108a] SBML_jll v5.20.1+0
-⌅ [02c8fc9c] XML2_jll v2.13.6+1
-  [1317d2d5] oneTBB_jll v2022.0.0+0
+⌅ [02c8fc9c] XML2_jll v2.13.9+0
+  [1317d2d5] oneTBB_jll v2022.0.0+1
   [0dad84c5] ArgTools v1.1.2
   [56f22d72] Artifacts v1.11.0
   [2a0f44e3] Base64 v1.11.0
   [ade2ca70] Dates v1.11.0
   [8ba89e20] Distributed v1.11.0
-  [f43a241f] Downloads v1.6.0
+  [f43a241f] Downloads v1.7.0
   [7b1f6079] FileWatching v1.11.0
   [9fa8497b] Future v1.11.0
   [b77e0a4c] InteractiveUtils v1.11.0
+  [ac6e5ff7] JuliaSyntaxHighlighting v1.12.0
   [4af54fe1] LazyArtifacts v1.11.0
   [b27032c2] LibCURL v0.6.4
   [76f85450] LibGit2 v1.11.0
   [8f399da3] Libdl v1.11.0
-  [37e2e46d] LinearAlgebra v1.11.0
+  [37e2e46d] LinearAlgebra v1.12.0
   [56ddb016] Logging v1.11.0
   [d6f4376e] Markdown v1.11.0
   [a63ad114] Mmap v1.11.0
-  [ca575930] NetworkOptions v1.2.0
-  [44cfe95a] Pkg v1.11.0
+  [ca575930] NetworkOptions v1.3.0
+  [44cfe95a] Pkg v1.12.1
   [de0858da] Printf v1.11.0
   [3fa0cd96] REPL v1.11.0
   [9a3f8284] Random v1.11.0
@@ -241,7 +243,7 @@ Threads: 1 default, 0 interactive, 1 GC (on 4 virtual cores)</code></pre></detai
   [9e88b42a] Serialization v1.11.0
   [1a1011a3] SharedArrays v1.11.0
   [6462fe0b] Sockets v1.11.0
-  [2f01184e] SparseArrays v1.11.0
+  [2f01184e] SparseArrays v1.12.0
   [f489334b] StyledStrings v1.11.0
   [4607b0f0] SuiteSparse
   [fa267f1f] TOML v1.0.3
@@ -249,18 +251,18 @@ Threads: 1 default, 0 interactive, 1 GC (on 4 virtual cores)</code></pre></detai
   [8dfed614] Test v1.11.0
   [cf7118a7] UUIDs v1.11.0
   [4ec0a83e] Unicode v1.11.0
-  [e66e0078] CompilerSupportLibraries_jll v1.1.1+0
-  [deac9b47] LibCURL_jll v8.6.0+0
-  [e37daf67] LibGit2_jll v1.7.2+0
-  [29816b5a] LibSSH2_jll v1.11.0+1
-  [c8ffd9c3] MbedTLS_jll v2.28.6+0
-  [14a3606d] MozillaCACerts_jll v2023.12.12
-  [4536629a] OpenBLAS_jll v0.3.27+1
-  [05823500] OpenLibm_jll v0.8.5+0
-  [efcefdf7] PCRE2_jll v10.42.0+1
-  [bea87d4a] SuiteSparse_jll v7.7.0+0
-  [83775a58] Zlib_jll v1.2.13+1
-  [8e850b90] libblastrampoline_jll v5.11.0+0
-  [8e850ede] nghttp2_jll v1.59.0+0
-  [3f19e933] p7zip_jll v17.4.0+2
-Info Packages marked with ⌅ have new versions available but compatibility constraints restrict them from upgrading. To see why use `status --outdated -m`</code></pre></details><p>You can also download the <a href="https://github.com/SciML/SBMLToolkit.jl/tree/gh-pages/v0.1.31/assets/Manifest.toml">manifest</a> file and the <a href="https://github.com/SciML/SBMLToolkit.jl/tree/gh-pages/v0.1.31/assets/Project.toml">project</a> file.</p></article><nav class="docs-footer"><a class="docs-footer-nextpage" href="api/">API documentation »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.14.1 on <span class="colophon-date" title="Saturday 2 August 2025 06:49">Saturday 2 August 2025</span>. Using Julia version 1.11.6.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+  [e66e0078] CompilerSupportLibraries_jll v1.3.0+1
+  [deac9b47] LibCURL_jll v8.15.0+0
+  [e37daf67] LibGit2_jll v1.9.0+0
+  [29816b5a] LibSSH2_jll v1.11.3+1
+  [14a3606d] MozillaCACerts_jll v2025.5.20
+  [4536629a] OpenBLAS_jll v0.3.29+0
+  [05823500] OpenLibm_jll v0.8.7+0
+  [458c3c95] OpenSSL_jll v3.5.4+0
+  [efcefdf7] PCRE2_jll v10.44.0+1
+  [bea87d4a] SuiteSparse_jll v7.8.3+2
+  [83775a58] Zlib_jll v1.3.1+2
+  [8e850b90] libblastrampoline_jll v5.15.0+0
+  [8e850ede] nghttp2_jll v1.64.0+1
+  [3f19e933] p7zip_jll v17.7.0+0
+Info Packages marked with ⌃ and ⌅ have new versions available. Those with ⌃ may be upgradable, but those with ⌅ are restricted by compatibility constraints from upgrading. To see why use `status --outdated -m`</code></pre></details><p>You can also download the <a href="https://github.com/SciML/SBMLToolkit.jl/tree/gh-pages/v0.1.31/assets/Manifest.toml">manifest</a> file and the <a href="https://github.com/SciML/SBMLToolkit.jl/tree/gh-pages/v0.1.31/assets/Project.toml">project</a> file.</p></article><nav class="docs-footer"><a class="docs-footer-nextpage" href="api/">API documentation »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.16.1 on <span class="colophon-date" title="Monday 29 December 2025 13:09">Monday 29 December 2025</span>. Using Julia version 1.12.3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
