@@ -1,8 +1,14 @@
 module SBMLToolkit
 
-using Catalyst
-using SBML
-using SymbolicUtils
+# Catalyst exports and re-exports from ModelingToolkit/Symbolics
+using Catalyst: Catalyst, @parameters, @species, Equation, ModelingToolkit, Num,
+                ODESystem, Reaction, ReactionSystem, Symbolics, complete,
+                default_t, default_time_deriv, isspecies
+# SBML imports
+using SBML: SBML, convert_promotelocals_expandfuns, readSBML,
+            readSBMLFromString, set_level_and_version
+# SymbolicUtils imports
+using SymbolicUtils: SymbolicUtils, expand, simplify, substitute
 
 include("drafts.jl")
 include("systems.jl")

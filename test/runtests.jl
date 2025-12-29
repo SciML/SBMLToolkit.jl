@@ -4,6 +4,9 @@ using SafeTestsets, Test
     @safetestset "Quality Assurance" begin
         include("qa.jl")
     end
+    @safetestset "Explicit Imports" begin
+        include("explicit_imports.jl")
+    end
     @safetestset "Systems" begin
         include("systems.jl")
     end
