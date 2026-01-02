@@ -89,3 +89,4 @@ If you use SBMLToolkit.jl in your research, please cite [this paper](https://www
 	year = {2024},
 }
 ```
+
