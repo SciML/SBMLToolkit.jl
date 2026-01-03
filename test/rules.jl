@@ -16,26 +16,26 @@ end
 
 # Test get_rules
 sbml, _, _ = SBMLToolkitTestSuite.read_case("00029")  # assignmentRule
-m = readmodel(sbml)
+m = complete(readmodel(sbml))
 a, o, r = SBMLToolkit.get_rules(m)
 o_true = [S1 ~ 7 * compartment]
 @test isequal(o, o_true)
 
 sbml, _, _ = SBMLToolkitTestSuite.read_case("00031")  # rateRule
-m = readmodel(sbml)
+m = complete(readmodel(sbml))
 a, o, r = SBMLToolkit.get_rules(m)
 r_true = [default_time_deriv()(S1) ~ 7 * compartment]
 @test isequal(r, r_true)
 
 sbml, _, _ = SBMLToolkitTestSuite.read_case("00039")  # algebraicRule
-m = readmodel(sbml)
+m = complete(readmodel(sbml))
 a, o, r = SBMLToolkit.get_rules(m)
 a_true = [0 ~ S1 + S2 - k1]
 @test isequal(a, a_true)
 
 # Test get_var_and_assignment
 sbml, _, _ = SBMLToolkitTestSuite.read_case("00031")
-m = readmodel(sbml)
+m = complete(readmodel(sbml))
 var, assignment = SBMLToolkit.get_var_and_assignment(m, m.rules[1])
 var_true = S1
 assignment_true = 7 * compartment
@@ -55,20 +55,20 @@ vc = SBMLToolkit.get_volume_correction(m, "S1")
 @test isequal(vc, "compartment")
 
 sbml, _, _ = SBMLToolkitTestSuite.read_case("00060")  # hOSU="true" species
-m = readmodel(sbml)
+m = complete(readmodel(sbml))
 vc = SBMLToolkit.get_volume_correction(m, "S1")
 @test isnothing(vc)
 
 # tests that non-constant parameters become variables
 sbml, _, _ = SBMLToolkitTestSuite.read_case("00033")
-m = readmodel(sbml)
+m = complete(readmodel(sbml))
 @named sys = ODESystem(m)
 @species k1(IV)
 @test isequal(k1, unknowns(sys)[end])
 
 # tests that non-constant compartments become variables
 sbml, _, _ = SBMLToolkitTestSuite.read_case("00051")  # hOSU="true" species
-m = readmodel(sbml)
+m = complete(readmodel(sbml))
 @named sys = ODESystem(m)
 @species C(IV)
 @test isequal(C, unknowns(sys)[end])
