@@ -16,11 +16,14 @@ makedocs(;
     format = Documenter.HTML(;
         prettyurls = get(ENV, "CI", "false") == "true",
         canonical = "https://docs.sciml.ai/SBMLToolkit/stable/",
-        assets = ["assets/favicon.ico"]),
+        assets = ["assets/favicon.ico"]
+    ),
     pages = [
         "Home" => "index.md",
-        "API documentation" => "api.md"
-    ])
+        "API documentation" => "api.md",
+    ]
+)
 
 deploydocs(;
-    repo = "github.com/SciML/SBMLToolkit.jl")
+    repo = "github.com/SciML/SBMLToolkit.jl"
+)

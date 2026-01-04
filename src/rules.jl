@@ -17,13 +17,15 @@ function get_rules(model)
         end
     end
     algeqs, obseqs,
-    raterules = map(x -> substitute(x, subsdict),
-        (algeqs, obseqs, raterules))
-    algeqs, obseqs, raterules
+        raterules = map(
+        x -> substitute(x, subsdict),
+        (algeqs, obseqs, raterules)
+    )
+    return algeqs, obseqs, raterules
 end
 
 function extensive_kinetic_math(m::SBML.Model, formula::SBML.Math)
-    SBML.interpret_math(  # TODO: move this to SBML.jl
+    return SBML.interpret_math(  # TODO: move this to SBML.jl
         formula,
         map_apply = (x, rec) -> SBML.MathApply(x.fn, rec.(x.args)),
         map_const = identity,
@@ -33,7 +35,7 @@ function extensive_kinetic_math(m::SBML.Model, formula::SBML.Math)
             sp = m.species[x.id]
             sp.only_substance_units && return x
             if isnothing(m.compartments[sp.compartment].size) &&
-               !seemsdefined(sp.compartment, m)
+                    !seemsdefined(sp.compartment, m)
                 if m.compartments[sp.compartment].spatial_dimensions == 0
                     # If the compartment ID doesn't seem directly defined anywhere
                     # and it is a zero-dimensional unsized compartment, just avoid
@@ -43,9 +45,9 @@ function extensive_kinetic_math(m::SBML.Model, formula::SBML.Math)
                     # In case the compartment is expected to be defined, complain.
                     throw(
                         DomainError(
-                        sp.compartment,
-                        "compartment size is insufficiently defined"
-                    ),
+                            sp.compartment,
+                            "compartment size is insufficiently defined"
+                        ),
                     )
                 end
             else
@@ -57,8 +59,10 @@ function extensive_kinetic_math(m::SBML.Model, formula::SBML.Math)
                 return SBML.MathApply("/", [x, SBML.MathIdent(sp.compartment)])
             end
         end,
-        map_lambda = (x,
-            _) -> error(
+        map_lambda = (
+            x,
+            _,
+        ) -> error(
             ErrorException("converting lambdas to extensive kinetic math is not supported"),
         ),
         map_time = identity,
@@ -83,11 +87,11 @@ function get_var_and_assignment(model, rule)
         comp = model.compartments[sp.compartment]
         comp.constant == false && sp.only_substance_units == false &&
             begin
-                c = create_var(sp.compartment, IV)
-                assignment = c * assignment + var / c * D(c)
-            end
+            c = create_var(sp.compartment, IV)
+            assignment = c * assignment + var / c * D(c)
+        end
     end
-    var, assignment
+    return var, assignment
 end
 
 function get_volume_correction(model, s_id)
@@ -97,7 +101,11 @@ function get_volume_correction(model, s_id)
     sp.only_substance_units == true && return nothing
     isnothing(comp.size) && !SBML.seemsdefined(sp.compartment, model) &&
         comp.spatial_dimensions != 0 &&  # remove this line when SBML test suite is fixed
-        throw(DomainError(sp.compartment,
-            "compartment size is insufficiently defined"))
-    sp.compartment
+        throw(
+        DomainError(
+            sp.compartment,
+            "compartment size is insufficiently defined"
+        )
+    )
+    return sp.compartment
 end
