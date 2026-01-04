@@ -13,16 +13,20 @@ function get_reactions(model::SBML.Model)
             symbolic_math = get_unidirectional_components(symbolic_math)
             kl_fw, kl_rv = [substitute(x, subsdict) for x in symbolic_math]
             enforce_rate = isequal(kl_rv, 0)
-            add_reaction!(rxs, kl_fw, reactant_references, product_references, model;
-                enforce_rate = enforce_rate)
-            add_reaction!(rxs, kl_rv, product_references, reactant_references, model;
-                enforce_rate = enforce_rate)
+            add_reaction!(
+                rxs, kl_fw, reactant_references, product_references, model;
+                enforce_rate = enforce_rate
+            )
+            add_reaction!(
+                rxs, kl_rv, product_references, reactant_references, model;
+                enforce_rate = enforce_rate
+            )
         else
             kl = substitute(symbolic_math, subsdict)  # Todo: use SUBSDICT
             add_reaction!(rxs, kl, reactant_references, product_references, model)
         end
     end
-    rxs
+    return rxs
 end
 
 """
@@ -52,35 +56,45 @@ function get_unidirectional_components(bidirectional_math)
     return (fw_terms[1], rv_terms[1])
 end
 
-function add_reaction!(rxs::Vector{Reaction},
+function add_reaction!(
+        rxs::Vector{Reaction},
         kl::Num,
         reactant_references::Vector{SBML.SpeciesReference},
         product_references::Vector{SBML.SpeciesReference},
         model::SBML.Model;
-        enforce_rate = false)
+        enforce_rate = false
+    )
     reactants, products,
-    rstoichvals, pstoichvals = get_reagents(reactant_references,
-        product_references, model)
+        rstoichvals, pstoichvals = get_reagents(
+        reactant_references,
+        product_references, model
+    )
     isnothing(reactants) && isnothing(products) && return
     rstoichvals = stoich_convert_to_ints(rstoichvals)
     pstoichvals = stoich_convert_to_ints(pstoichvals)
     kl, our = use_rate(kl, reactants, rstoichvals)
     our = enforce_rate ? true : our
-    push!(rxs,
-        Catalyst.Reaction(kl, reactants, products, rstoichvals, pstoichvals;
-            only_use_rate = our))
+    return push!(
+        rxs,
+        Catalyst.Reaction(
+            kl, reactants, products, rstoichvals, pstoichvals;
+            only_use_rate = our
+        )
+    )
 end
 
 function stoich_convert_to_ints(xs)
-    (xs !== nothing && all(isinteger(x) for x in xs)) ? Int.(xs) : xs
+    return (xs !== nothing && all(isinteger(x) for x in xs)) ? Int.(xs) : xs
 end
 
 """
 Get reagents
 """
-function get_reagents(reactant_references::Vector{SBML.SpeciesReference},
+function get_reagents(
+        reactant_references::Vector{SBML.SpeciesReference},
         product_references::Vector{SBML.SpeciesReference},
-        model::SBML.Model)
+        model::SBML.Model
+    )
     reactants = String[]
     products = String[]
     rstoich = Float64[]
@@ -90,7 +104,7 @@ function get_reagents(reactant_references::Vector{SBML.SpeciesReference},
         sn = rr.species
         stoich = rr.stoichiometry
         if isnothing(stoich)
-            @warn "SBML SpeciesReferences does not contain stoichiometries. Assuming stoichiometry of 1." maxlog=1
+            @warn "SBML SpeciesReferences does not contain stoichiometries. Assuming stoichiometry of 1." maxlog = 1
             stoich = 1.0
         end
         iszero(stoich) && @error("Stoichiometry of $sn must be non-zero")
@@ -115,7 +129,7 @@ function get_reagents(reactant_references::Vector{SBML.SpeciesReference},
         sn = pr.species
         stoich = pr.stoichiometry
         if isnothing(stoich)
-            @warn "Stoichiometries of SpeciesReferences are not defined. Setting to 1." maxlog=1
+            @warn "Stoichiometries of SpeciesReferences are not defined. Setting to 1." maxlog = 1
             stoich = 1.0
         end
         iszero(stoich) && @error("Stoichiometry of $sn must be non-zero")
@@ -140,14 +154,16 @@ function get_reagents(reactant_references::Vector{SBML.SpeciesReference},
         products = nothing
         pstoich = nothing
     end
-    (reactants, products, rstoich, pstoich)
+    return (reactants, products, rstoich, pstoich)
 end
 
 """
 Get kineticLaw for use in MTK.Reaction
 """
-function use_rate(kl::Num, react::Union{Vector{Num}, Nothing},
-        stoich::Union{Vector{<:Real}, Nothing})
+function use_rate(
+        kl::Num, react::Union{Vector{Num}, Nothing},
+        stoich::Union{Vector{<:Real}, Nothing}
+    )
     rate_const = get_massaction(kl, react, stoich)
     if !isnan(rate_const)
         kl = rate_const
@@ -161,10 +177,12 @@ end
 """
 Get rate constant of mass action kineticLaws
 """
-function get_massaction(kl::Num, reactants::Union{Vector{Num}, Nothing},
-        stoich::Union{Vector{<:Real}, Nothing})
+function get_massaction(
+        kl::Num, reactants::Union{Vector{Num}, Nothing},
+        stoich::Union{Vector{<:Real}, Nothing}
+    )
     function check_args(x::SymbolicUtils.BasicSymbolic{Real})
-        check_args(Val(SymbolicUtils.istree(x)), x)
+        return check_args(Val(SymbolicUtils.istree(x)), x)
     end
 
     function check_args(::Val{true}, x::SymbolicUtils.BasicSymbolic{Real})
@@ -191,5 +209,5 @@ function get_massaction(kl::Num, reactants::Union{Vector{Num}, Nothing},
         rate_const = SymbolicUtils.simplify_fractions(kl / *((.^(reactants, stoich))...))
     end
 
-    isnan(check_args(ModelingToolkit.value(rate_const))) ? NaN : rate_const
+    return isnan(check_args(ModelingToolkit.value(rate_const))) ? NaN : rate_const
 end

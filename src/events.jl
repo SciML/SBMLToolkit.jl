@@ -20,8 +20,10 @@ function get_events(model)  # Todo: implement up or downpass and parameters
                 end
             end
             var = create_var(eva.variable, IV; irreducible = true)
-            math = substitute(Symbolics.unwrap(interpret_as_num(math, model)),
-                subsdict)
+            math = substitute(
+                Symbolics.unwrap(interpret_as_num(math, model)),
+                subsdict
+            )
             effect = var ~ math
             push!(mtk_evas, effect)
         end
@@ -29,5 +31,5 @@ function get_events(model)  # Todo: implement up or downpass and parameters
     end
     !isempty(evs) &&
         @warn "SBMLToolkit currently fires events regardless of uppass or downpass trigger."
-    isempty(mtk_evs) ? nothing : mtk_evs
+    return isempty(mtk_evs) ? nothing : mtk_evs
 end

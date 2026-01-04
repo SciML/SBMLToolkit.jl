@@ -8,10 +8,12 @@ const IV = default_t()
 @species S1(IV), S2(IV)
 
 function readmodel(sbml)
-    SBMLToolkit.readSBMLFromString(sbml, doc -> begin
-        set_level_and_version(3, 2)(doc)
-        convert_promotelocals_expandfuns(doc)
-    end)
+    return SBMLToolkit.readSBMLFromString(
+        sbml, doc -> begin
+            set_level_and_version(3, 2)(doc)
+            convert_promotelocals_expandfuns(doc)
+        end
+    )
 end
 
 # Test get_rules
@@ -45,7 +47,8 @@ assignment_true = 7 * compartment
 r = SBML.AssignmentRule("S2", SBML.MathVal(1))
 @test_throws ErrorException("Cannot find target for rule with ID `S2`") SBMLToolkit.get_var_and_assignment(
     m,
-    r)
+    r
+)
 
 # Test get_volume_correction
 vc = SBMLToolkit.get_volume_correction(m, "notaspecies")

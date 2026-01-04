@@ -16,7 +16,7 @@ See also [`Model`](@ref) and [`DefaultImporter`](@ref).
 """
 function SBML.readSBML(sbmlfile::String, ::DefaultImporter)  # Returns an SBML.Model
     SBMLToolkit.checksupport_file(sbmlfile)
-    readSBML(sbmlfile, importdefaults)
+    return readSBML(sbmlfile, importdefaults)
 end
 
 """
@@ -27,7 +27,7 @@ Create a `Catalyst.ReactionSystem` from an SBML file, using the default import s
 See also [`Model`](@ref) and [`ReactionSystemImporter`](@ref).
 """
 function SBML.readSBML(sbmlfile::String, ::ReactionSystemImporter; kwargs...)  # Returns a Catalyst.ReactionSystem
-    ReactionSystem(readSBML(sbmlfile::String, DefaultImporter()), kwargs...)
+    return ReactionSystem(readSBML(sbmlfile::String, DefaultImporter()), kwargs...)
 end
 
 """
@@ -37,11 +37,15 @@ Create a `ModelingToolkit.ODESystem` from an SBML file, using the default import
 
 See also [`Model`](@ref) and [`ODESystemImporter`](@ref).
 """
-function SBML.readSBML(sbmlfile::String, ::ODESystemImporter;
-        include_zero_odes::Bool = true, kwargs...)  # Returns an MTK.ODESystem
-    odesys = convert(ODESystem, readSBML(sbmlfile, ReactionSystemImporter(), kwargs...),
-        include_zero_odes = include_zero_odes)
-    complete(odesys)
+function SBML.readSBML(
+        sbmlfile::String, ::ODESystemImporter;
+        include_zero_odes::Bool = true, kwargs...
+    )  # Returns an MTK.ODESystem
+    odesys = convert(
+        ODESystem, readSBML(sbmlfile, ReactionSystemImporter(), kwargs...),
+        include_zero_odes = include_zero_odes
+    )
+    return complete(odesys)
 end
 
 """
@@ -105,7 +109,8 @@ function Catalyst.ReactionSystem(model::SBML.Model; kwargs...)  # Todo: requires
         IV, first.(u0map), first.(parammap);
         defaults = defs, name = gensym(:SBML),
         continuous_events = get_events(model),
-        combinatoric_ratelaws = false, kwargs...)
+        combinatoric_ratelaws = false, kwargs...
+    )
     return complete(rs)  # Todo: maybe add a `complete=True` kwarg
 end
 
@@ -116,11 +121,13 @@ Create an `ODESystem` from an `SBML.Model`.
 
 See also [`ReactionSystem`](@ref).
 """
-function ModelingToolkit.ODESystem(model::SBML.Model; include_zero_odes::Bool = true,
-        kwargs...)
+function ModelingToolkit.ODESystem(
+        model::SBML.Model; include_zero_odes::Bool = true,
+        kwargs...
+    )
     rs = ReactionSystem(model; kwargs...)
     odesys = convert(ODESystem, rs; include_zero_odes = include_zero_odes)
-    complete(odesys)
+    return complete(odesys)
 end
 
 function get_mappings(model::SBML.Model)
@@ -141,7 +148,7 @@ function get_mappings(model::SBML.Model)
     for (k, v) in model.parameters
         var = create_symbol(k, model)
         if v.constant == false &&
-           (SBML.seemsdefined(k, model) || is_event_assignment(k, model))
+                (SBML.seemsdefined(k, model) || is_event_assignment(k, model))
             push!(u0map, var => v.value)
         elseif v.constant == true && isnothing(v.value)  # Todo: maybe add this branch also to model.compartments
             val = model.initial_assignments[k]
@@ -164,16 +171,19 @@ function get_mappings(model::SBML.Model)
         var = create_symbol(k, model)
         push!(initial_assignment_map, var => interpret_as_num(v, model))
     end
-    u0map, parammap, initial_assignment_map
+    return u0map, parammap, initial_assignment_map
 end
 
 function netstoich(id, reaction)
     netstoich = 0
-    rdict = Dict(getproperty.(
-        reaction.reactants, :species) .=> getproperty.(reaction.reactants, :stoichiometry))
+    rdict = Dict(
+        getproperty.(
+            reaction.reactants, :species
+        ) .=> getproperty.(reaction.reactants, :stoichiometry)
+    )
     pdict = Dict(getproperty.(reaction.products, :species) .=> getproperty.(reaction.products, :stoichiometry))
     netstoich -= get(rdict, id, 0)
-    netstoich += get(pdict, id, 0)
+    return netstoich += get(pdict, id, 0)
 end
 
 """
@@ -185,7 +195,7 @@ function checksupport_file(filename::String)
     string = open(filename) do file
         read(file, String)
     end
-    checksupport_string(string)
+    return checksupport_string(string)
 end
 
 """
@@ -194,11 +204,13 @@ end
 Check if SBML passed as string is supported by SBMLToolkit.jl.
 """
 function checksupport_string(xml::String)
-    not_implemented = ["listOfConstraints", "/delay",
+    not_implemented = [
+        "listOfConstraints", "/delay",
         "<priority>",
         "factorial", "id=\"case00387\"",  # Case 00387 requires event directionality
         "id=\"case01071\"",  # require event directionality, I think
-        "</eventAssignment>\n          <eventAssignment"]
+        "</eventAssignment>\n          <eventAssignment",
+    ]
     for item in not_implemented
         occursin(item, xml) &&
             throw(ErrorException("SBML models with $item are not yet implemented."))
@@ -209,5 +221,5 @@ function checksupport_string(xml::String)
         throw(ErrorException("This model uses the SBML \"comp\" package, which is not yet implemented."))
     !(occursin("<reaction", xml) || occursin("rateRule", xml)) &&
         throw(ErrorException("Models that contain neither reactions or rateRules will fail in simulation."))
-    true
+    return true
 end
