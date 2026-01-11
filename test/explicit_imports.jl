@@ -8,6 +8,7 @@ using Test
     end
 
     @testset "No stale explicit imports" begin
-        @test check_no_stale_explicit_imports(SBMLToolkit) === nothing
+        # setmetadata is needed at runtime by @species macro expansion but not directly referenced in source
+        @test check_no_stale_explicit_imports(SBMLToolkit; ignore = (:setmetadata,)) === nothing
     end
 end

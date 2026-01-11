@@ -6,7 +6,7 @@ import ModelingToolkit: ModelingToolkit, @parameters, Equation, ODESystem, compl
 using Symbolics: Symbolics, Num
 using SBML: SBML, convert_promotelocals_expandfuns, readSBML, readSBMLFromString,
     set_level_and_version
-using SymbolicUtils: SymbolicUtils, expand, simplify, substitute
+using SymbolicUtils: SymbolicUtils, expand, setmetadata, simplify, substitute
 
 include("drafts.jl")
 include("systems.jl")
