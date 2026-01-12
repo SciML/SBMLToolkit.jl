@@ -348,10 +348,10 @@ version = "6.196.0"
     Unitful = "1986cc42-f94f-5a68-af5c-568840ba703d"
 
 [[deps.DiffEqCallbacks]]
-deps = ["ConcreteStructs", "DataStructures", "DiffEqBase", "DifferentiationInterface", "LinearAlgebra", "Markdown", "RecipesBase", "RecursiveArrayTools", "SciMLBase", "StaticArraysCore"]
-git-tree-sha1 = "78492306505abc7d9a78a63d52d577ec1a994c8d"
+deps = ["ConcreteStructs", "DataStructures", "DiffEqBase", "DifferentiationInterface", "LinearAlgebra", "Markdown", "PrecompileTools", "RecipesBase", "RecursiveArrayTools", "SciMLBase", "StaticArraysCore"]
+git-tree-sha1 = "f17b863c2d5d496363fe36c8d8535cc6a33c9952"
 uuid = "459566f4-90b8-5000-8ac3-15dfb0a30def"
-version = "4.11.0"
+version = "4.12.0"
 
     [deps.DiffEqCallbacks.extensions]
     DiffEqCallbacksFunctorsExt = "Functors"
@@ -1468,8 +1468,8 @@ uuid = "e5567a89-2604-4b09-9718-f5f78e97c3bb"
 version = "1.6.0"
 
 [[deps.SBMLToolkit]]
-deps = ["Catalyst", "SBML", "SymbolicUtils"]
-path = "/home/runner/work/SBMLToolkit.jl/SBMLToolkit.jl"
+deps = ["Catalyst", "ModelingToolkit", "SBML", "SymbolicUtils", "Symbolics"]
+path = "/home/chrisrackauckas/github-runners/deepsea4-28/_work/SBMLToolkit.jl/SBMLToolkit.jl"
 uuid = "86080e66-c8ac-44c2-a1a0-9adaadfe4a4e"
 version = "0.1.31"
 
