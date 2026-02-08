@@ -182,7 +182,7 @@ function get_massaction(
         stoich::Union{Vector{<:Real}, Nothing}
     )
     function check_args(x::SymbolicUtils.BasicSymbolic{Real})
-        return check_args(Val(SymbolicUtils.istree(x)), x)
+        return check_args(Val(SymbolicUtils.iscall(x)), x)
     end
 
     function check_args(::Val{true}, x::SymbolicUtils.BasicSymbolic{Real})
