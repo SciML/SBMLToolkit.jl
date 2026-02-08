@@ -75,7 +75,7 @@ function get_var_and_assignment(model, rule)
     if !haskey(merge(model.species, model.compartments, model.parameters), rule.variable)
         error("Cannot find target for rule with ID `$(rule.variable)`")
     end
-    var = create_var(rule.variable, IV)
+    var = create_var(rule.variable, IV; isbcspecies = true)
     math = extensive_kinetic_math(model, rule.math)
     vc = get_volume_correction(model, rule.variable)
     if !isnothing(vc)
@@ -87,7 +87,7 @@ function get_var_and_assignment(model, rule)
         comp = model.compartments[sp.compartment]
         comp.constant == false && sp.only_substance_units == false &&
             begin
-            c = create_var(sp.compartment, IV)
+            c = create_var(sp.compartment, IV; isbcspecies = true)
             assignment = c * assignment + var / c * D(c)
         end
     end

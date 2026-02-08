@@ -15,7 +15,8 @@ include("rules.jl")
 include("events.jl")
 include("utils.jl")
 
-@deprecate convert_simplify_math convert_promotelocals_expandfuns
+# Backward compatibility alias (SBMLToolkitTestSuite still uses this name)
+const convert_simplify_math = convert_promotelocals_expandfuns
 
 export ReactionSystem, ODESystem
 export readSBML, readSBMLFromString, set_level_and_version, convert_simplify_math,
