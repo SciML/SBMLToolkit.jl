@@ -5,7 +5,7 @@ using SBMLToolkit
 using Downloads, ModelingToolkit, OrdinaryDiffEq
 using Test
 
-sbml_url = "https://www.ebi.ac.uk/biomodels/model/download/MODEL1112100000.2?filename=MODEL1112100000_url.xml"
+sbml_url = "https://www.biomodels.org/biomodels/services/download/get-files/MODEL1112100000/2/MODEL1112100000_url.xml"
 sbml = String(take!(Downloads.download(sbml_url, IOBuffer())))
 m = readSBMLFromString(
     sbml, doc -> begin
