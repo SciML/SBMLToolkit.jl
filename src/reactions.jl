@@ -181,11 +181,14 @@ function get_massaction(
         kl::Num, reactants::Union{Vector{Num}, Nothing},
         stoich::Union{Vector{<:Real}, Nothing}
     )
-    function check_args(x::SymbolicUtils.BasicSymbolic{Real})
+    function check_args(x::SymbolicUtils.BasicSymbolic)
+        # SymbolicUtils v4 stores the value type as `symtype(x)` rather than
+        # in the type parameter, so distinguish Bool vs Real expressions at runtime.
+        SymbolicUtils.symtype(x) === Bool && return NaN
         return check_args(Val(SymbolicUtils.iscall(x)), x)
     end
 
-    function check_args(::Val{true}, x::SymbolicUtils.BasicSymbolic{Real})
+    function check_args(::Val{true}, x::SymbolicUtils.BasicSymbolic)
         for arg in SymbolicUtils.arguments(x)
             if isnan(check_args(arg)) || isequal(arg, default_t())
                 return NaN
@@ -194,9 +197,8 @@ function get_massaction(
         return 0
     end
 
-    check_args(::Val{false}, x::SymbolicUtils.BasicSymbolic{Real}) = isspecies(x) ? NaN : 0  # Species vs Parameter leaf node
+    check_args(::Val{false}, x::SymbolicUtils.BasicSymbolic) = isspecies(x) ? NaN : 0  # Species vs Parameter leaf node
     check_args(::Real) = 0  # Real leaf node
-    check_args(::SymbolicUtils.BasicSymbolic{Bool}) = NaN
     check_args(x) = throw(ErrorException("Cannot handle $(typeof(x)) types."))  # Unknown leaf node
 
     if isnothing(reactants) && isnothing(stoich)
