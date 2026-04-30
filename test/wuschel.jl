@@ -12,7 +12,7 @@ catch e
     # BioModels' download endpoints intermittently 403 self-hosted CI runner
     # IPs (Cloudflare/WAF). The test exercises SBMLToolkit on a large model,
     # not the network, so skip rather than fail when the fetch is blocked.
-    @warn "Wuschel test: SBML download failed, skipping" exception=(e, catch_backtrace())
+    @warn "Wuschel test: SBML download failed, skipping" exception = (e, catch_backtrace())
     nothing
 end
 

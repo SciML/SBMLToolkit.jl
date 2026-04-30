@@ -8,7 +8,10 @@ function get_events(model)  # Todo: implement up or downpass and parameters
     for (_, e) in evs
         trigger = SBML.extensive_kinetic_math(model, e.trigger.math)
         trigger = Symbolics.unwrap(interpret_as_num(trigger, model))
-        lhs, rhs = map(x -> substitute(x, subsdict), trigger.arguments)
+        lhs, rhs = map(
+            x -> substitute(x, subsdict),
+            SymbolicUtils.arguments(trigger),
+        )
         trig = [lhs ~ rhs]
         mtk_evas = Equation[]
         for eva in e.event_assignments
