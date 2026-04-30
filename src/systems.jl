@@ -104,14 +104,67 @@ function Catalyst.ReactionSystem(model::SBML.Model; kwargs...)  # Todo: requires
         defs = ModelingToolkit._merge(defs, kwargs[:defaults])
         kwargs = filter(x -> !isequal(first(x), :defaults), kwargs)
     end
-    rs = ReactionSystem(
+    unknown_keys = first.(u0map)
+    param_keys = first.(parammap)
+    rs = _build_reaction_system(
         [rxs..., algrules..., raterules_subs..., obsrules_rearranged..., zero_rates...],
-        IV, first.(u0map), first.(parammap);
-        defaults = defs, name = gensym(:SBML),
-        continuous_events = get_events(model),
-        combinatoric_ratelaws = false, kwargs...
+        IV, unknown_keys, param_keys, defs,
+        get_events(model);
+        kwargs...
     )
     return complete(rs)  # Todo: maybe add a `complete=True` kwarg
+end
+
+# Catalyst v16 replaced the single `defaults` kwarg of `ReactionSystem` with
+# separate `bindings` (parameter values) and `initial_conditions` (species/unknown
+# values). Older Catalyst (v14, v15) still uses `defaults`. This shim splits the
+# merged dictionary and dispatches on the installed Catalyst version so the same
+# SBMLToolkit code base supports both APIs.
+@static if pkgversion(Catalyst) >= v"16"
+    function _build_reaction_system(eqs, iv, unknowns, ps, defs, cevs; kwargs...)
+        unknown_set = Set(SymbolicUtils.unwrap(u) for u in unknowns)
+        param_set = Set(SymbolicUtils.unwrap(p) for p in ps)
+        bindings = Dict{Any, Any}()
+        initial_conditions = Dict{Any, Any}()
+        for (k, v) in defs
+            if SymbolicUtils.unwrap(k) in unknown_set
+                initial_conditions[k] = v
+            elseif _references_non_parameter(v, param_set)
+                # SBML `initialAssignment`s on parameters may reference species
+                # (e.g. `parameter S3 := k1*S2`); those cannot live in `bindings`
+                # under Catalyst v16 (`check_bindings` rejects non-parameter symbols)
+                # but are accepted as `initial_conditions`, which is evaluated at
+                # t=0 with the same SBML semantics.
+                initial_conditions[k] = v
+            else
+                bindings[k] = v
+            end
+        end
+        return ReactionSystem(
+            eqs, iv, unknowns, ps;
+            bindings = bindings, initial_conditions = initial_conditions,
+            name = gensym(:SBML), continuous_events = cevs,
+            combinatoric_ratelaws = false, kwargs...
+        )
+    end
+
+    function _references_non_parameter(v, param_set)
+        # Note: Symbolics.Num <: Real <: Number, so a `v isa Number` early-return
+        # would swallow symbolic values. Use `get_variables` directly — it returns
+        # an empty iterator for plain numerics.
+        for var in Symbolics.get_variables(v)
+            SymbolicUtils.unwrap(var) in param_set || return true
+        end
+        return false
+    end
+else
+    function _build_reaction_system(eqs, iv, unknowns, ps, defs, cevs; kwargs...)
+        return ReactionSystem(
+            eqs, iv, unknowns, ps;
+            defaults = defs, name = gensym(:SBML), continuous_events = cevs,
+            combinatoric_ratelaws = false, kwargs...
+        )
+    end
 end
 
 """
@@ -126,8 +179,17 @@ function ModelingToolkit.ODESystem(
         kwargs...
     )
     rs = ReactionSystem(model; kwargs...)
-    odesys = convert(ODESystem, rs; include_zero_odes = include_zero_odes)
+    odesys = _rs_to_odesys(rs; include_zero_odes = include_zero_odes)
     return complete(odesys)
+end
+
+# Catalyst v16 / MTK v11 removed the `convert(ODESystem, rs; ...)` path: ODESystem
+# is now an `IntermediateDeprecationSystem` alias and the conversion is done via
+# `Catalyst.ode_model`. Older Catalyst still uses the convert path.
+@static if pkgversion(Catalyst) >= v"16"
+    _rs_to_odesys(rs; kwargs...) = Catalyst.ode_model(rs; kwargs...)
+else
+    _rs_to_odesys(rs; kwargs...) = convert(ODESystem, rs; kwargs...)
 end
 
 function get_mappings(model::SBML.Model)
