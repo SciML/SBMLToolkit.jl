@@ -1426,7 +1426,7 @@ version = "1.6.0"
 
 [[deps.SBMLToolkit]]
 deps = ["Catalyst", "ModelingToolkit", "SBML", "SymbolicUtils", "Symbolics"]
-path = "/home/runner/work/SBMLToolkit.jl/SBMLToolkit.jl"
+path = "/home/runner/_work/SBMLToolkit.jl/SBMLToolkit.jl"
 uuid = "86080e66-c8ac-44c2-a1a0-9adaadfe4a4e"
 version = "0.1.33"
 
