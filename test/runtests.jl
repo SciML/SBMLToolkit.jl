@@ -1,5 +1,7 @@
 using Pkg
 
+using SafeTestsets, Test
+
 const GROUP = get(ENV, "GROUP", "All")
 
 if GROUP == "QA"
@@ -8,8 +10,6 @@ if GROUP == "QA"
     Pkg.instantiate()
     include("qa/qa.jl")
 else
-    using SafeTestsets, Test
-
     @safetestset "SBMLToolkit.jl" begin
         @safetestset "Systems" begin
             include("systems.jl")
