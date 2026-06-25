@@ -1,26 +1,33 @@
-using SBMLToolkit, Aqua, ExplicitImports, Test
+using SBMLToolkit, Test
+using SciMLTesting
 
-@testset "Aqua" begin
-    Aqua.find_persistent_tasks_deps(SBMLToolkit)
-    Aqua.test_ambiguities(SBMLToolkit, recursive = false)
-    Aqua.test_deps_compat(SBMLToolkit)
-    Aqua.test_piracies(
-        SBMLToolkit,
-        treat_as_own = [SBMLToolkit.SBML.Model]
-    )
-    Aqua.test_project_extras(SBMLToolkit)
-    Aqua.test_stale_deps(SBMLToolkit)
-    Aqua.test_unbound_args(SBMLToolkit)
-    Aqua.test_undefined_exports(SBMLToolkit)
-end
-
-@testset "ExplicitImports" begin
-    @testset "No implicit imports" begin
-        @test check_no_implicit_imports(SBMLToolkit) === nothing
-    end
-
-    @testset "No stale explicit imports" begin
-        # setmetadata is needed at runtime by @species macro expansion but not directly referenced in source
-        @test check_no_stale_explicit_imports(SBMLToolkit; ignore = (:setmetadata,)) === nothing
-    end
-end
+run_qa(
+    SBMLToolkit;
+    explicit_imports = true,
+    aqua_kwargs = (;
+        ambiguities = (; recursive = false),
+        piracies = (; treat_as_own = [SBMLToolkit.SBML.Model]),
+    ),
+    ei_kwargs = (;
+        # `setmetadata` is needed at runtime by the `@species` macro expansion but is
+        # not directly referenced in source.
+        no_stale_explicit_imports = (; ignore = (:setmetadata,)),
+        # Names accessed qualified from their owner package but not (yet) declared
+        # `public`/exported there. Ignored per source package; drop each as the
+        # upstream library marks the name public.
+        all_qualified_accesses_are_public = (;
+            ignore = (
+                # SBML
+                :AlgebraicRule, :AssignmentRule, :Math, :MathApply, :MathAvogadro,
+                :MathConst, :MathIdent, :MathTime, :MathVal, :Model, :RateRule,
+                :Rule, :SpeciesReference, :default_constants, :default_function_mapping,
+                :extensive_kinetic_math, :initial_amounts, :interpret_math, :isfreein,
+                :seemsdefined,
+                # SymbolicUtils
+                :BasicSymbolic, :isadd, :ismul, :symtype, :unwrap,
+                # Symbolics
+                :fixpoint_sub, :get_variables, :value,
+            ),
+        ),
+    ),
+)

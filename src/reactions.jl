@@ -33,17 +33,17 @@ end
 Infer forward and reverse components of bidirectional kineticLaw
 """
 function get_unidirectional_components(bidirectional_math)
-    bm = ModelingToolkit.value(bidirectional_math)  #  Symbolics.tosymbol(bidirectional_math)
+    bm = Symbolics.value(bidirectional_math)  #  Symbolics.tosymbol(bidirectional_math)
     bm = expand(simplify(bm))
     if !SymbolicUtils.isadd(bm)
         @warn "Cannot separate bidirectional kineticLaw `$bidirectional_math` to forward and reverse part. Setting forward to `$bidirectional_math` and reverse to `0`. Stochastic simulations will be inexact."
         return (bidirectional_math, Num(0))
     end
-    terms = SymbolicUtils.arguments(ModelingToolkit.value(bm))
+    terms = SymbolicUtils.arguments(Symbolics.value(bm))
     fw_terms = []
     rv_terms = []
     for term in terms
-        if SymbolicUtils.ismul(ModelingToolkit.value(term)) && (term.coeff < 0)
+        if SymbolicUtils.ismul(Symbolics.value(term)) && (term.coeff < 0)
             push!(rv_terms, Num(-term))  # PL: @Anand: Perhaps we should to create_var(term) or so?
         else
             push!(fw_terms, Num(term))  # PL: @Anand: Perhaps we should to create_var(term) or so?
@@ -211,5 +211,5 @@ function get_massaction(
         rate_const = SymbolicUtils.simplify_fractions(kl / *((.^(reactants, stoich))...))
     end
 
-    return isnan(check_args(ModelingToolkit.value(rate_const))) ? NaN : rate_const
+    return isnan(check_args(Symbolics.value(rate_const))) ? NaN : rate_const
 end

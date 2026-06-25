@@ -73,7 +73,7 @@ function Catalyst.ReactionSystem(model::SBML.Model; kwargs...)  # Todo: requires
                 rhs = r.rhs
             end
         end
-        defs[o.lhs] = ModelingToolkit.fixpoint_sub(rhs, defs)
+        defs[o.lhs] = Symbolics.fixpoint_sub(rhs, defs)
         #  ModelingToolkit._merge(defs,
         #                         Dict(Catalyst.DEFAULT_IV.val => 0)))
         push!(obsrules_rearranged, 0 ~ rhs - o.lhs)
@@ -86,7 +86,7 @@ function Catalyst.ReactionSystem(model::SBML.Model; kwargs...)  # Todo: requires
                 rhs = r.rhs
             end
         end
-        defs[o.lhs] = ModelingToolkit.fixpoint_sub(rhs, defs)
+        defs[o.lhs] = Symbolics.fixpoint_sub(rhs, defs)
         #  ModelingToolkit._merge(defs,
         #                         Dict(Catalyst.DEFAULT_IV.val => 0)))
         push!(raterules_subs, rhs ~ o.lhs)
