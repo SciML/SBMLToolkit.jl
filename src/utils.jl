@@ -97,11 +97,11 @@ end
 
 function create_var(x; isbcspecies = false)
     sym = Symbol(x)
-    return SymbolicUtils.unwrap(first(@species $sym [isbcspecies = isbcspecies]))
+    return Symbolics.unwrap(first(@species $sym [isbcspecies = isbcspecies]))
 end
 function create_var(x, iv; isbcspecies = false, irreducible = false)
     sym = Symbol(x)
-    return SymbolicUtils.unwrap(
+    return Symbolics.unwrap(
         first(
             @species $sym(iv) [
                 isbcspecies = isbcspecies,
@@ -112,7 +112,7 @@ function create_var(x, iv; isbcspecies = false, irreducible = false)
 end
 function create_param(x; isconstantspecies = false)
     sym = Symbol(x)
-    return SymbolicUtils.unwrap(first(@parameters $sym [isconstantspecies = isconstantspecies]))
+    return Symbolics.unwrap(first(@parameters $sym [isconstantspecies = isconstantspecies]))
 end
 
 function has_rule_type(id::String, m::SBML.Model, T::Type{<:SBML.Rule})

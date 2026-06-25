@@ -23,10 +23,11 @@ run_qa(
                 :Rule, :SpeciesReference, :default_constants, :default_function_mapping,
                 :extensive_kinetic_math, :initial_amounts, :interpret_math, :isfreein,
                 :seemsdefined,
-                # SymbolicUtils
-                :BasicSymbolic, :isadd, :ismul, :symtype, :unwrap,
-                # Symbolics
-                :fixpoint_sub, :get_variables, :value,
+                # SymbolicUtils / Symbolics. `unwrap` is accessed via both: the
+                # wrapper-aware `Symbolics.unwrap` (utils/events) and
+                # `SymbolicUtils.unwrap` (systems); they differ at the compat floor.
+                :BasicSymbolic, :isadd, :ismul, :symtype,
+                :fixpoint_sub, :get_variables, :unwrap, :value,
             ),
         ),
     ),
