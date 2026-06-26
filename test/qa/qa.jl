@@ -17,17 +17,14 @@ run_qa(
         # upstream library marks the name public.
         all_qualified_accesses_are_public = (;
             ignore = (
-                # SBML
+                # SBML (non-SciML dep; names not declared public upstream)
                 :AlgebraicRule, :AssignmentRule, :Math, :MathApply, :MathAvogadro,
                 :MathConst, :MathIdent, :MathTime, :MathVal, :Model, :RateRule,
                 :Rule, :SpeciesReference, :default_constants, :default_function_mapping,
                 :extensive_kinetic_math, :initial_amounts, :interpret_math, :isfreein,
                 :seemsdefined,
-                # SymbolicUtils / Symbolics. `unwrap` is accessed via both: the
-                # wrapper-aware `Symbolics.unwrap` (utils/events) and
-                # `SymbolicUtils.unwrap` (systems); they differ at the compat floor.
-                :BasicSymbolic, :isadd, :ismul, :symtype,
-                :fixpoint_sub, :get_variables, :unwrap, :value,
+                # SymbolicUtils / Symbolics: not yet declared public upstream.
+                :fixpoint_sub, :symtype,
             ),
         ),
     ),
