@@ -12,19 +12,13 @@ run_qa(
         # `setmetadata` is needed at runtime by the `@species` macro expansion but is
         # not directly referenced in source.
         no_stale_explicit_imports = (; ignore = (:setmetadata,)),
-        # `unwrap`/`value`/`fixpoint_sub` are written as `Symbolics.X` in source, but
-        # ExplicitImports' qualifier resolution differs across Julia versions: on 1.10
-        # it attributes `Symbolics.value`/`Symbolics.fixpoint_sub` to ModelingToolkit
-        # (which re-exports the `Symbolics` module name) and reports `Symbolics.unwrap`
-        # as owned by SymbolicUtils, so `via_owners` flags all three on lts but none on
-        # >=1.11. `unwrap` in particular must stay `Symbolics.unwrap` (not
-        # `SymbolicUtils.unwrap`): at the compat floor the wrapper-aware `Symbolics`
-        # form is required for `@species` results, whereas `SymbolicUtils.unwrap(::Num)`
-        # is a no-op there. No single spelling satisfies the owner check on both 1.10
-        # and >=1.11 without breaking floor correctness.
-        all_qualified_accesses_via_owners = (;
-            ignore = (:fixpoint_sub, :unwrap, :value),
-        ),
+        # `Symbolics.unwrap` re-exports `SymbolicUtils.unwrap`; on Julia 1.10 `Base.which`
+        # attributes the name to its owner `SymbolicUtils`, so `via_owners` flags the
+        # `Symbolics.unwrap` accesses (it does not flag on >=1.11). The source must keep
+        # the `Symbolics.unwrap` spelling: at the compat floor the wrapper-aware form is
+        # required for `@species`/`@parameters` results, whereas `SymbolicUtils.unwrap`
+        # is a no-op there.
+        all_qualified_accesses_via_owners = (; ignore = (:unwrap,)),
         # Names accessed qualified from their owner package but not (yet) declared
         # `public`/exported there. Ignored per source package; drop each as the
         # upstream library marks the name public.
@@ -36,7 +30,7 @@ run_qa(
                 :Rule, :SpeciesReference, :default_constants, :default_function_mapping,
                 :extensive_kinetic_math, :initial_amounts, :interpret_math, :isfreein,
                 :seemsdefined,
-                # SymbolicUtils / Symbolics: not yet declared public upstream.
+                # Symbolics: not yet declared public upstream.
                 :fixpoint_sub,
             ),
         ),
