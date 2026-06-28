@@ -37,7 +37,7 @@ run_qa(
                 :extensive_kinetic_math, :initial_amounts, :interpret_math, :isfreein,
                 :seemsdefined,
                 # SymbolicUtils / Symbolics: not yet declared public upstream.
-                :fixpoint_sub, :symtype,
+                :fixpoint_sub,
             ),
         ),
     ),
