@@ -16,6 +16,11 @@ include("events.jl")
 include("utils.jl")
 
 # Backward compatibility alias (SBMLToolkitTestSuite still uses this name)
+"""
+    convert_simplify_math(args...)
+
+Backward-compatible alias for `SBML.convert_promotelocals_expandfuns`.
+"""
 const convert_simplify_math = convert_promotelocals_expandfuns
 
 export ReactionSystem, ODESystem

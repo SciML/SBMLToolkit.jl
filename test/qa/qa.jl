@@ -4,6 +4,7 @@ using SciMLTesting
 run_qa(
     SBMLToolkit;
     explicit_imports = true,
+    api_docs_kwargs = (; rendered = true),
     aqua_kwargs = (;
         ambiguities = (; recursive = false),
         piracies = (; treat_as_own = [SBMLToolkit.SBML.Model]),
