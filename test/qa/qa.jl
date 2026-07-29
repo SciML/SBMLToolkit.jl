@@ -1,9 +1,27 @@
 using SBMLToolkit, Test
 using SciMLTesting
 
+const INTENTIONAL_PUBLIC_REEXPORTS = (
+    ODESystem = SBMLToolkit.ModelingToolkit.ODESystem,
+    ReactionSystem = SBMLToolkit.Catalyst.ReactionSystem,
+    convert_promotelocals_expandfuns = SBMLToolkit.SBML.convert_promotelocals_expandfuns,
+    convert_simplify_math = SBMLToolkit.SBML.convert_promotelocals_expandfuns,
+    readSBML = SBMLToolkit.SBML.readSBML,
+    readSBMLFromString = SBMLToolkit.SBML.readSBMLFromString,
+    set_level_and_version = SBMLToolkit.SBML.set_level_and_version,
+)
+
+@testset "Intentional public reexports" begin
+    @test Tuple(public_reexports(SBMLToolkit)) == keys(INTENTIONAL_PUBLIC_REEXPORTS)
+    for (name, owner_binding) in pairs(INTENTIONAL_PUBLIC_REEXPORTS)
+        @test getfield(SBMLToolkit, name) === owner_binding
+    end
+end
+
 run_qa(
     SBMLToolkit;
     explicit_imports = true,
+    reexports_allow = keys(INTENTIONAL_PUBLIC_REEXPORTS),
     api_docs_kwargs = (; rendered = true),
     aqua_kwargs = (;
         ambiguities = (; recursive = false),
