@@ -154,7 +154,10 @@ function create_symbol(k::String, model::SBML.Model)
         v = model.parameters[k]
         if v.constant == false &&
                 (SBML.seemsdefined(k, model) || is_event_assignment(k, model))
-            sym = create_var(k, IV; isbcspecies = true)
+            sym = create_var(
+                k, IV; isbcspecies = true,
+                irreducible = is_event_assignment(k, model)
+            )
         else
             sym = create_param(k)
         end

@@ -1,5 +1,6 @@
 using SBMLToolkit
-using Catalyst, SBML
+using Catalyst, ModelingToolkit, SBML
+import Symbolics
 using Test
 
 cd(@__DIR__)
@@ -110,8 +111,15 @@ rs = ReactionSystem(MODEL2)  # Contains reversible reaction
 @test isequal(Catalyst.get_species(rs), [s1])
 @test issetequal(Catalyst.get_ps(rs), [k1, c1])
 
-@test convert(ModelingToolkit.ODESystem, rs) isa ODESystem
-@test structural_simplify(convert(ModelingToolkit.ODESystem, rs)) isa ODESystem
+if pkgversion(Catalyst) >= v"16"
+    odesys_from_rs = Catalyst.ode_model(rs)
+    @test odesys_from_rs isa ODESystem
+    @test mtkcompile(odesys_from_rs) isa ODESystem
+else
+    odesys_from_rs = convert(ModelingToolkit.ODESystem, rs)
+    @test odesys_from_rs isa ODESystem
+    @test structural_simplify(odesys_from_rs) isa ODESystem
+end
 
 # Test ODESystem constructor
 odesys = ODESystem(MODEL1)
@@ -123,7 +131,19 @@ trueeqs = Equation[default_time_deriv()(s1) ~ k1]
 u0 = [s1 => 1.0]
 par = [k1 => 1.0, c1 => 2.0]
 testdef = merge(Dict(u0), Dict(par))
-@test issubset(testdef, defaults(odesys))
+if pkgversion(ModelingToolkit) >= v"11"
+    initial_conditions = ModelingToolkit.initial_conditions(odesys)
+    bindings = ModelingToolkit.bindings(odesys)
+    @test all(
+        isequal(Symbolics.wrap(initial_conditions[Symbolics.unwrap(k)]), v)
+            for (k, v) in u0
+    )
+    @test all(
+        isequal(Symbolics.wrap(bindings[Symbolics.unwrap(k)]), v) for (k, v) in par
+    )
+else
+    @test issubset(testdef, ModelingToolkit.defaults(odesys))
+end
 @named odesys = ODESystem(MODEL1)
 isequal(nameof(odesys), :odesys)
 @test structural_simplify(odesys) isa ODESystem
@@ -142,7 +162,19 @@ trueeqs = Equation[
 u0 = [s1 => 2 * 1.0, s2 => 2 * 1.0, s1s2 => 2 * 1.0]
 par = [k1 => 1.0, c1 => 2.0]
 testdef = merge(Dict(u0), Dict(par))
-@test issubset(testdef, ModelingToolkit.defaults(odesys))
+if pkgversion(ModelingToolkit) >= v"11"
+    initial_conditions = ModelingToolkit.initial_conditions(odesys)
+    bindings = ModelingToolkit.bindings(odesys)
+    @test all(
+        isequal(Symbolics.wrap(initial_conditions[Symbolics.unwrap(k)]), v)
+            for (k, v) in u0
+    )
+    @test all(
+        isequal(Symbolics.wrap(bindings[Symbolics.unwrap(k)]), v) for (k, v) in par
+    )
+else
+    @test issubset(testdef, ModelingToolkit.defaults(odesys))
+end
 @named odesys = ODESystem(MODEL1)
 isequal(nameof(odesys), :odesys)
 

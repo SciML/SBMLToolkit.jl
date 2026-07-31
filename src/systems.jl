@@ -41,9 +41,9 @@ function SBML.readSBML(
         sbmlfile::String, ::ODESystemImporter;
         include_zero_odes::Bool = true, kwargs...
     )  # Returns an MTK.ODESystem
-    odesys = convert(
-        ODESystem, readSBML(sbmlfile, ReactionSystemImporter(), kwargs...),
-        include_zero_odes = include_zero_odes
+    odesys = _rs_to_odesys(
+        readSBML(sbmlfile, ReactionSystemImporter(); kwargs...);
+        include_zero_odes
     )
     return complete(odesys)
 end
