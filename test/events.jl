@@ -34,3 +34,6 @@ events_true = [
     [S2 / compartment ~ 0.5] => [S2 ~ 0],
 ]
 @test isequal(events, events_true)
+
+# Symbolic backends may represent `a > b` as `b < a`; retain the SBML operands.
+@test isequal(first(events[2])[1], S2 / compartment ~ 0.5)
