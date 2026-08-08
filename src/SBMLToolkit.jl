@@ -15,11 +15,19 @@ include("rules.jl")
 include("events.jl")
 include("utils.jl")
 
-# Backward compatibility alias (SBMLToolkitTestSuite still uses this name)
 """
     convert_simplify_math(args...)
 
-Backward-compatible alias for `SBML.convert_promotelocals_expandfuns`.
+Compatibility alias for `SBML.convert_promotelocals_expandfuns`.
+
+All arguments are forwarded unchanged. New code should import and call
+`SBML.convert_promotelocals_expandfuns` directly.
+
+# Examples
+
+```julia
+normalized_document = convert_simplify_math(document)
+```
 """
 const convert_simplify_math = convert_promotelocals_expandfuns
 

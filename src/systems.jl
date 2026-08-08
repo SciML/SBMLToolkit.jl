@@ -1,18 +1,68 @@
-"DefaultImporter to use in conjunction with `readSBML`"
+"""
+    DefaultImporter()
+
+Select SBMLToolkit's default normalization pipeline for `SBML.readSBML`.
+
+The pipeline checks for unsupported features, upgrades the document to SBML Level 3
+Version 2, and promotes local parameters and function definitions.
+
+# Examples
+
+```julia
+model = readSBML("model.xml", DefaultImporter())
+```
+"""
 struct DefaultImporter end
 
-"ReactionSystemImporter to use in conjunction with `readSBML`"
+"""
+    ReactionSystemImporter()
+
+Select conversion of an SBML file to a completed `Catalyst.ReactionSystem`.
+
+# Examples
+
+```julia
+reaction_system = readSBML("model.xml", ReactionSystemImporter())
+```
+"""
 struct ReactionSystemImporter end
 
-"ODESystemImporter to use in conjunction with `readSBML`"
+"""
+    ODESystemImporter()
+
+Select conversion of an SBML file to a completed `ModelingToolkit.ODESystem`.
+
+# Examples
+
+```julia
+ode_system = readSBML("model.xml", ODESystemImporter())
+```
+"""
 struct ODESystemImporter end
 
 """
-    readSBML(sbmlfile::String, ::DefaultImporter)
+    readSBML(sbmlfile::String, ::DefaultImporter) -> SBML.Model
 
-Create a `SBML.Model` from an SBML file, using the default import settings for use as Catalyst and ModelingToolkit types.
+Import and normalize an SBML file for conversion to SciML system types.
 
-See also [`Model`](@ref) and [`DefaultImporter`](@ref).
+# Arguments
+
+- `sbmlfile::String`: path to the SBML XML file.
+- `::DefaultImporter`: selects SBMLToolkit's default normalization pipeline.
+
+# Returns
+
+- `SBML.Model`: the normalized SBML model.
+
+# Throws
+
+- `ErrorException`: the file uses an unsupported SBML feature.
+
+# Examples
+
+```julia
+model = readSBML("model.xml", DefaultImporter())
+```
 """
 function SBML.readSBML(sbmlfile::String, ::DefaultImporter)  # Returns an SBML.Model
     SBMLToolkit.checksupport_file(sbmlfile)
@@ -20,22 +70,57 @@ function SBML.readSBML(sbmlfile::String, ::DefaultImporter)  # Returns an SBML.M
 end
 
 """
-    readSBML(sbmlfile::String, ::ReactionSystemImporter)
+    readSBML(sbmlfile::String, ::ReactionSystemImporter; kwargs...)
 
-Create a `Catalyst.ReactionSystem` from an SBML file, using the default import settings.
+Import an SBML file as a completed `Catalyst.ReactionSystem`.
 
-See also [`Model`](@ref) and [`ReactionSystemImporter`](@ref).
+# Arguments
+
+- `sbmlfile::String`: path to the SBML XML file.
+- `::ReactionSystemImporter`: selects reaction-system conversion.
+
+# Keywords
+
+- `kwargs...`: forwarded to `Catalyst.ReactionSystem`.
+
+# Returns
+
+- `Catalyst.ReactionSystem`: the completed reaction system.
+
+# Examples
+
+```julia
+reaction_system = readSBML("model.xml", ReactionSystemImporter())
+```
 """
 function SBML.readSBML(sbmlfile::String, ::ReactionSystemImporter; kwargs...)  # Returns a Catalyst.ReactionSystem
     return ReactionSystem(readSBML(sbmlfile::String, DefaultImporter()), kwargs...)
 end
 
 """
-    readSBML(sbmlfile::String, ::ODESystemImporter)
+    readSBML(sbmlfile::String, ::ODESystemImporter; include_zero_odes = true, kwargs...)
 
-Create a `ModelingToolkit.ODESystem` from an SBML file, using the default import settings.
+Import an SBML file as a completed `ModelingToolkit.ODESystem`.
 
-See also [`Model`](@ref) and [`ODESystemImporter`](@ref).
+# Arguments
+
+- `sbmlfile::String`: path to the SBML XML file.
+- `::ODESystemImporter`: selects ODE-system conversion.
+
+# Keywords
+
+- `include_zero_odes::Bool = true`: retain equations with zero right-hand sides.
+- `kwargs...`: forwarded while constructing the intermediate reaction system.
+
+# Returns
+
+- `ModelingToolkit.ODESystem`: the completed ODE system.
+
+# Examples
+
+```julia
+ode_system = readSBML("model.xml", ODESystemImporter())
+```
 """
 function SBML.readSBML(
         sbmlfile::String, ::ODESystemImporter;
@@ -51,9 +136,26 @@ end
 """
     ReactionSystem(model::SBML.Model; kwargs...)
 
-Create a `ReactionSystem` from an `SBML.Model`.
+Convert an `SBML.Model` to a completed `Catalyst.ReactionSystem`.
 
-See also [`ODESystem`](@ref).
+# Arguments
+
+- `model::SBML.Model`: the normalized SBML model to convert.
+
+# Keywords
+
+- `kwargs...`: forwarded to `Catalyst.ReactionSystem`.
+
+# Returns
+
+- `Catalyst.ReactionSystem`: the completed reaction system.
+
+# Examples
+
+```julia
+model = readSBML("model.xml", DefaultImporter())
+reaction_system = ReactionSystem(model)
+```
 """
 function Catalyst.ReactionSystem(model::SBML.Model; kwargs...)  # Todo: requires unique parameters (i.e. SBML must have been imported with localParameter promotion in libSBML)
     # length(model.events) > 0 ? error("Model contains events. Please import with `ODESystem(model)`") : nothing  @Anand: how to suppress this when called from ODESystem
@@ -170,9 +272,27 @@ end
 """
     ODESystem(model::SBML.Model; include_zero_odes = true, kwargs...)
 
-Create an `ODESystem` from an `SBML.Model`.
+Convert an `SBML.Model` to a completed `ModelingToolkit.ODESystem`.
 
-See also [`ReactionSystem`](@ref).
+# Arguments
+
+- `model::SBML.Model`: the normalized SBML model to convert.
+
+# Keywords
+
+- `include_zero_odes::Bool = true`: retain equations with zero right-hand sides.
+- `kwargs...`: forwarded while constructing the intermediate reaction system.
+
+# Returns
+
+- `ModelingToolkit.ODESystem`: the completed ODE system.
+
+# Examples
+
+```julia
+model = readSBML("model.xml", DefaultImporter())
+ode_system = ODESystem(model)
+```
 """
 function ModelingToolkit.ODESystem(
         model::SBML.Model; include_zero_odes::Bool = true,
@@ -251,7 +371,25 @@ end
 """
     checksupport_file(filename::String)
 
-Check if SBML file is supported by SBMLToolkit.jl.
+Validate that an SBML file uses features supported by SBMLToolkit.
+
+# Arguments
+
+- `filename::String`: path to the SBML XML file.
+
+# Returns
+
+- `Bool`: `true` when the file does not contain a known unsupported feature.
+
+# Throws
+
+- `ErrorException`: the file uses an unsupported SBML feature.
+
+# Examples
+
+```julia
+checksupport_file("model.xml")
+```
 """
 function checksupport_file(filename::String)
     string = open(filename) do file

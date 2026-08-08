@@ -10,8 +10,7 @@ makedocs(;
     modules = [SBMLToolkit],
     authors = "paulflang, anandijain",
     sitename = "SBMLToolkit.jl",
-    clean = true, doctest = false, linkcheck = true,
-    warnonly = [:missing_docs, :cross_references],
+    clean = true, doctest = true, linkcheck = true, checkdocs = :exports,
     linkcheck_ignore = ["https://www.linkedin.com/in/paul-lang-7b54a81a3/"],
     format = Documenter.HTML(;
         prettyurls = get(ENV, "CI", "false") == "true",
