@@ -16,15 +16,15 @@ sol = solve(prob, Tsit5())</code></pre><p>SBMLToolkit also provides the followin
 rs = readSBML(sbmlfile, ReactionSystemImporter())
 odesys = readSBML(sbmlfile, ODESystemImporter())</code></pre><h2 id="License"><a class="docs-heading-anchor" href="#License">License</a><a id="License-1"></a><a class="docs-heading-anchor-permalink" href="#License" title="Permalink"></a></h2><p>The package is released under the <a href="https://github.com/SciML/SBMLToolkit.jl/blob/main/LICENSE">MIT license</a>.</p><h2 id="Development-team"><a class="docs-heading-anchor" href="#Development-team">Development team</a><a id="Development-team-1"></a><a class="docs-heading-anchor-permalink" href="#Development-team" title="Permalink"></a></h2><p>This package was developed by <a href="https://www.linkedin.com/in/paul-lang-7b54a81a3/">Paul F. Lang</a> at the University of Oxford, UK and <a href="https://github.com/anandijain">Anand Jain</a> at the University of Chicago, USA.</p><h2 id="Questions-and-comments"><a class="docs-heading-anchor" href="#Questions-and-comments">Questions and comments</a><a id="Questions-and-comments-1"></a><a class="docs-heading-anchor-permalink" href="#Questions-and-comments" title="Permalink"></a></h2><p>Please use GitHub issues, the #sciml-sysbio channel in the <a href="https://julialang.org/slack/">Julia Slack workspace</a> or email <a href="mailto:paul.lang@juliacomputing.com">Paul F. Lang</a> or <a href="mailto:anandj@uchicago.edu">Anand Jain</a> with any questions or comments.</p><h2 id="Reproducibility"><a class="docs-heading-anchor" href="#Reproducibility">Reproducibility</a><a id="Reproducibility-1"></a><a class="docs-heading-anchor-permalink" href="#Reproducibility" title="Permalink"></a></h2><details><summary>The documentation of this SciML package was built using these direct dependencies,</summary><pre class="documenter-example-output"><code class="nohighlight hljs ansi"><span class="sgr32"><span class="sgr1">Status</span></span> `~/_work/SBMLToolkit.jl/SBMLToolkit.jl/docs/Project.toml`
   <span class="sgr90">[e30172f5] </span>Documenter v1.17.0
-  <span class="sgr90">[86080e66] </span>SBMLToolkit v0.1.39 `~/_work/SBMLToolkit.jl/SBMLToolkit.jl`</code></pre></details><details><summary>and using this machine and Julia version.</summary><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Julia Version 1.12.6
-Commit 15346901f00 (2026-04-09 19:20 UTC)
+  <span class="sgr90">[86080e66] </span>SBMLToolkit v0.1.39 `~/_work/SBMLToolkit.jl/SBMLToolkit.jl`</code></pre></details><details><summary>and using this machine and Julia version.</summary><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Julia Version 1.12.7
+Commit 6d172b025e4 (2026-08-15 08:05 UTC)
 Build Info:
   Official https://julialang.org release
 Platform Info:
   OS: Linux (x86_64-linux-gnu)
-  CPU: 112 × AMD EPYC 7663 56-Core Processor
+  CPU: 128 × AMD EPYC 9354 32-Core Processor
   WORD_SIZE: 64
-  LLVM: libLLVM-18.1.7 (ORCJIT, znver3)
+  LLVM: libLLVM-18.1.7 (ORCJIT, znver4)
   GC: Built with stock GC
 Threads: 1 default, 1 interactive, 1 GC (on 4 virtual cores)
 Environment:
@@ -65,7 +65,7 @@ Environment:
   <span class="sgr90">[459566f4] </span>DiffEqCallbacks v4.19.2
   <span class="sgr90">[163ba53b] </span>DiffResults v1.1.0
   <span class="sgr90">[b552c78f] </span>DiffRules v1.16.0
-  <span class="sgr90">[a0c0ee7d] </span>DifferentiationInterface v0.7.20
+  <span class="sgr90">[a0c0ee7d] </span>DifferentiationInterface v0.7.21
   <span class="sgr90">[8d63f2c5] </span>DispatchDoctor v0.4.28
   <span class="sgr90">[ffbed154] </span>DocStringExtensions v0.9.5
   <span class="sgr90">[e30172f5] </span>Documenter v1.17.0
@@ -122,8 +122,8 @@ Environment:
   <span class="sgr90">[102ac46a] </span>MultivariatePolynomials v0.5.19
   <span class="sgr90">[d8a4904e] </span>MutableArithmetics v1.8.0
   <span class="sgr90">[77ba4419] </span>NaNMath v1.1.4
-  <span class="sgr90">[be0214bd] </span>NonlinearSolveBase v2.44.0
-  <span class="sgr90">[5959db7a] </span>NonlinearSolveFirstOrder v2.3.2
+  <span class="sgr90">[be0214bd] </span>NonlinearSolveBase v2.45.0
+  <span class="sgr90">[5959db7a] </span>NonlinearSolveFirstOrder v2.4.0
   <span class="sgr90">[6fe1bfb0] </span>OffsetArrays v1.17.0
 <span class="sgr33">⌅</span> <span class="sgr90">[bac558e1] </span>OrderedCollections v1.8.2
   <span class="sgr90">[bbf590c4] </span>OrdinaryDiffEqCore v4.14.3
@@ -148,7 +148,7 @@ Environment:
   <span class="sgr90">[e5567a89] </span>SBML v1.6.0
   <span class="sgr90">[86080e66] </span>SBMLToolkit v0.1.39 `~/_work/SBMLToolkit.jl/SBMLToolkit.jl`
   <span class="sgr90">[9dfe8606] </span>SCCNonlinearSolve v1.15.0
-  <span class="sgr90">[0bca4576] </span>SciMLBase v3.47.0
+  <span class="sgr90">[0bca4576] </span>SciMLBase v3.49.0
   <span class="sgr90">[19f34311] </span>SciMLJacobianOperators v0.1.17
   <span class="sgr90">[a6db7da4] </span>SciMLLogging v2.0.4
   <span class="sgr90">[c0aeaf25] </span>SciMLOperators v1.27.0
@@ -182,7 +182,7 @@ Environment:
   <span class="sgr90">[3a884ed6] </span>UnPack v1.0.2
   <span class="sgr90">[1986cc42] </span>Unitful v1.28.0
   <span class="sgr90">[d30d5f5c] </span>WeakCacheSets v0.1.0
-  <span class="sgr90">[2e619515] </span>Expat_jll v2.8.2+0
+  <span class="sgr90">[2e619515] </span>Expat_jll v2.8.3+0
   <span class="sgr90">[61579ee1] </span>Ghostscript_jll v9.55.1+0
   <span class="sgr90">[020c3dae] </span>Git_LFS_jll v3.7.1+0
   <span class="sgr90">[f8c6e375] </span>Git_jll v2.55.0+0
@@ -227,18 +227,18 @@ Environment:
   <span class="sgr90">[8dfed614] </span>Test v1.11.0
   <span class="sgr90">[cf7118a7] </span>UUIDs v1.11.0
   <span class="sgr90">[4ec0a83e] </span>Unicode v1.11.0
-  <span class="sgr90">[e66e0078] </span>CompilerSupportLibraries_jll v1.3.0+1
+  <span class="sgr90">[e66e0078] </span>CompilerSupportLibraries_jll v1.3.1+2
   <span class="sgr90">[deac9b47] </span>LibCURL_jll v8.15.0+0
   <span class="sgr90">[e37daf67] </span>LibGit2_jll v1.9.0+0
   <span class="sgr90">[29816b5a] </span>LibSSH2_jll v1.11.3+1
   <span class="sgr90">[14a3606d] </span>MozillaCACerts_jll v2025.11.4
   <span class="sgr90">[4536629a] </span>OpenBLAS_jll v0.3.29+0
   <span class="sgr90">[05823500] </span>OpenLibm_jll v0.8.7+0
-  <span class="sgr90">[458c3c95] </span>OpenSSL_jll v3.5.4+0
+  <span class="sgr90">[458c3c95] </span>OpenSSL_jll v3.5.6+0
   <span class="sgr90">[efcefdf7] </span>PCRE2_jll v10.44.0+1
   <span class="sgr90">[bea87d4a] </span>SuiteSparse_jll v7.8.3+2
   <span class="sgr90">[83775a58] </span>Zlib_jll v1.3.1+2
   <span class="sgr90">[8e850b90] </span>libblastrampoline_jll v5.15.0+0
   <span class="sgr90">[8e850ede] </span>nghttp2_jll v1.64.0+1
   <span class="sgr90">[3f19e933] </span>p7zip_jll v17.7.0+0
-<span class="sgr36"><span class="sgr1">Info</span></span> Packages marked with <span class="sgr33">⌅</span> have new versions available but compatibility constraints restrict them from upgrading. To see why use `status --outdated -m`</code></pre></details><p>You can also download the <a href="https://github.com/SciML/SBMLToolkit.jl/tree/gh-pages/v0.1.39/assets/Manifest.toml">manifest</a> file and the <a href="https://github.com/SciML/SBMLToolkit.jl/tree/gh-pages/v0.1.39/assets/Project.toml">project</a> file.</p></article><nav class="docs-footer"><a class="docs-footer-nextpage" href="api/">API documentation »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.17.0 on <span class="colophon-date" title="Saturday 15 August 2026 09:15">Saturday 15 August 2026</span>. Using Julia version 1.12.6.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+<span class="sgr36"><span class="sgr1">Info</span></span> Packages marked with <span class="sgr33">⌅</span> have new versions available but compatibility constraints restrict them from upgrading. To see why use `status --outdated -m`</code></pre></details><p>You can also download the <a href="https://github.com/SciML/SBMLToolkit.jl/tree/gh-pages/v0.1.39/assets/Manifest.toml">manifest</a> file and the <a href="https://github.com/SciML/SBMLToolkit.jl/tree/gh-pages/v0.1.39/assets/Project.toml">project</a> file.</p></article><nav class="docs-footer"><a class="docs-footer-nextpage" href="api/">API documentation »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.17.0 on <span class="colophon-date" title="Monday 17 August 2026 08:18">Monday 17 August 2026</span>. Using Julia version 1.12.7.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
