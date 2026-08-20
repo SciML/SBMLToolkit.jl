@@ -36,4 +36,6 @@ export readSBML, readSBMLFromString, set_level_and_version, convert_simplify_mat
     convert_promotelocals_expandfuns, checksupport_file
 export DefaultImporter, ReactionSystemImporter, ODESystemImporter
 
+include("precompile.jl")
+
 end
