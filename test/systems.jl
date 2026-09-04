@@ -137,11 +137,9 @@ if pkgversion(ModelingToolkit) >= v"11"
     bindings = ModelingToolkit.bindings(odesys)
     @test all(
         isequal(Symbolics.wrap(initial_conditions[Symbolics.unwrap(k)]), v)
-            for (k, v) in u0
+            for (k, v) in testdef
     )
-    @test all(
-        isequal(Symbolics.wrap(bindings[Symbolics.unwrap(k)]), v) for (k, v) in par
-    )
+    @test isempty(bindings)
 else
     @test issubset(testdef, ModelingToolkit.defaults(odesys))
 end
@@ -168,18 +166,19 @@ if pkgversion(ModelingToolkit) >= v"11"
     bindings = ModelingToolkit.bindings(odesys)
     @test all(
         isequal(Symbolics.wrap(initial_conditions[Symbolics.unwrap(k)]), v)
-            for (k, v) in u0
+            for (k, v) in testdef
     )
-    @test all(
-        isequal(Symbolics.wrap(bindings[Symbolics.unwrap(k)]), v) for (k, v) in par
-    )
+    @test isempty(bindings)
 else
     @test issubset(testdef, ModelingToolkit.defaults(odesys))
 end
 @named odesys = ODESystem(MODEL1)
 isequal(nameof(odesys), :odesys)
 
-@test ODEProblem(odesys, [], [0.0, 1.0], []) isa ODEProblem
+prob = ODEProblem(odesys, [], [0.0, 1.0])
+@test prob isa ODEProblem
+override_prob = ODEProblem(odesys, [k1 => 2.0], [0.0, 1.0])
+@test override_prob.ps[k1] == 2.0
 
 # # Test ODEProblem
 # oprob = ODEProblem(ODESystem(MODEL1), [], [0.0, 1.0], [])
@@ -218,6 +217,14 @@ parammap_true = [k1 => 1.0, SBMLToolkit.create_var("k2") => k1]
 initial_assignment_map_true = [SBMLToolkit.create_var("k2") => k1]
 @test isequal(parammap, parammap_true)
 @test isequal(initial_assignment_map, initial_assignment_map_true)
+if pkgversion(Catalyst) >= v"16"
+    rs = ReactionSystem(m)
+    initial_conditions = ModelingToolkit.initial_conditions(rs)
+    bindings = ModelingToolkit.bindings(rs)
+    k2 = first(parammap_true[2])
+    @test isequal(Symbolics.wrap(initial_conditions[Symbolics.unwrap(k1)]), 1.0)
+    @test isequal(Symbolics.wrap(bindings[Symbolics.unwrap(k2)]), k1)
+end
 
 m = SBML.Model(
     species = Dict("s2" => SPECIES2),
