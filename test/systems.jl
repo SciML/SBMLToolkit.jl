@@ -1,5 +1,6 @@
 using SBMLToolkit
 using Catalyst, ModelingToolkit, SBML
+using OrdinaryDiffEq
 import Symbolics
 using Test
 
@@ -260,3 +261,27 @@ ns = SBMLToolkit.netstoich("s1", r)
 @test readSBML(sbmlfile, DefaultImporter()) isa SBML.Model
 @test readSBML(sbmlfile, ReactionSystemImporter()) isa ReactionSystem
 @test readSBML(sbmlfile, ODESystemImporter()) isa ODESystem
+
+@testset "Assignment rule follows initial-value override" begin
+    model = SBML.Model(
+        compartments = Dict("c1" => SBML.Compartment(size = 1.0, constant = true)),
+        species = Dict("s1" => SPECIES1),
+        parameters = Dict("lambda" => SBML.Parameter(value = 999.0, constant = false)),
+        reactions = Dict(
+            "r1" => SBML.Reaction(
+                products = [SBML.SpeciesReference(species = "s1", stoichiometry = 1.0)],
+                kinetic_math = SBML.MathIdent("lambda"), reversible = false
+            )
+        ),
+        rules = SBML.Rule[
+            SBML.AssignmentRule(
+                "lambda", SBML.MathApply("*", SBML.Math[SBML.MathVal(2.0), SBML.MathIdent("s1")])
+            ),
+        ]
+    )
+    sys = structural_simplify(ODESystem(model))
+    prob = ODEProblem(sys, [sys.s1 => 3.0], (0.0, 1.0))
+    sol = solve(prob, Rodas5P())
+    @test successful_retcode(sol)
+    @test sol[sys.lambda][1] == 6.0
+end
