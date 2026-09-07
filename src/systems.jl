@@ -217,11 +217,7 @@ function Catalyst.ReactionSystem(model::SBML.Model; kwargs...)  # Todo: requires
     return complete(rs)  # Todo: maybe add a `complete=True` kwarg
 end
 
-# Catalyst v16 replaced the single `defaults` kwarg of `ReactionSystem` with
-# separate `bindings` (parameter values) and `initial_conditions` (species/unknown
-# values). Older Catalyst (v14, v15) still uses `defaults`. This shim splits the
-# merged dictionary and dispatches on the installed Catalyst version so the same
-# SBMLToolkit code base supports both APIs.
+# Catalyst v16 distinguishes immutable symbolic bindings from overridable initial values.
 @static if pkgversion(Catalyst) >= v"16"
     function _build_reaction_system(eqs, iv, unknowns, ps, defs, cevs; kwargs...)
         unknown_set = Set(SymbolicUtils.unwrap(u) for u in unknowns)
@@ -231,12 +227,7 @@ end
         for (k, v) in defs
             if SymbolicUtils.unwrap(k) in unknown_set
                 initial_conditions[k] = v
-            elseif _references_non_parameter(v, param_set)
-                # SBML `initialAssignment`s on parameters may reference species
-                # (e.g. `parameter S3 := k1*S2`); those cannot live in `bindings`
-                # under Catalyst v16 (`check_bindings` rejects non-parameter symbols)
-                # but are accepted as `initial_conditions`, which is evaluated at
-                # t=0 with the same SBML semantics.
+            elseif _is_initial_condition(v, param_set)
                 initial_conditions[k] = v
             else
                 bindings[k] = v
@@ -250,14 +241,9 @@ end
         )
     end
 
-    function _references_non_parameter(v, param_set)
-        # Note: Symbolics.Num <: Real <: Number, so a `v isa Number` early-return
-        # would swallow symbolic values. Use `get_variables` directly — it returns
-        # an empty iterator for plain numerics.
-        for var in Symbolics.get_variables(v)
-            SymbolicUtils.unwrap(var) in param_set || return true
-        end
-        return false
+    function _is_initial_condition(v, param_set)
+        vars = Symbolics.get_variables(v)
+        return isempty(vars) || any(SymbolicUtils.unwrap(var) ∉ param_set for var in vars)
     end
 else
     function _build_reaction_system(eqs, iv, unknowns, ps, defs, cevs; kwargs...)
