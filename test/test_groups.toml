@@ -1,11 +1,9 @@
 [Core]
 versions = ["lts", "1", "pre"]
 
-["Core 32-bit"]
-group = "Core"
-versions = ["1"]
-os = ["ubuntu-latest"]
-arch = "x86"
+# Core 32-bit dropped: SBML.jl fails to precompile on i686
+# (`ArgumentError: cannot convert NULL to string` during libsbml init).
+# Re-enable when SBML/SBML_jll works on 32-bit.
 
 [QA]
 versions = ["lts", "1"]
