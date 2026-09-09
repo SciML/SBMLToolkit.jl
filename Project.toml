@@ -26,7 +26,7 @@ SafeTestsets = "0.1"
 SciMLTesting = "2.4"
 Sundials = "6.2"
 SymbolicUtils = "4"
-Symbolics = "7"
+Symbolics = "7.39.2"
 Test = "1"
 julia = "1.10"
 
