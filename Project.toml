@@ -45,3 +45,7 @@ Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [targets]
 test = ["CSV", "DataFrames", "Downloads", "OrdinaryDiffEq", "Plots", "SafeTestsets", "SBMLToolkitTestSuite", "SciMLTesting", "Sundials", "Test"]
+
+[sources]
+Sundials = {url = "https://github.com/ChrisRackauckas-Claude/Sundials.jl.git", rev = "fix-32bit-nvector-length"}
+
