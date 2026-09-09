@@ -13,6 +13,7 @@ Symbolics = "0c5d862f-8b57-4792-8d23-62f2024744c7"
 
 
 [compat]
+DiffEqBase = "6.190, 7"
 CSV = "0.10.13"
 Catalyst = "16"
 DataFrames = "1.8.2"
@@ -32,6 +33,7 @@ Test = "1"
 julia = "1.10"
 
 [extras]
+DiffEqBase = "2b5f629d-d688-5b77-993f-72d75c75574e"
 CSV = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
 DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
 Downloads = "f43a241f-c20a-4ad4-852c-f6b1247861c6"
@@ -44,7 +46,7 @@ Sundials = "c3572dad-4567-51f8-b174-8c6c989267f4"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [targets]
-test = ["CSV", "DataFrames", "Downloads", "OrdinaryDiffEq", "Plots", "SafeTestsets", "SBMLToolkitTestSuite", "SciMLTesting", "Sundials", "Test"]
+test = ["DiffEqBase", "CSV", "DataFrames", "Downloads", "OrdinaryDiffEq", "Plots", "SafeTestsets", "SBMLToolkitTestSuite", "SciMLTesting", "Sundials", "Test"]
 
 [sources]
 DiffEqBase = {url = "https://github.com/ChrisRackauckas-Claude/OrdinaryDiffEq.jl.git", rev = "fix-32bit-interp-points-range", subdir = "lib/DiffEqBase"}
