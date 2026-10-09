@@ -14,7 +14,7 @@ Symbolics = "0c5d862f-8b57-4792-8d23-62f2024744c7"
 
 [compat]
 DiffEqBase = "6.190, 7"
-CSV = "0.10.13"
+CSV = "0.10.13, 1.1"
 Catalyst = "16"
 DataFrames = "1.8.2"
 Downloads = "1"
