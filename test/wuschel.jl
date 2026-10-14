@@ -26,7 +26,7 @@ if sbml !== nothing
     sys = ODESystem(m)
     @test length(equations(sys)) == 1012
     @test length(unknowns(sys)) == 1012
-    #ssys = structural_simplify(sys)  # Todo: Figure out why this complains about ExtraVariablesSystemException
+    #ssys = mtkcompile(sys)  # Todo: Figure out why this complains about ExtraVariablesSystemException
     prob = ODEProblem(sys, [], (0, 10.0))
     solve(prob, Tsit5(), save_everystep = false)
 else

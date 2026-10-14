@@ -119,7 +119,7 @@ if pkgversion(Catalyst) >= v"16"
 else
     odesys_from_rs = convert(ModelingToolkit.ODESystem, rs)
     @test odesys_from_rs isa ODESystem
-    @test structural_simplify(odesys_from_rs) isa ODESystem
+    @test mtkcompile(odesys_from_rs) isa ODESystem
 end
 
 # Test ODESystem constructor
@@ -145,7 +145,7 @@ else
 end
 @named odesys = ODESystem(MODEL1)
 isequal(nameof(odesys), :odesys)
-@test structural_simplify(odesys) isa ODESystem
+@test mtkcompile(odesys) isa ODESystem
 
 odesys = ODESystem(readSBML(sbmlfile))
 m = readSBML(sbmlfile)
@@ -286,7 +286,7 @@ ns = SBMLToolkit.netstoich("s1", r)
             ),
         ]
     )
-    sys = structural_simplify(ODESystem(model))
+    sys = mtkcompile(ODESystem(model))
     prob = ODEProblem(sys, [sys.s1 => 3.0], (0.0, 1.0))
     sol = solve(prob, Rodas5P())
     @test successful_retcode(sol)
