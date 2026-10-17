@@ -3,7 +3,7 @@ Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
 SBMLToolkit = "86080e66-c8ac-44c2-a1a0-9adaadfe4a4e"
 
 [sources]
-SBMLToolkit = {path = "/home/runner/_work/SBMLToolkit.jl/SBMLToolkit.jl"}
+SBMLToolkit = {path = "/home/runner/work/SBMLToolkit.jl/SBMLToolkit.jl"}
 
 [compat]
 Documenter = "1"
