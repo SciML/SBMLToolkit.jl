@@ -193,12 +193,19 @@ function Catalyst.ReactionSystem(model::SBML.Model; kwargs...)  # Todo: requires
         #                         Dict(Catalyst.DEFAULT_IV.val => 0)))
         push!(raterules_subs, rhs ~ o.lhs)
     end
+    # Event-assigned parameters and compartments are piecewise constant unless a
+    # rate rule already defines their derivative. Emitting both overdetermines
+    # the ODE (SBML semantic case 00172).
+    rate_rule_targets = Set(
+        rule.variable for rule in model.rules if rule isa SBML.RateRule
+    )
     zero_rates = []
     for (k, v) in merge(model.parameters, model.compartments)
         if is_event_assignment(k, model)
             if v.constant
                 ErrorException("$k appears in event assignment but should be constant.")
             end
+            k in rate_rule_targets && continue
             push!(zero_rates, D(create_var(k, IV; isbcspecies = true)) ~ 0)
         end
     end
