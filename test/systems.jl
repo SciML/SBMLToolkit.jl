@@ -292,3 +292,22 @@ ns = SBMLToolkit.netstoich("s1", r)
     @test successful_retcode(sol)
     @test sol[sys.lambda][1] == 6.0
 end
+
+@testset "Event resets a parameter governed by a rate rule" begin
+    fixture = joinpath(@__DIR__, "data", "rate_rule_event.xml")
+    sys = mtkcompile(readSBML(fixture, ODESystemImporter()))
+    prob = ODEProblem(sys, [], (0.0, 5.0))
+    sol = solve(prob, Tsit5(); abstol = 1.0e-11, reltol = 1.0e-11)
+    @test successful_retcode(sol)
+
+    # S1 decays exponentially from 1 to 0.1 in log(10) time. S2 gains the
+    # amount S1 loses, so each complete cycle adds 0.9 and the partial cycle adds 1 - S1.
+    period = log(10)
+    for t in [2.2, 2.4, 4.5, 4.7, 5.0]
+        cycles = floor(Int, t / period)
+        expected_S1 = exp(-(t - cycles * period))
+        expected_S2 = 0.9 * cycles + (1 - expected_S1)
+        @test isapprox(sol(t; idxs = sys.S1), expected_S1; atol = 1.0e-8, rtol = 0)
+        @test isapprox(sol(t; idxs = sys.S2), expected_S2; atol = 1.0e-8, rtol = 0)
+    end
+end
