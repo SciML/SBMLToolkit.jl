@@ -303,7 +303,7 @@ end
     sol = solve(prob, Tsit5(); saveat = times, abstol = 1.0e-11, reltol = 1.0e-11)
 
     @test successful_retcode(sol)
-    for (i, t) in enumerate(times)
+    for t in times
         n = floor(Int, t / log(10))
         s1 = exp(-(t - n * log(10)))
         s2 = 1 + 0.9n - s1
