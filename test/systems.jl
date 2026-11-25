@@ -292,3 +292,22 @@ ns = SBMLToolkit.netstoich("s1", r)
     @test successful_retcode(sol)
     @test sol[sys.lambda][1] == 6.0
 end
+
+@testset "Rate rule and event reset preserve the ODE trajectory" begin
+    file = joinpath(@__DIR__, "data", "rate_rule_event_reset.xml")
+    rs = readSBML(file, ReactionSystemImporter())
+    @test length(Catalyst.get_eqs(rs)) == 3
+    sys = mtkcompile(readSBML(file, ODESystemImporter()))
+    times = [2.2, 2.4, 4.5, 4.7, 5.0]
+    prob = ODEProblem(sys, [], (0.0, 5.0))
+    sol = solve(prob, Tsit5(); saveat = times, abstol = 1.0e-11, reltol = 1.0e-11)
+
+    @test successful_retcode(sol)
+    for (i, t) in enumerate(times)
+        n = floor(Int, t / log(10))
+        s1 = exp(-(t - n * log(10)))
+        s2 = 1 + 0.9n - s1
+        @test isapprox(sol(t; idxs = sys.S1), s1; atol = 1.0e-8, rtol = 0)
+        @test isapprox(sol(t; idxs = sys.S2), s2; atol = 1.0e-8, rtol = 0)
+    end
+end
